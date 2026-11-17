@@ -13,6 +13,10 @@
     "Settings…" : {
 
     },
+    "Untitled" : {
+      "comment" : "Name of a board created without one",
+      "extractionState" : "manual"
+    },
     "Version" : {
 
     }

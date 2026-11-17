@@ -116,6 +116,7 @@ What exists:
 - Deliverable: create (empty name → "Untitled"), rename, recolor, reorder, delete; add card (moves from another board, goes to front), remove card (deletes it if not in History), reorder inside a board with fractional positions
 - Acceptance: tests `addToSecondBoardMoves`, `removeFromBoardDeletesCardOutsideHistory`, `deleteBoardKeepsHistoryCards`, `deleteBoardDeletesBoardOnlyCards`, `reorderBetweenNeighbors`, `emptyNameBecomesUntitled`
 - Size: M
+- Status: done
 
 ### T1.8 Retention, Erase History, delete and restore
 - Module(s): Store

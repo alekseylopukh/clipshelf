@@ -263,7 +263,7 @@ The pasteboard keeps the pasted content afterwards; the previous clipboard is no
 
 ### 4.8 Boards
 
-- A board has a name, a color and a position among the tabs. Default name "Untitled" if left empty.
+- A board has a name, a color and a position among the tabs. Default name "Untitled" if left empty, also when renamed to an empty name.
 - Colors come from the system palette (red, orange, yellow, green, blue, purple, gray).
   > TODO: final palette size and order (see design.md).
 - A card belongs to at most one board. Adding it to another board moves it.
