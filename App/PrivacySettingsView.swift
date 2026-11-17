@@ -49,6 +49,13 @@ struct PrivacySettingsView: View {
             }
 
             Section {
+                Toggle(isOn: $privacy.recognizesTextInImages) {
+                    Text("Recognize text in images")
+                    Text("Text is recognized on this Mac, so you can search for it.")
+                }
+            }
+
+            Section {
                 Toggle("Show the Shelf in screenshots and screen sharing", isOn: $privacy.showsShelfInScreenCapture)
             }
 

@@ -20,6 +20,7 @@ final class PrivacySettingsTests {
 
         #expect(settings.ignoredBundleIDs == [CapturePolicy.applePasswordsBundleID])
         #expect(settings.showsShelfInScreenCapture == false)
+        #expect(settings.recognizesTextInImages)
         #expect(settings.capturePolicy == CapturePolicy())
     }
 
@@ -54,6 +55,7 @@ final class PrivacySettingsTests {
         settings.ignoreApps(withBundleIDs: ["com.apple.TextEdit"])
         settings.ignoresConcealed = false
         settings.showsShelfInScreenCapture = true
+        settings.recognizesTextInImages = false
 
         let relaunched = PrivacySettings(defaults: defaults)
 
@@ -61,6 +63,7 @@ final class PrivacySettingsTests {
         #expect(relaunched.ignoresConcealed == false)
         #expect(relaunched.ignoresTransient)
         #expect(relaunched.showsShelfInScreenCapture)
+        #expect(relaunched.recognizesTextInImages == false)
     }
 
     @Test func `removing the preset is remembered`() {

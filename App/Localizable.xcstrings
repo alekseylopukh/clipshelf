@@ -452,6 +452,12 @@
     "Show the Shelf in screenshots and screen sharing" : {
       "comment" : "Privacy setting that lets screenshots and screen sharing capture the Shelf"
     },
+    "Recognize text in images" : {
+      "comment" : "Privacy setting that turns on-device text recognition in image cards on or off"
+    },
+    "Text is recognized on this Mac, so you can search for it." : {
+      "comment" : "Explanation under the Recognize text in images setting"
+    },
     "Some apps can’t be ignored." : {
       "comment" : "Title of the alert shown when a chosen app has no bundle identifier"
     },

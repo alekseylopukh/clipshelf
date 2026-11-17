@@ -39,12 +39,14 @@ public struct CardRepository: Sendable {
             try connection.execute(
                 sql: """
                 INSERT INTO card (kind, content_hash, preview_text, metadata, source_app_id,
-                                  byte_size, created_at, last_copied_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                                  byte_size, created_at, last_copied_at, ocr_state)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 arguments: [
                     card.kind.rawValue, card.contentHash, card.previewText, card.metadata, sourceAppID,
-                    card.representations.reduce(0) { $0 + $1.data.count }, time, time
+                    card.representations.reduce(0) { $0 + $1.data.count }, time, time,
+                    card.kind == .image ? TextRecognitionState.pending.rawValue : TextRecognitionState.notApplicable
+                        .rawValue
                 ]
             )
             let id = connection.lastInsertedRowID

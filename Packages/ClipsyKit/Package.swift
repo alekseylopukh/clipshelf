@@ -15,7 +15,7 @@ let package = Package(
     targets: [
         .target(name: "Store", dependencies: [.product(name: "GRDB", package: "GRDB.swift")]),
         .target(name: "Capture", dependencies: ["Store"]),
-        .target(name: "Media"),
+        .target(name: "Media", dependencies: ["Store"]),
         .target(name: "Pasting", dependencies: ["Store"]),
         .target(name: "DesignSystem"),
         .target(

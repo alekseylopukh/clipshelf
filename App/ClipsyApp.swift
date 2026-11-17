@@ -51,11 +51,7 @@ struct ClipsyApp: App {
             thumbnails: ThumbnailCache(directory: repository.thumbnailsDirectory)
         )
         _shelf = State(initialValue: shelf)
-        _ = Task {
-            for await isShown in Observations({ privacy.showsShelfInScreenCapture }) {
-                shelf.isShownInScreenCapture = isShown
-            }
-        }
+        Self.apply(privacy, to: shelf, textRecognition: TextRecognitionQueue(repository: repository))
         KeyboardShortcuts.onKeyUp(for: .toggleShelf) {
             shelf.toggle()
         }
@@ -117,6 +113,26 @@ struct ClipsyApp: App {
             }
         }
         return onboarding
+    }
+
+    private static func apply(
+        _ privacy: PrivacySettings,
+        to shelf: ShelfController,
+        textRecognition: TextRecognitionQueue
+    ) {
+        _ = Task {
+            for await isShown in Observations({ privacy.showsShelfInScreenCapture }) {
+                shelf.isShownInScreenCapture = isShown
+            }
+        }
+        _ = Task {
+            try await textRecognition.run()
+        }
+        _ = Task {
+            for await isEnabled in Observations({ privacy.recognizesTextInImages }) {
+                await textRecognition.setEnabled(isEnabled)
+            }
+        }
     }
 
     private static func capturePolicy(privacy: PrivacySettings, pause: CapturePause) -> CapturePolicy {

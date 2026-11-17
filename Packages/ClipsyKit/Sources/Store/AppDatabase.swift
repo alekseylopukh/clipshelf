@@ -83,6 +83,7 @@ public struct AppDatabase: Sendable {
                 CHECK ((inline_data IS NULL) <> (payload_hash IS NULL))
             );
             CREATE INDEX representation_payload ON representation(payload_hash) WHERE payload_hash IS NOT NULL;
+            CREATE INDEX card_ocr_pending ON card(id) WHERE ocr_state = 1;
 
             CREATE VIRTUAL TABLE card_search USING fts5(
                 title, body, url, file_names, ocr_text, app_name,

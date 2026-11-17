@@ -120,6 +120,7 @@ card
   CHECK (last_copied_at IS NOT NULL OR board_id IS NOT NULL)
   INDEX card_history ON card(last_copied_at DESC) WHERE last_copied_at IS NOT NULL
   INDEX card_board   ON card(board_id, board_position) WHERE board_id IS NOT NULL
+  INDEX card_ocr_pending ON card(id) WHERE ocr_state = 1
 
 representation                           -- one row per (pasteboard item, type), full fidelity
   card_id          INTEGER NOT NULL REFERENCES card(id) ON DELETE CASCADE
@@ -183,7 +184,7 @@ Rules:
 4. Classify in the order of [product.md §4.2](product.md#42-type-detection): file URL → file; image type → image; trimmed string that is a single URL → link; string that matches the hex rule → color; any text → text; otherwise unknown.
 5. Compute `content_hash`. If a Card with that hash exists: set `last_copied_at = now` and its source app (this also brings a Board-only Card back into History) and stop.
 6. Otherwise write payloads, then insert `card`, `representation` and `card_search` rows in one transaction.
-7. Enqueue background work: OCR for images if enabled; link metadata if enabled. Image thumbnails are made by `Media` when the Card is first shown ([WD-32](roadmap.md#working-defaults-for-open-todos)).
+7. Enqueue background work: an image Card is inserted with `ocr_state` pending, and `Media`'s `TextRecognitionQueue` recognizes pending Cards, newest first, while "Recognize text in images" is on ([WD-38](roadmap.md#working-defaults-for-open-todos)); link metadata if enabled. Image thumbnails are made by `Media` when the Card is first shown ([WD-32](roadmap.md#working-defaults-for-open-todos)).
 8. Store the handled `changeCount` in `UserDefaults` (also for skipped changes, so resuming does not capture what was copied while paused) so a relaunch does not recapture the current clipboard. Each new card id is emitted on `capturedCardIDs` for the menu bar effect and the Sequence.
 
 > TODO: handling of `com.apple.is-remote-clipboard` (Universal Clipboard) and whether `org.nspasteboard.source` should override the frontmost app as the source.
@@ -281,7 +282,7 @@ scripts/release/            release helpers (DMG, appcast)
 
 This is the module list; other docs link here instead of repeating it.
 
-Dependency direction: `ShelfUI` → `DesignSystem`, `Pasting`, `Media`, `Store`, KeyboardShortcuts; `Pasting` → `Store`; `Capture` → `Store`; the app target's Settings and onboarding use `DesignSystem`; `Store` and `DesignSystem` depend on nothing in the package.
+Dependency direction: `ShelfUI` → `DesignSystem`, `Pasting`, `Media`, `Store`, KeyboardShortcuts; `Pasting` → `Store`; `Capture` → `Store`; `Media` → `Store`; the app target's Settings and onboarding use `DesignSystem`; `Store` and `DesignSystem` depend on nothing in the package.
 
 Decided (2026-11-17): a plain, committed `Clipsy.xcodeproj`. `App/` is a folder-synchronized group, so new files there need no project edits. The app links one umbrella product, `ClipsyKit`, so adding a module only changes `Package.swift`. Never hand-edit `project.pbxproj` unless a build setting has to change.
 

@@ -8,6 +8,7 @@ public final class PrivacySettings {
     public static let ignoresConcealedKey = "IgnoreConcealedContent"
     public static let ignoresTransientKey = "IgnoreTransientContent"
     public static let showsShelfInScreenCaptureKey = "ShowShelfInScreenCapture"
+    public static let recognizesTextInImagesKey = "RecognizeTextInImages"
 
     public private(set) var ignoredBundleIDs: [String] {
         didSet { defaults.set(ignoredBundleIDs, forKey: Self.ignoredAppsKey) }
@@ -25,6 +26,10 @@ public final class PrivacySettings {
         didSet { defaults.set(showsShelfInScreenCapture, forKey: Self.showsShelfInScreenCaptureKey) }
     }
 
+    public var recognizesTextInImages: Bool {
+        didSet { defaults.set(recognizesTextInImages, forKey: Self.recognizesTextInImagesKey) }
+    }
+
     @ObservationIgnored private let defaults: UserDefaults
 
     public init(defaults: UserDefaults = .standard) {
@@ -33,6 +38,7 @@ public final class PrivacySettings {
         ignoresConcealed = defaults.object(forKey: Self.ignoresConcealedKey) as? Bool ?? true
         ignoresTransient = defaults.object(forKey: Self.ignoresTransientKey) as? Bool ?? true
         showsShelfInScreenCapture = defaults.bool(forKey: Self.showsShelfInScreenCaptureKey)
+        recognizesTextInImages = defaults.object(forKey: Self.recognizesTextInImagesKey) as? Bool ?? true
     }
 
     public var capturePolicy: CapturePolicy {
