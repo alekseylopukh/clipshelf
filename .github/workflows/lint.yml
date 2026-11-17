@@ -12,15 +12,37 @@ concurrency:
   group: lint-${{ github.ref }}
   cancel-in-progress: true
 
+# reference tool versions, bumped by hand together with their sha256
+env:
+  SWIFTLINT_VERSION: 0.63.3
+  SWIFTLINT_SHA256: 26db741d43f2f2dc26c0cf16911100a3e186c3d1dbb59e55ad3ac87b0de4538f
+  SWIFTFORMAT_VERSION: 0.62.0
+  SWIFTFORMAT_SHA256: ca5986fe0b2899894e8a51d3f479db3e53081b818576af9afa58510f0ff1326c
+
 jobs:
   lint:
     name: SwiftFormat and SwiftLint
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - name: Install tools
-        run: brew install swiftformat swiftlint
+        run: |
+          mkdir -p "$RUNNER_TEMP/bin" && cd "$RUNNER_TEMP"
+          curl -fsSLo swiftlint.zip "https://github.com/realm/SwiftLint/releases/download/${SWIFTLINT_VERSION}/swiftlint_linux_amd64.zip"
+          curl -fsSLo swiftformat.zip "https://github.com/nicklockwood/SwiftFormat/releases/download/${SWIFTFORMAT_VERSION}/swiftformat_linux.zip"
+          echo "$SWIFTLINT_SHA256  swiftlint.zip" | sha256sum -c -
+          echo "$SWIFTFORMAT_SHA256  swiftformat.zip" | sha256sum -c -
+          unzip -q -o swiftlint.zip swiftlint-static && mv swiftlint-static bin/swiftlint
+          unzip -q -o swiftformat.zip swiftformat_linux && mv swiftformat_linux bin/swiftformat
+          chmod +x bin/swiftlint bin/swiftformat
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+      - name: Smoke-test tools
+        run: |
+          printf 'let answer = 42\n' > "$RUNNER_TEMP/Smoke.swift"
+          swiftlint version && swiftformat --version
+          swiftformat --lint --config .swiftformat "$RUNNER_TEMP/Smoke.swift"
+          swiftlint lint --strict --config .swiftlint.yml "$RUNNER_TEMP/Smoke.swift"
       - name: Lint
         run: scripts/lint.sh
       - name: Commit gate tests
