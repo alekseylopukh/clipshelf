@@ -212,7 +212,7 @@ While the Shelf is key, Cmd+1…9 runs the paste flow on the Nth Card counted fr
 2. The head Card is placed on the pasteboard ahead of time. The user pastes with their normal Cmd+V; we do not intercept it.
 3. When the paste is detected, the head is removed and the next Card is placed on the pasteboard. After the last Card, the window closes.
 4. "Paste all": text Cards joined with `\n`, one paste.
-5. Sequence state (ordered Card IDs, direction, plain-text flag, undo stack) lives in memory. Cards stay in History.
+5. Sequence state (ordered Card IDs, direction, undo stack) lives in memory in `Pasting.PasteSequence`; the plain-text flag is kept in `UserDefaults` so it persists across Sequences. Cards stay in History. Details: WD-26 in [roadmap.md](roadmap.md).
 
 Paste detection, to be prototyped:
 - (a) lazy data provider: put the head on the pasteboard via `NSPasteboardItemDataProvider`; the callback fires when the target app reads it. No extra permission.

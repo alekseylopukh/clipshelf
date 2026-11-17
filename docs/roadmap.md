@@ -37,6 +37,7 @@ Not maintainer decisions. They are the doc's current text or the simplest choice
 | WD-23 | Frontmost app without a bundle ID ([product §4.1](product.md#41-capture) rule 3) | Counts as no frontmost app, so the capture is skipped |
 | WD-24 | Database fails to open at launch ([architecture §3.4](architecture.md#34-migrations)) | An alert shows the error with one "Quit Clipsy" button, then the app quits; no files are moved or deleted. A damaged store is recovered instead (T7.4) |
 | WD-25 | Plain-text paste of a Card without a plain string ([architecture §4.2](architecture.md#42-paste)) | Writes every representation, as a normal paste would |
+| WD-26 | Sequence details ([product §4.7](product.md#47-sequence)) | Paste All with any non-text Card writes one item per Card, as a multi-paste does; Reverse Order lasts for the app session and affects only Cards added later; the same Card copied twice is queued twice; Clear empties the panel and keeps it open; removing the last Card keeps the panel open, pasting it closes the panel |
 
 ## Rules for every task
 
@@ -562,6 +563,7 @@ What exists:
 - Deliverable: in-memory queue of card ids: add (end, or head with Reverse Order), seed from selection in shelf order, advance, remove, reorder, undo last paste or removal, paste all joined text, plain-text flag persisted
 - Acceptance: tests `copyOrderPastesFirstCopiedFirst`, `reverseOrderInsertsAtHead`, `undoRestoresPosition`, `lastPasteCloses`, `pasteAllJoinsText`
 - Size: M
+- Status: done
 
 ### T11.3 Sequence paste detection
 - Module(s): Pasting
