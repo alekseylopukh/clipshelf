@@ -8,8 +8,11 @@ let package = Package(
     products: [
         .library(name: "ClipsyKit", targets: ["Store", "Capture", "Media", "Pasting", "DesignSystem", "ShelfUI"])
     ],
+    dependencies: [
+        .package(url: "https://github.com/groue/GRDB.swift.git", from: "7.12.0")
+    ],
     targets: [
-        .target(name: "Store"),
+        .target(name: "Store", dependencies: [.product(name: "GRDB", package: "GRDB.swift")]),
         .target(name: "Capture", dependencies: ["Store"]),
         .target(name: "Media"),
         .target(name: "Pasting", dependencies: ["Store"]),

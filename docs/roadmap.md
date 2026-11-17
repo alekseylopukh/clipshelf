@@ -78,6 +78,7 @@ What exists:
 - Deliverable: GRDB dependency (notice row added); `AppDatabase` opening a `DatabasePool` at a given URL (directory created 0700) or in a temp directory for tests; `DatabaseMigrator` with `v1_initial` creating `card`, `representation`, `board`, `source_app`, `card_search` exactly as §3.2; `CardKind` enum
 - Acceptance: tests `migrationCreatesAllTables`, `cardRequiresHistoryOrBoard` (CHECK rejects a row with neither), `representationRequiresExactlyOnePayload`, `searchTokenizerFoldsDiacritics`, `directoryIsOwnerOnly`
 - Size: M
+- Status: done
 
 ### T1.4 Payload file store
 - Module(s): Store

@@ -15,4 +15,8 @@ These are vendored unchanged except for one cleanup: plugin manifests and images
 
 ## Swift packages
 
-None yet. Every package added later gets a row here.
+Every package added later gets a row here.
+
+| Package | Version | Use | License |
+|---|---|---|---|
+| [groue/GRDB.swift](https://github.com/groue/GRDB.swift) | 7.12.0 | SQLite, FTS5, migrations (`Store`) | MIT, © Gwendal Roué |
