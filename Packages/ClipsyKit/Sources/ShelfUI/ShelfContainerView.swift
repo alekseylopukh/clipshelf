@@ -29,6 +29,7 @@ struct ShelfContainerView: View {
                 VStack(spacing: 0) {
                     ShelfTopBar(model: model, commands: commands)
                         .padding([.horizontal, .top], DesignTokens.shelfPadding)
+                        .zIndex(1)
                     ZStack {
                         CardStrip(model: model)
                         if let emptyState = model.emptyState(isCapturePaused: commands.isCapturePaused()) {
