@@ -200,8 +200,9 @@ Applied in order; the first match wins.
 | `#1A2B3C`, `1a2b3c`, `#235442` | Color |
 | `235442` (no `#`, digits only, e.g. a one-time code) | Text |
 | `#FFF`, `rgb(…)`, `red`, hex inside a sentence | Text |
+| `#1A2B3C4D` (8 digits, with alpha) | Text |
 
-> TODO: which URL schemes count as Link (proposal: http, https, mailto, ftp, and any scheme with `//`); whether 8-digit hex with alpha counts as Color.
+**Link schemes.** http, https and ftp with a host, mailto, and any other scheme followed by `//` (for example `custom://x`). Working default [WD-5](roadmap.md#working-defaults-for-open-todos).
 
 ### 4.3 Dedupe and re-copy
 

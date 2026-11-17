@@ -152,6 +152,7 @@ What exists:
 - Deliverable: `classify(_ snapshot:) -> CardKind` in the §4.2 order, reusing `HexColor`; File vs Multiple files kept in metadata
 - Acceptance: parameterized test `classification` covering every row of the §4.2 tables plus `mailto:`, `ftp://`, `custom://x`, a URL with spaces, and 8-digit hex
 - Size: S
+- Status: done
 
 ### T2.3 Content hash, preview and metadata
 - Module(s): Capture
