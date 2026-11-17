@@ -6,6 +6,13 @@ public struct Board: Sendable, Equatable, Identifiable {
     public var name: String
     public var color: String
     public var createdAt: Date
+
+    public init(id: Int64, name: String, color: String, createdAt: Date) {
+        self.id = id
+        self.name = name
+        self.color = color
+        self.createdAt = createdAt
+    }
 }
 
 extension Board: FetchableRecord {

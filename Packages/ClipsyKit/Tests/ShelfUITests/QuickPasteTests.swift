@@ -19,7 +19,11 @@ final class QuickPasteTests {
     }
 
     private func makeModel(cards ids: [Int64]) -> ShelfModel {
-        let model = ShelfModel(defaults: defaults) { _ in AsyncThrowingStream { $0.finish() } }
+        let model = ShelfModel(
+            defaults: defaults,
+            observe: { _ in AsyncThrowingStream { $0.finish() } },
+            observeBoards: { AsyncThrowingStream { $0.finish() } }
+        )
         model.receive(ids.map { CardSummary(
             id: $0,
             kind: .text,

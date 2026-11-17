@@ -1,6 +1,7 @@
 import AppKit
 import Carbon.HIToolbox
 import Foundation
+import KeyboardShortcuts
 import Observation
 import os
 import Store
@@ -9,6 +10,7 @@ import Store
 @Observable
 public final class ShelfModel {
     public typealias CardObservation = @Sendable (CardList) -> any AsyncSequence<[CardSummary], any Error> & Sendable
+    public typealias BoardObservation = @Sendable () -> any AsyncSequence<[Board], any Error> & Sendable
 
     public enum Direction: Sendable {
         case previous
@@ -17,6 +19,9 @@ public final class ShelfModel {
 
     public private(set) var tab: CardList
     public private(set) var cards: [CardSummary] = []
+    public private(set) var boards: [Board] = []
+    var query = ""
+    private var hasLoadedCards = false
     public private(set) var selection: Set<Int64> = []
     public private(set) var observationError: (any Error)?
     public private(set) var isQuickPasteModifierHeld = false
@@ -28,14 +33,20 @@ public final class ShelfModel {
     private var selectsFirstOnLoad = true
 
     @ObservationIgnored private let observe: CardObservation
+    @ObservationIgnored private let observeBoardList: BoardObservation
     @ObservationIgnored private let defaults: UserDefaults
 
     private static let tabKey = "ShelfTab"
     private static let logger = Logger(subsystem: "app.gonar.clipsy", category: "Shelf")
 
-    public init(defaults: UserDefaults = .standard, observe: @escaping CardObservation) {
+    public init(
+        defaults: UserDefaults = .standard,
+        observe: @escaping CardObservation,
+        observeBoards: @escaping BoardObservation
+    ) {
         self.defaults = defaults
         self.observe = observe
+        observeBoardList = observeBoards
         tab = Self.decodeTab(defaults.string(forKey: Self.tabKey)) ?? .history
     }
 
@@ -55,6 +66,53 @@ public final class ShelfModel {
         }
     }
 
+    public func observeBoards() async {
+        do {
+            for try await boards in observeBoardList() {
+                receiveBoards(boards)
+            }
+        } catch is CancellationError {
+            return
+        } catch {
+            Self.logger.error("board observation failed: \(String(describing: type(of: error)), privacy: .public)")
+        }
+    }
+
+    var tabs: [CardList] {
+        [.history] + boards.map { .board(id: $0.id) }
+    }
+
+    func emptyState(isCapturePaused: Bool) -> ShelfEmptyState? {
+        guard hasLoadedCards, cards.isEmpty else { return nil }
+        if !query.isEmpty {
+            return .noResults
+        }
+        switch tab {
+        case .history: return isCapturePaused ? .paused : .history
+        case .board: return .board
+        }
+    }
+
+    func clearSearch() -> Bool {
+        guard !query.isEmpty else { return false }
+        query = ""
+        return true
+    }
+
+    func showAdjacentTab(_ direction: Direction) {
+        let tabs = tabs
+        guard let index = tabs.firstIndex(of: tab) else { return }
+        let target = index + (direction == .next ? 1 : -1)
+        guard tabs.indices.contains(target) else { return }
+        showTab(tabs[target])
+    }
+
+    func handleTabShortcut(_ shortcut: KeyboardShortcuts.Shortcut) -> Bool {
+        guard let direction = TabShortcuts(defaults: defaults).direction(of: shortcut) else { return false }
+        showAdjacentTab(direction)
+        return true
+    }
+
     public func didOpen() {
         clearSelection()
         selectsFirstOnLoad = true
@@ -66,6 +124,7 @@ public final class ShelfModel {
         tab = list
         defaults.set(Self.encodeTab(list), forKey: Self.tabKey)
         cards = []
+        hasLoadedCards = false
         observationError = nil
         clearSelection()
         selectsFirstOnLoad = true
@@ -174,6 +233,7 @@ public final class ShelfModel {
 
     func receive(_ newCards: [CardSummary]) {
         cards = newCards
+        hasLoadedCards = true
         observationError = nil
         let ids = Set(newCards.map(\.id))
         selection.formIntersection(ids)
@@ -185,6 +245,13 @@ public final class ShelfModel {
         }
         updateQuickPasteCards()
         selectFirstIfPending()
+    }
+
+    func receiveBoards(_ newBoards: [Board]) {
+        boards = newBoards
+        if case let .board(id) = tab, !newBoards.contains(where: { $0.id == id }) {
+            showTab(.history)
+        }
     }
 
     private func updateQuickPasteCards() {

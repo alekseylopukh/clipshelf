@@ -162,7 +162,10 @@ private struct CardPreview: View {
     let card: CardSummary
     var isSelected = false
     var layout = CardLayout.regular
-    @State private var model = ShelfModel { _ in AsyncThrowingStream { $0.finish() } }
+    @State private var model = ShelfModel(
+        observe: { _ in AsyncThrowingStream { $0.finish() } },
+        observeBoards: { AsyncThrowingStream { $0.finish() } }
+    )
 
     var body: some View {
         let compactHeight = DesignTokens.shelfMinimumHeight - DesignTokens.shelfResizeHandleHeight

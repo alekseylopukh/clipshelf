@@ -16,6 +16,7 @@ public enum DesignTokens {
     public static let shelfResizeHandleHeight: CGFloat = 6
     public static let shelfOpenOffset: CGFloat = 24
     public static let shelfOpenScale: CGFloat = 0.98
+    public static let searchFieldWidth: CGFloat = 220
 
     public static let cardSide: CGFloat = 220
     public static let compactCardHeightThreshold: CGFloat = 150

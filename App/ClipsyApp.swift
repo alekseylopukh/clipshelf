@@ -38,18 +38,10 @@ struct ClipsyApp: App {
         }
         _retention = State(initialValue: retention)
 
-        let shelf = ShelfController(
-            model: ShelfModel { repository.observeCards(in: $0) },
-            paster: PasteCoordinator(writer: writer) { try await repository.representations(of: $0) },
-            deletion: CardDeletion(
-                delete: { try await repository.delete(cards: $0, in: $1) },
-                restore: { try await repository.restore($0) }
-            ),
-            representations: { try await repository.representations(of: $0) },
-            rename: { try await repository.rename(card: $0, to: $1) },
-            togglePause: { pause.isPaused.toggle() },
-            thumbnails: ThumbnailCache(directory: repository.thumbnailsDirectory)
-        )
+        let shelf = Self.makeShelf(repository: repository, writer: writer, pause: pause)
+        shelf.commands.isCapturePaused = { pause.isPaused }
+        shelf.commands.setCapturePaused = { pause.isPaused = $0 }
+        shelf.commands.openSettings = { SettingsWindow.open() }
         _shelf = State(initialValue: shelf)
         Self.apply(privacy, to: shelf, textRecognition: TextRecognitionQueue(repository: repository))
         KeyboardShortcuts.onKeyUp(for: .toggleShelf) {
@@ -133,6 +125,27 @@ struct ClipsyApp: App {
                 await textRecognition.setEnabled(isEnabled)
             }
         }
+    }
+
+    private static func makeShelf(
+        repository: CardRepository,
+        writer: PasteboardWriter,
+        pause: CapturePause
+    ) -> ShelfController {
+        ShelfController(
+            model: ShelfModel(
+                observe: { repository.observeCards(in: $0) },
+                observeBoards: { repository.observeBoards() }
+            ),
+            paster: PasteCoordinator(writer: writer) { try await repository.representations(of: $0) },
+            deletion: CardDeletion(
+                delete: { try await repository.delete(cards: $0, in: $1) },
+                restore: { try await repository.restore($0) }
+            ),
+            representations: { try await repository.representations(of: $0) },
+            rename: { try await repository.rename(card: $0, to: $1) },
+            thumbnails: ThumbnailCache(directory: repository.thumbnailsDirectory)
+        )
     }
 
     private static func capturePolicy(privacy: PrivacySettings, pause: CapturePause) -> CapturePolicy {

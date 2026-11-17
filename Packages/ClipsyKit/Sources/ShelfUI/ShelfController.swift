@@ -1,6 +1,7 @@
 import AppKit
 import Carbon.HIToolbox
 import DesignSystem
+import KeyboardShortcuts
 import Media
 import os
 import Pasting
@@ -12,6 +13,7 @@ public final class ShelfController {
     public typealias Rename = @Sendable (Int64, String) async throws -> Void
 
     public private(set) var targetApplication: NSRunningApplication?
+    public let commands = ShelfCommands()
 
     private static let heightKey = "ShelfHeight"
     private static let logger = Logger(subsystem: "app.gonar.clipsy", category: "Shelf")
@@ -25,7 +27,6 @@ public final class ShelfController {
     private let deletion: CardDeletion
     private let representations: PasteCoordinator.RepresentationLoading
     private let renameCard: Rename
-    private let togglePause: () -> Void
     private let actions = CardActions()
     private let defaults: UserDefaults
     private var resizeStart: (mouseY: CGFloat, height: CGFloat)?
@@ -36,7 +37,6 @@ public final class ShelfController {
         deletion: CardDeletion,
         representations: @escaping PasteCoordinator.RepresentationLoading,
         rename: @escaping Rename,
-        togglePause: @escaping () -> Void,
         thumbnails: ThumbnailCache,
         defaults: UserDefaults = .standard
     ) {
@@ -45,11 +45,11 @@ public final class ShelfController {
         self.deletion = deletion
         self.representations = representations
         renameCard = rename
-        self.togglePause = togglePause
         self.defaults = defaults
         let hostingView = NSHostingView(rootView: ShelfContainerView(
             presentation: presentation,
             model: model,
+            commands: commands,
             onResize: { [weak self] in self?.resize() },
             onResizeEnded: { [weak self] in self?.endResize() }
         ).environment(actions).environment(\.richTextLoader, RichTextLoader(representations: representations))
@@ -59,7 +59,7 @@ public final class ShelfController {
         let contentView = NSView()
         contentView.addSubview(hostingView)
         panel.contentView = contentView
-        panel.onCancel = { [weak self] in self?.hide() }
+        panel.onCancel = { [weak self] in self?.cancel() }
         panel.onResignKey = { [weak self] in self?.closeOnFocusLoss() }
         panel.onKeyDown = { [weak self] event in self?.handleKeyDown(event) ?? false }
         panel.onFlagsChanged = { [weak self] event in self?.updateQuickPasteModifier(event.modifierFlags) }
@@ -194,7 +194,7 @@ public final class ShelfController {
             }
             return true
         }
-        if model.handleSelectionKey(keyCode: Int(event.keyCode), character: key, modifiers: modifiers) {
+        if handleNavigationKey(event, character: key, modifiers: modifiers) {
             return true
         }
         if modifiers == .command, handleCommandKey(key, isRepeat: event.isARepeat) {
@@ -340,7 +340,7 @@ private extension ShelfController {
         switch key {
         case "t":
             if !isRepeat {
-                togglePause()
+                commands.setCapturePaused?(!commands.isCapturePaused())
             }
         case "z":
             Task {
@@ -350,6 +350,19 @@ private extension ShelfController {
             return false
         }
         return true
+    }
+
+    func cancel() {
+        if !model.clearSearch() {
+            hide()
+        }
+    }
+
+    func handleNavigationKey(_ event: NSEvent, character: String?, modifiers: NSEvent.ModifierFlags) -> Bool {
+        if let shortcut = KeyboardShortcuts.Shortcut(event: event), model.handleTabShortcut(shortcut) {
+            return true
+        }
+        return model.handleSelectionKey(keyCode: Int(event.keyCode), character: character, modifiers: modifiers)
     }
 }
 

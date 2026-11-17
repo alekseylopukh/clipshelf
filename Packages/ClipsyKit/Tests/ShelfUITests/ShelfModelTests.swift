@@ -1,6 +1,7 @@
 import AppKit
 import Carbon.HIToolbox
 import Foundation
+import KeyboardShortcuts
 import Store
 import Synchronization
 import Testing
@@ -23,11 +24,19 @@ final class ShelfModelTests {
         cards ids: [Int64] = [],
         observe: @escaping ShelfModel.CardObservation = { _ in AsyncThrowingStream { $0.finish() } }
     ) -> ShelfModel {
-        let model = ShelfModel(defaults: defaults, observe: observe)
+        let model = ShelfModel(
+            defaults: defaults,
+            observe: observe,
+            observeBoards: { AsyncThrowingStream { $0.finish() } }
+        )
         if !ids.isEmpty {
             model.receive(Self.cards(ids))
         }
         return model
+    }
+
+    private static func boards(_ ids: [Int64]) -> [Board] {
+        ids.map { Board(id: $0, name: "Board \($0)", color: "blue", createdAt: Date(timeIntervalSince1970: 0)) }
     }
 
     private static func cards(_ ids: [Int64]) -> [CardSummary] {
@@ -212,5 +221,74 @@ final class ShelfModelTests {
         #expect(model.handleSelectionKey(keyCode: kVK_LeftArrow, character: nil, modifiers: .command) == false)
         #expect(model.handleSelectionKey(keyCode: kVK_ANSI_C, character: "c", modifiers: .command) == false)
         #expect(model.selection == [5])
+    }
+
+    @Test func `esc clears search first`() {
+        let model = makeModel()
+        model.query = "invoice"
+
+        #expect(model.clearSearch())
+        #expect(model.query.isEmpty)
+        #expect(model.clearSearch() == false)
+    }
+
+    @Test func `tab shortcuts switch tabs`() {
+        let model = makeModel()
+        model.receiveBoards(Self.boards([1, 2]))
+        let previous = KeyboardShortcuts.Shortcut(.leftArrow, modifiers: .command)
+        let next = KeyboardShortcuts.Shortcut(.rightArrow, modifiers: .command)
+
+        #expect(model.handleTabShortcut(next))
+        #expect(model.tab == .board(id: 1))
+        #expect(model.handleTabShortcut(next))
+        #expect(model.handleTabShortcut(next))
+        #expect(model.tab == .board(id: 2))
+        #expect(model.handleTabShortcut(previous))
+        #expect(model.handleTabShortcut(previous))
+        #expect(model.handleTabShortcut(previous))
+        #expect(model.tab == .history)
+        #expect(model.handleTabShortcut(KeyboardShortcuts.Shortcut(.leftArrow)) == false)
+    }
+
+    @Test func `tab shortcuts are customizable`() throws {
+        let custom = KeyboardShortcuts.Shortcut(.rightBracket, modifiers: [.command, .shift])
+        try defaults.set(String(bytes: JSONEncoder().encode(custom), encoding: .utf8), forKey: TabShortcuts.nextKey)
+        let model = makeModel()
+        model.receiveBoards(Self.boards([1]))
+
+        #expect(model.handleTabShortcut(KeyboardShortcuts.Shortcut(.rightArrow, modifiers: .command)) == false)
+        #expect(model.handleTabShortcut(custom))
+        #expect(model.tab == .board(id: 1))
+    }
+
+    @Test func `removed board falls back to history`() {
+        defaults.set("board:2", forKey: "ShelfTab")
+        let model = makeModel()
+        model.receiveBoards(Self.boards([1, 2]))
+        #expect(model.tab == .board(id: 2))
+
+        model.receiveBoards(Self.boards([1]))
+
+        #expect(model.tab == .history)
+        #expect(makeModel().tab == .history)
+    }
+
+    @Test func `empty states follow tab, search and pause`() {
+        let model = makeModel()
+        #expect(model.emptyState(isCapturePaused: false) == nil)
+
+        model.receive([])
+        #expect(model.emptyState(isCapturePaused: false) == .history)
+        #expect(model.emptyState(isCapturePaused: true) == .paused)
+        model.query = "invoice"
+        #expect(model.emptyState(isCapturePaused: true) == .noResults)
+        model.query = ""
+
+        model.showTab(.board(id: 1))
+        #expect(model.emptyState(isCapturePaused: false) == nil)
+        model.receive([])
+        #expect(model.emptyState(isCapturePaused: true) == .board)
+        model.receive(Self.cards([1]))
+        #expect(model.emptyState(isCapturePaused: false) == nil)
     }
 }

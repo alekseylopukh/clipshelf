@@ -35,6 +35,18 @@ struct BoardTests {
         #expect(boards.first?.createdAt == Date(timeIntervalSince1970: 10))
     }
 
+    @Test(.timeLimit(.minutes(1)))
+    func `board observation follows changes`() async throws {
+        var updates = repository.observeBoards().makeAsyncIterator()
+        #expect(try #require(try await updates.next()).isEmpty)
+
+        let id = try await repository.createBoard(named: "Work", color: "blue")
+        #expect(try #require(try await updates.next()).map(\.id) == [id])
+
+        try await repository.deleteBoard(id)
+        #expect(try #require(try await updates.next()).isEmpty)
+    }
+
     @Test func `boards reorder`() async throws {
         let one = try await repository.createBoard(named: "One", color: "red")
         let two = try await repository.createBoard(named: "Two", color: "red")

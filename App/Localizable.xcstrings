@@ -1,6 +1,62 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "New Board" : {
+      "comment" : "Shelf top bar button that creates a board",
+      "extractionState" : "manual"
+    },
+    "New Text Card" : {
+      "comment" : "Shelf More menu item that opens the editor for a new text card",
+      "extractionState" : "manual"
+    },
+    "Start Sequence" : {
+      "comment" : "Shelf More menu item that opens the Sequence panel",
+      "extractionState" : "manual"
+    },
+    "Pause Capture" : {
+      "comment" : "Shelf More menu item that stops saving copies",
+      "extractionState" : "manual"
+    },
+    "Resume Capture" : {
+      "comment" : "Shelf More menu item and empty-state button that start saving copies again",
+      "extractionState" : "manual"
+    },
+    "Search" : {
+      "comment" : "Placeholder of the shelf search field",
+      "extractionState" : "manual"
+    },
+    "Clear Search" : {
+      "comment" : "Button inside the shelf search field that empties it",
+      "extractionState" : "manual"
+    },
+    "No Clipboard History" : {
+      "comment" : "Title of the shelf empty state when History has no cards",
+      "extractionState" : "manual"
+    },
+    "Copy something and it shows up here." : {
+      "comment" : "Description of the shelf empty state when History has no cards",
+      "extractionState" : "manual"
+    },
+    "This Board Is Empty" : {
+      "comment" : "Title of the shelf empty state when the current board has no cards",
+      "extractionState" : "manual"
+    },
+    "Drag Cards here or use “Add to Board”." : {
+      "comment" : "Description of the shelf empty state when the current board has no cards",
+      "extractionState" : "manual"
+    },
+    "No Results" : {
+      "comment" : "Title of the shelf empty state when a search finds nothing",
+      "extractionState" : "manual"
+    },
+    "Try a different search or remove a filter." : {
+      "comment" : "Description of the shelf empty state when a search finds nothing",
+      "extractionState" : "manual"
+    },
+    "Capture Paused" : {
+      "comment" : "Title of the shelf empty state when History is empty and capture is paused",
+      "extractionState" : "manual"
+    },
     "Allow Clipsy to paste into other apps?" : {
       "comment" : "Title of the alert shown on the first paste without Accessibility permission"
     },
@@ -81,7 +137,7 @@
       "extractionState" : "manual"
     },
     "More" : {
-      "comment" : "Sequence panel menu button with more actions",
+      "comment" : "Sequence panel and shelf top bar menu button with more actions",
       "extractionState" : "manual"
     },
     "Next" : {
@@ -216,7 +272,7 @@
       "comment" : "Explanation under the Accessibility row when the permission is missing"
     },
     "History" : {
-      "comment" : "Section header in the General settings pane"
+      "comment" : "Section header in the General settings pane, and the shelf tab that shows the clipboard history"
     },
     "Keep history for" : {
       "comment" : "Label of the retention slider in Settings"

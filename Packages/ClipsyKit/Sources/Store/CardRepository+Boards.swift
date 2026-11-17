@@ -4,9 +4,14 @@ import GRDB
 public extension CardRepository {
     @concurrent
     func boards() async throws -> [Board] {
-        try await database.pool.read { connection in
-            try Board.fetchAll(connection, sql: "SELECT * FROM board ORDER BY position, id")
-        }
+        try await database.pool.read(Self.fetchBoards)
+    }
+
+    func observeBoards() -> some AsyncSequence<[Board], any Error> & Sendable {
+        ValueObservation
+            .tracking(Self.fetchBoards)
+            .removeDuplicates()
+            .values(in: database.pool, bufferingPolicy: .bufferingNewest(1))
     }
 
     @discardableResult
@@ -114,6 +119,10 @@ public extension CardRepository {
                 )
             }
         }
+    }
+
+    private static func fetchBoards(_ connection: Database) throws -> [Board] {
+        try Board.fetchAll(connection, sql: "SELECT * FROM board ORDER BY position, id")
     }
 
     private static func boardName(_ name: String) -> String {
