@@ -7,6 +7,15 @@
     "Clipsy can’t open its clipboard history." : {
       "comment" : "Title of the alert shown when the database fails to open at launch"
     },
+    "Clipsy moved it to “%@” and started a new, empty history." : {
+      "comment" : "Informative text of the alert shown after a damaged database was moved aside at launch; the argument is the backup folder path"
+    },
+    "Clipsy’s clipboard history was damaged." : {
+      "comment" : "Title of the alert shown after a damaged database was moved aside at launch"
+    },
+    "OK" : {
+
+    },
     "Open Shelf" : {
 
     },
@@ -15,6 +24,9 @@
     },
     "Settings…" : {
 
+    },
+    "Show in Finder" : {
+      "comment" : "Button that reveals the backup of a damaged database"
     },
     "Untitled" : {
       "comment" : "Name of a board created without one",

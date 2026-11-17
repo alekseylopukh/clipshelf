@@ -94,6 +94,7 @@ Local-only. No sync fields, no UUIDs, no tombstones: integer row IDs are enough.
   clipsy.sqlite (+ -wal, -shm)
   Payloads/<aa>/<sha256>                       content-addressed representation data
   Thumbnails/<sha256>.png                      keyed by card content hash
+  Backups/Damaged Store <date time>/           a damaged store moved aside at launch (§3.4)
 ```
 
 > TODO: confirm the directory name once the bundle ID is chosen.
@@ -168,6 +169,7 @@ Rules:
 
 - GRDB `DatabaseMigrator` with named, append-only migrations (`v1_initial`, `v2_…`). A migration is never edited after it ships in a release.
 - Migrations run at launch before any UI shows. On failure the app shows an error and does not touch the database file.
+- A damaged store is the exception: when opening or migrating fails with `SQLITE_CORRUPT` or `SQLITE_NOTADB`, the database files, `Payloads/` and `Thumbnails/` move to `Backups/Damaged Store <date time>/`, a new empty store is created, and an alert tells the user where the backup is, with a "Show in Finder" button.
 - Each migration has a test that builds the previous schema with synthetic rows, migrates, and checks the result.
 - `UserDefaults` key changes get a one-shot migration keyed by a stored settings version.
 

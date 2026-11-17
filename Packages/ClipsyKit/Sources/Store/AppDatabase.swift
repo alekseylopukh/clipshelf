@@ -11,6 +11,10 @@ public struct AppDatabase: Sendable {
     let pool: DatabasePool
 
     public init(directory: URL) throws {
+        try self.init(directory: directory, migrator: Self.migrator)
+    }
+
+    init(directory: URL, migrator: DatabaseMigrator) throws {
         try FileManager.default.createDirectory(
             at: directory,
             withIntermediateDirectories: true,
@@ -18,7 +22,7 @@ public struct AppDatabase: Sendable {
         )
         self.directory = directory
         pool = try DatabasePool(path: directory.appending(path: "clipsy.sqlite").path(percentEncoded: false))
-        try Self.migrator.migrate(pool)
+        try migrator.migrate(pool)
     }
 
     public static func temporary() throws -> AppDatabase {

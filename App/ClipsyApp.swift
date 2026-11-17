@@ -51,11 +51,16 @@ struct ClipsyApp: App {
 
     /// migrations must finish before any UI shows (architecture §3.4), so this runs synchronously at launch
     private static func openDatabase() -> AppDatabase {
+        let logger = Logger(subsystem: "app.gonar.clipsy", category: "Startup")
         do {
-            return try AppDatabase(directory: AppDatabase.defaultDirectory)
+            let opened = try AppDatabase.openRecoveringDamagedStore(directory: AppDatabase.defaultDirectory)
+            if let backup = opened.backupDirectory {
+                logger.error("the database was damaged and was moved aside")
+                showRecoveryAlert(backup: backup)
+            }
+            return opened.database
         } catch {
-            Logger(subsystem: "app.gonar.clipsy", category: "Startup")
-                .fault("opening the database failed: \(String(describing: type(of: error)), privacy: .public)")
+            logger.fault("opening the database failed: \(String(describing: type(of: error)), privacy: .public)")
             let alert = NSAlert(error: error)
             alert.messageText = String(localized: "Clipsy can’t open its clipboard history.")
             alert.informativeText = error.localizedDescription
@@ -63,6 +68,21 @@ struct ClipsyApp: App {
             NSApplication.shared.activate()
             alert.runModal()
             exit(EXIT_FAILURE)
+        }
+    }
+
+    private static func showRecoveryAlert(backup: URL) {
+        let alert = NSAlert()
+        alert.alertStyle = .warning
+        alert.messageText = String(localized: "Clipsy’s clipboard history was damaged.")
+        alert.informativeText = String(
+            localized: "Clipsy moved it to “\(backup.path(percentEncoded: false))” and started a new, empty history."
+        )
+        alert.addButton(withTitle: String(localized: "OK"))
+        alert.addButton(withTitle: String(localized: "Show in Finder"))
+        NSApplication.shared.activate()
+        if alert.runModal() == .alertSecondButtonReturn {
+            NSWorkspace.shared.activateFileViewerSelecting([backup])
         }
     }
 }
