@@ -14,8 +14,15 @@ struct CardStrip: View {
                 ScrollView(.horizontal) {
                     LazyHStack(spacing: DesignTokens.cardSpacing) {
                         ForEach(model.cards) { card in
-                            CardView(card: card, model: model, now: context.date, layout: layout)
-                                .transition(.scale(scale: DesignTokens.shelfOpenScale).combined(with: .opacity))
+                            CardView(
+                                card: card,
+                                model: model,
+                                now: context.date,
+                                layout: layout,
+                                match: model.searchResult(for: card.id),
+                                board: model.board(of: card)
+                            )
+                            .transition(.scale(scale: DesignTokens.shelfOpenScale).combined(with: .opacity))
                         }
                     }
                     .scrollTargetLayout()

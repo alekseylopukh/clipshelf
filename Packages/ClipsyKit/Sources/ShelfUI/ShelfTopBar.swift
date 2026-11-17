@@ -45,20 +45,39 @@ struct ShelfTopBar: View {
 private struct ShelfSearchField: View {
     let model: ShelfModel
 
+    @FocusState private var isFocused: Bool
+    @Environment(CardActions.self) private var actions
+
     var body: some View {
         @Bindable var model = model
         HStack(spacing: DesignTokens.spacingSmall) {
             Image(systemName: "magnifyingglass")
                 .foregroundStyle(.secondary)
                 .accessibilityHidden(true)
-            TextField("Search", text: $model.query)
+            TextField("Search", text: $model.query, selection: $model.searchSelection)
                 .textFieldStyle(.plain)
+                .focused($isFocused)
                 .onKeyPress(.escape) {
                     model.clearSearch() ? .handled : .ignored
                 }
+                .onKeyPress(keys: [.downArrow, .tab]) { press in
+                    guard press.modifiers.isEmpty else { return .ignored }
+                    model.focusCards()
+                    return .handled
+                }
+                .onKeyPress(.return) {
+                    actions.pasteOnDoubleClick(model.selectedCards.map(\.id))
+                    return .handled
+                }
+                .onChange(of: model.isSearchFieldFocused) { _, isFocused in
+                    self.isFocused = isFocused
+                }
+                .onChange(of: isFocused) { _, isFocused in
+                    model.searchFieldFocusDidChange(isFocused)
+                }
             if !model.query.isEmpty {
                 Button("Clear Search", systemImage: "xmark.circle.fill") {
-                    model.query = ""
+                    _ = model.clearSearch()
                 }
                 .labelStyle(.iconOnly)
                 .buttonStyle(.borderless)

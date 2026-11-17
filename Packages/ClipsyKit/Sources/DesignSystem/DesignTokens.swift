@@ -59,6 +59,8 @@ public enum DesignTokens {
 
     public static let selectionRingGap: CGFloat = 2
     public static let boardDotSize: CGFloat = 8
+    public static let searchHighlightFill = NSColor.findHighlightColor
+    public static let searchHighlightText = NSColor.black
     public static let boardDotOutlineWidth: CGFloat = 1
     public static let boardSwatchSize: CGFloat = 20
     public static let boardSheetWidth: CGFloat = 400

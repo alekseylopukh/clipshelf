@@ -218,12 +218,7 @@ public final class ShelfController {
         if modifiers == .command, handleCommandKey(key, isRepeat: event.isARepeat) {
             return true
         }
-        guard let command = quickPaste.command(keyCode: event.keyCode, character: key, modifierFlags: modifiers)
-        else { return false }
-        if !event.isARepeat {
-            perform(command, on: model.selectedCards.map(\.id))
-        }
-        return true
+        return handleCommandOrTyping(event, character: key, modifiers: modifiers, quickPaste: quickPaste)
     }
 
     private func pasteOnDoubleClick(_ ids: [Int64]) {
@@ -254,13 +249,14 @@ public final class ShelfController {
     }
 
     private func delete(_ ids: [Int64]) async {
-        let list = model.tab
+        let tab = model.tab
+        let list = model.removalList(for: ids)
         let neighbor = model.neighbor(afterRemoving: Set(ids))
         do {
-            let deleted = try await deletion.delete(ids, in: list) { [weak self] count in
+            let deleted = try await deletion.delete(model.idsByList(ids)) { [weak self] count in
                 await self?.confirmDeletion(of: count, in: list) ?? false
             }
-            if deleted, let neighbor, model.tab == list {
+            if deleted, let neighbor, model.tab == tab {
                 model.select(neighbor)
             }
         } catch {
@@ -350,6 +346,8 @@ private extension ShelfController {
             if !isRepeat {
                 commands.setCapturePaused?(!commands.isCapturePaused())
             }
+        case "f":
+            model.focusSearch()
         case "z":
             Task {
                 await undoDelete()
@@ -376,6 +374,23 @@ private extension ShelfController {
             break
         default:
             return false
+        }
+        return true
+    }
+
+    func handleCommandOrTyping(
+        _ event: NSEvent,
+        character: String?,
+        modifiers: NSEvent.ModifierFlags,
+        quickPaste: QuickPasteModifiers
+    ) -> Bool {
+        guard let command = quickPaste.command(keyCode: event.keyCode, character: character, modifierFlags: modifiers)
+        else {
+            guard modifiers.isSubset(of: .shift), let characters = event.characters else { return false }
+            return model.typeToSearch(characters)
+        }
+        if !event.isARepeat {
+            perform(command, on: model.selectedCards.map(\.id))
         }
         return true
     }

@@ -161,7 +161,8 @@ struct ClipsyApp: App {
     ) -> ShelfController {
         let model = ShelfModel(
             observe: { repository.observeCards(in: $0) },
-            observeBoards: { repository.observeBoards() }
+            observeBoards: { repository.observeBoards() },
+            observeSearch: { repository.observeSearch($0) }
         )
         return ShelfController(
             model: model,

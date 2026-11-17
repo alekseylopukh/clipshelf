@@ -22,14 +22,14 @@ struct CardDeletionTests {
         let ids = try await record(3)
         var asked: [Int] = []
 
-        let declined = try await deletion.delete(Array(ids.prefix(2)), in: .history) { count in
+        let declined = try await deletion.delete([.history: Array(ids.prefix(2))]) { count in
             asked.append(count)
             return false
         }
         #expect(declined == false)
         #expect(try await historyIDs() == ids.reversed())
 
-        let confirmed = try await deletion.delete(Array(ids.prefix(2)), in: .history) { count in
+        let confirmed = try await deletion.delete([.history: Array(ids.prefix(2))]) { count in
             asked.append(count)
             return true
         }
@@ -41,7 +41,7 @@ struct CardDeletionTests {
     @Test func `delete one needs no confirmation`() async throws {
         let ids = try await record(2)
 
-        let deleted = try await deletion.delete([ids[0]], in: .history) { _ in
+        let deleted = try await deletion.delete([.history: [ids[0]]]) { _ in
             Issue.record("one card must be deleted without asking")
             return false
         }
@@ -52,8 +52,8 @@ struct CardDeletionTests {
 
     @Test func `undo restores deleted cards`() async throws {
         let ids = try await record(3)
-        _ = try await deletion.delete([ids[0]], in: .history) { _ in true }
-        _ = try await deletion.delete([ids[1], ids[2]], in: .history) { _ in true }
+        _ = try await deletion.delete([.history: [ids[0]]]) { _ in true }
+        _ = try await deletion.delete([.history: [ids[1], ids[2]]]) { _ in true }
         #expect(try await historyIDs().isEmpty)
 
         try await deletion.undo()
@@ -63,9 +63,24 @@ struct CardDeletionTests {
         #expect(deletion.canUndo == false)
     }
 
+    @Test func `delete across lists is one undo step`() async throws {
+        let ids = try await record(2)
+        let boardID = try await repository.createBoard(named: "Work", color: "blue")
+        try await repository.addCards([ids[1]], toBoard: boardID)
+
+        _ = try await deletion.delete([.history: [ids[0]], .board(id: boardID): [ids[1]]]) { _ in true }
+        #expect(try await historyIDs() == [ids[1]])
+        #expect(try await repository.cards(in: .board(id: boardID)).isEmpty)
+
+        try await deletion.undo()
+        #expect(try await historyIDs() == ids.reversed())
+        #expect(try await repository.cards(in: .board(id: boardID)).map(\.id) == [ids[1]])
+        #expect(deletion.canUndo == false)
+    }
+
     @Test func `discarded undo restores nothing`() async throws {
         let ids = try await record(1)
-        _ = try await deletion.delete(ids, in: .history) { _ in true }
+        _ = try await deletion.delete([.history: ids]) { _ in true }
 
         deletion.discardUndo()
         try await deletion.undo()
@@ -85,7 +100,7 @@ struct CardDeletionTests {
         )
         holder.deletion = deletion
 
-        _ = try await deletion.delete(ids, in: .history) { _ in true }
+        _ = try await deletion.delete([.history: ids]) { _ in true }
 
         #expect(deletion.canUndo == false)
     }
@@ -101,7 +116,7 @@ struct CardDeletionTests {
             }
         )
         holder.deletion = deletion
-        _ = try await deletion.delete(ids, in: .history) { _ in true }
+        _ = try await deletion.delete([.history: ids]) { _ in true }
 
         try await deletion.undo()
 

@@ -5,12 +5,14 @@ import KeyboardShortcuts
 import Observation
 import os
 import Store
+import SwiftUI
 
 @MainActor
 @Observable
 public final class ShelfModel {
     public typealias CardObservation = @Sendable (CardList) -> any AsyncSequence<[CardSummary], any Error> & Sendable
     public typealias BoardObservation = @Sendable () -> any AsyncSequence<[Board], any Error> & Sendable
+    public typealias SearchObservation = @Sendable (String) -> any AsyncSequence<[SearchResult], any Error> & Sendable
 
     public enum Direction: Sendable {
         case previous
@@ -20,9 +22,22 @@ public final class ShelfModel {
     public private(set) var tab: CardList
     public private(set) var cards: [CardSummary] = []
     public private(set) var boards: [Board] = []
-    var query = ""
-    private var hasLoadedCards = false
+    var query = "" {
+        didSet {
+            if Self.searchText(of: oldValue) != searchText {
+                searchTextDidChange()
+            }
+        }
+    }
+
+    var searchSelection: TextSelection?
+    var isSearchFieldFocused = false
+    private var requestedSearchSelection: TextSelection?
+    private var listCards: [CardSummary] = []
+    private var hasLoadedList = false
     private var hasLoadedBoards = false
+    private var hasLoadedResults = false
+    private var searchResults: [Int64: SearchResult] = [:]
     public private(set) var selection: Set<Int64> = []
     public private(set) var observationError: (any Error)?
     public private(set) var isQuickPasteModifierHeld = false
@@ -35,6 +50,8 @@ public final class ShelfModel {
 
     @ObservationIgnored private let observe: CardObservation
     @ObservationIgnored private let observeBoardList: BoardObservation
+    @ObservationIgnored private let observeSearchResults: SearchObservation
+    @ObservationIgnored private let searchDelay: Duration
     @ObservationIgnored private let defaults: UserDefaults
 
     private static let tabKey = "ShelfTab"
@@ -43,11 +60,15 @@ public final class ShelfModel {
     public init(
         defaults: UserDefaults = .standard,
         observe: @escaping CardObservation,
-        observeBoards: @escaping BoardObservation
+        observeBoards: @escaping BoardObservation,
+        observeSearch: @escaping SearchObservation = { _ in AsyncThrowingStream { $0.finish() } },
+        searchDelay: Duration = .milliseconds(150)
     ) {
         self.defaults = defaults
         self.observe = observe
         observeBoardList = observeBoards
+        observeSearchResults = observeSearch
+        self.searchDelay = searchDelay
         tab = Self.decodeTab(defaults.string(forKey: Self.tabKey)) ?? .history
     }
 
@@ -84,8 +105,8 @@ public final class ShelfModel {
     }
 
     func emptyState(isCapturePaused: Bool) -> ShelfEmptyState? {
-        guard hasLoadedCards, cards.isEmpty else { return nil }
-        if !query.isEmpty {
+        guard isSearching ? hasLoadedResults : hasLoadedList, cards.isEmpty else { return nil }
+        if isSearching {
             return .noResults
         }
         switch tab {
@@ -96,7 +117,7 @@ public final class ShelfModel {
 
     func clearSearch() -> Bool {
         guard !query.isEmpty else { return false }
-        query = ""
+        resetSearch()
         return true
     }
 
@@ -115,6 +136,8 @@ public final class ShelfModel {
     }
 
     public func didOpen() {
+        isSearchFieldFocused = false
+        resetSearch()
         clearSelection()
         selectsFirstOnLoad = true
         selectFirstIfPending()
@@ -124,8 +147,10 @@ public final class ShelfModel {
         guard list != tab else { return }
         tab = list
         defaults.set(Self.encodeTab(list), forKey: Self.tabKey)
+        listCards = []
+        hasLoadedList = false
+        resetSearch()
         cards = []
-        hasLoadedCards = false
         observationError = nil
         clearSelection()
         selectsFirstOnLoad = true
@@ -233,9 +258,21 @@ public final class ShelfModel {
     }
 
     func receive(_ newCards: [CardSummary]) {
-        cards = newCards
-        hasLoadedCards = true
+        listCards = newCards
+        hasLoadedList = true
         observationError = nil
+        guard !isSearching else { return }
+        show(newCards)
+    }
+
+    private func resetSearch() {
+        searchSelection = nil
+        requestedSearchSelection = nil
+        query = ""
+    }
+
+    private func show(_ newCards: [CardSummary]) {
+        cards = newCards
         let ids = Set(newCards.map(\.id))
         selection.formIntersection(ids)
         if let anchorID, !ids.contains(anchorID) {
@@ -245,6 +282,9 @@ public final class ShelfModel {
             self.cursorID = nil
         }
         updateQuickPasteCards()
+        if isSearching, selection.isEmpty {
+            selectsFirstOnLoad = true
+        }
         selectFirstIfPending()
     }
 
@@ -292,5 +332,125 @@ public final class ShelfModel {
         }
         guard value.hasPrefix("board:"), let id = Int64(value.dropFirst("board:".count)) else { return nil }
         return .board(id: id)
+    }
+}
+
+extension ShelfModel {
+    public func observeSearch() async {
+        let text = searchText
+        guard !text.isEmpty else { return }
+        do {
+            try await Task.sleep(for: searchDelay)
+            for try await results in observeSearchResults(text) {
+                guard text == searchText else { return }
+                receiveResults(results)
+            }
+        } catch is CancellationError {
+            return
+        } catch {
+            guard text == searchText else { return }
+            Self.logger.error("search failed: \(String(describing: type(of: error)), privacy: .public)")
+            observationError = error
+        }
+    }
+
+    var searchText: String {
+        Self.searchText(of: query)
+    }
+
+    var isSearching: Bool {
+        !searchText.isEmpty
+    }
+
+    func searchResult(for id: Int64) -> SearchResult? {
+        searchResults[id]
+    }
+
+    func board(of card: CardSummary) -> Board? {
+        guard isSearching, let boardID = card.boardID else { return nil }
+        return boards.first { $0.id == boardID }
+    }
+
+    func list(of card: CardSummary) -> CardList {
+        guard isSearching, !Self.list(tab, contains: card) else { return tab }
+        if card.lastCopiedAt == nil, let boardID = card.boardID {
+            return .board(id: boardID)
+        }
+        return .history
+    }
+
+    func idsByList(_ ids: [Int64]) -> [CardList: [Int64]] {
+        let selected = Set(ids)
+        return Dictionary(grouping: cards.filter { selected.contains($0.id) }, by: list(of:)).mapValues { $0.map(\.id) }
+    }
+
+    func removalList(for ids: [Int64]) -> CardList {
+        let lists = idsByList(ids).keys
+        return lists.count > 1 ? .history : lists.first ?? tab
+    }
+
+    func typeToSearch(_ text: String) -> Bool {
+        guard !isSearchFieldFocused,
+              text.contains(where: { !$0.isWhitespace }),
+              text.unicodeScalars.allSatisfy(Self.isTypeable)
+        else { return false }
+        query += text
+        requestedSearchSelection = TextSelection(insertionPoint: query.endIndex)
+        isSearchFieldFocused = true
+        return true
+    }
+
+    func focusSearch() {
+        let selection = TextSelection(range: query.startIndex ..< query.endIndex)
+        if isSearchFieldFocused, requestedSearchSelection == nil {
+            searchSelection = selection
+        } else {
+            requestedSearchSelection = selection
+            isSearchFieldFocused = true
+        }
+    }
+
+    func searchFieldFocusDidChange(_ isFocused: Bool) {
+        isSearchFieldFocused = isFocused
+        guard isFocused, let requestedSearchSelection else { return }
+        searchSelection = requestedSearchSelection
+        self.requestedSearchSelection = nil
+    }
+
+    func focusCards() {
+        isSearchFieldFocused = false
+    }
+
+    func receiveResults(_ results: [SearchResult]) {
+        searchResults = Dictionary(results.map { ($0.id, $0) }) { first, _ in first }
+        hasLoadedResults = true
+        observationError = nil
+        show(results.map(\.card))
+    }
+
+    private func searchTextDidChange() {
+        selectsFirstOnLoad = true
+        guard !isSearching else { return }
+        searchResults = [:]
+        hasLoadedResults = false
+        show(listCards)
+    }
+
+    private static func searchText(of query: String) -> String {
+        query.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private static func list(_ list: CardList, contains card: CardSummary) -> Bool {
+        switch list {
+        case .history: card.lastCopiedAt != nil
+        case let .board(id): card.boardID == id
+        }
+    }
+
+    private static func isTypeable(_ scalar: Unicode.Scalar) -> Bool {
+        switch scalar.properties.generalCategory {
+        case .control, .format, .privateUse, .surrogate, .unassigned: false
+        default: true
+        }
     }
 }

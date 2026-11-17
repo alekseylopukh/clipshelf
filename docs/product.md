@@ -281,7 +281,7 @@ The pasteboard keeps the pasted content afterwards; the previous clipboard is no
 ### 4.9 Search and filters
 
 - Typing while the shelf is focused starts a search; ⌘F focuses the search field. Results update live; one result is always selected; Return pastes it.
-- Scope: History and all boards together, regardless of the current tab. Results show which board a card is on.
+- Scope: History and all boards together, regardless of the current tab. Results show which board a card is on. Choosing a tab clears the search (working default WD-44 in [roadmap.md](roadmap.md)).
   > TODO: confirm global scope vs current tab.
 - Matched fields: title, text content, URL and page title, file names, source app name, recognized image text (v1).
 - Case- and diacritic-insensitive, word-prefix matching. Ordered newest first. Matches are highlighted.

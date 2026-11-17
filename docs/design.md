@@ -140,7 +140,7 @@ Order, leading to trailing:
 4. **New Board button** (`plus`).
 5. **More menu** (`ellipsis`): New Text Card, Start Sequence, Pause/Resume capture, Settings…
 
-While search is active, the Board switcher stays visible. Whether selecting a Board then narrows the results depends on the open search-scope TODO in [product.md §4.9](product.md#49-search-and-filters).
+While search is active, the Board switcher stays visible. Selecting a Board clears the search and shows that Board ([product.md §4.9](product.md#49-search-and-filters)). Matches in a Card's title and text are highlighted with the system find-highlight color.
 
 ### Board colors
 

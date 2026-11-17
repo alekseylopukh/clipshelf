@@ -8,17 +8,28 @@ struct CardView: View {
     let model: ShelfModel
     let now: Date
     let layout: CardLayout
+    let board: Board?
     private let content: CardContent
+    private let highlights: CardHighlights
 
     @State private var isHovered = false
     @Environment(CardActions.self) private var actions
 
-    init(card: CardSummary, model: ShelfModel, now: Date, layout: CardLayout) {
+    init(
+        card: CardSummary,
+        model: ShelfModel,
+        now: Date,
+        layout: CardLayout,
+        match: SearchResult? = nil,
+        board: Board? = nil
+    ) {
         self.card = card
         self.model = model
         self.now = now
         self.layout = layout
+        self.board = board
         content = CardContent(card)
+        highlights = CardHighlights(card: card, match: match)
     }
 
     var body: some View {
@@ -26,6 +37,8 @@ struct CardView: View {
         CardSurface(
             card: card,
             content: content,
+            highlights: highlights,
+            board: board,
             now: now,
             layout: layout,
             isSelected: isSelected,
@@ -35,16 +48,24 @@ struct CardView: View {
         .gesture(TapGesture(count: 2).onEnded { actions.pasteOnDoubleClick([card.id]) })
         .simultaneousGesture(TapGesture().onEnded { click() })
         .contextMenu {
-            CardContextMenu(cards: isSelected ? model.selectedCards : [card], list: model.tab)
+            let cards = isSelected ? model.selectedCards : [card]
+            CardContextMenu(cards: cards, list: model.removalList(for: cards.map(\.id)))
         }
         .draggable(CardReference(cardID: card.id))
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityLabel)
         .accessibilityValue(accessibilityValue)
+        .accessibilityCustomContent(
+            AccessibilityCustomContentKey(
+                Text("Board", comment: "VoiceOver name of the board a search result is on"),
+                id: "board"
+            ),
+            board.map { Text(verbatim: $0.name) }
+        )
         .accessibilityAddTraits(isSelected ? .isSelected : [])
         .accessibilityAction { model.select(card.id) }
         .accessibilityActions {
-            ForEach(CardCommand.menu(for: [card], in: model.tab).flatMap(\.self), id: \.self) { command in
+            ForEach(CardCommand.menu(for: [card], in: model.list(of: card)).flatMap(\.self), id: \.self) { command in
                 CardCommandButton(
                     command: command,
                     targetAppName: actions.targetAppName,
@@ -98,6 +119,8 @@ struct CardView: View {
 private struct CardSurface: View {
     let card: CardSummary
     let content: CardContent
+    let highlights: CardHighlights
+    let board: Board?
     let now: Date
     let layout: CardLayout
     let isSelected: Bool
@@ -116,8 +139,8 @@ private struct CardSurface: View {
             alignment: .leading,
             spacing: layout == .compact ? DesignTokens.spacingSmall : DesignTokens.spacingMedium
         ) {
-            CardHeader(card: card, now: now, layout: layout)
-            CardBodyView(card: card, content: content)
+            CardHeader(card: card, now: now, layout: layout, highlightedTitle: highlights.title, board: board)
+            CardBodyView(card: card, content: content, highlightedPreview: highlights.preview)
             if layout == .regular {
                 CardFooter(kind: card.kind, content: content)
             }
@@ -144,6 +167,16 @@ private struct CardSurface: View {
         )
         .animation(reduceMotion ? nil : .default, value: isSelected)
         .animation(reduceMotion ? nil : .default, value: isHovered)
+    }
+}
+
+private struct CardHighlights {
+    let title: AttributedString?
+    let preview: AttributedString?
+
+    init(card: CardSummary, match: SearchResult?) {
+        title = card.title.flatMap { SearchHighlight.text($0, matches: match?.titleMatches ?? []) }
+        preview = card.preview.flatMap { SearchHighlight.text($0, matches: match?.previewMatches ?? []) }
     }
 }
 

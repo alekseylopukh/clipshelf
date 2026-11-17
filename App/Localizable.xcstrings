@@ -1,6 +1,10 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Board" : {
+      "comment" : "VoiceOver name of the board a search result is on",
+      "extractionState" : "manual"
+    },
     "New Board" : {
       "comment" : "Shelf top bar button that creates a board",
       "extractionState" : "manual"

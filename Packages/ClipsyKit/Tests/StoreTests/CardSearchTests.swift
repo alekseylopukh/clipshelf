@@ -95,6 +95,19 @@ struct CardSearchTests {
         #expect(results.map(\.card.boardID) == [1, 1, nil])
     }
 
+    @Test(.timeLimit(.minutes(1)))
+    func `search observation emits on insert`() async throws {
+        try await record("Hello world", hash: 1, at: 100)
+        var updates = repository.observeSearch("hel").makeAsyncIterator()
+        #expect(try #require(try await updates.next()).count == 1)
+
+        let id = try await record("Help", hash: 2, at: 200)
+
+        let results = try #require(try await updates.next())
+        #expect(results.first?.id == id)
+        #expect(results.count == 2)
+    }
+
     @Test func `blank query returns nothing`() async throws {
         try await record("Hello", hash: 1, at: 100)
 

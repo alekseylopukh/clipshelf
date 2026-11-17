@@ -303,6 +303,8 @@ final class ShelfModelTests {
         #expect(model.emptyState(isCapturePaused: false) == .history)
         #expect(model.emptyState(isCapturePaused: true) == .paused)
         model.query = "invoice"
+        #expect(model.emptyState(isCapturePaused: true) == nil)
+        model.receiveResults([])
         #expect(model.emptyState(isCapturePaused: true) == .noResults)
         model.query = ""
 

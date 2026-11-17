@@ -7,7 +7,7 @@ public final class CardDeletion {
 
     private let deleteCards: Delete
     private let restoreCards: Restore
-    private var undoStack: [DeletedCards] = []
+    private var undoStack: [[DeletedCards]] = []
     private var isBusy = false
     private var generation = 0
 
@@ -20,33 +20,42 @@ public final class CardDeletion {
         !undoStack.isEmpty
     }
 
-    func delete(_ ids: [Int64], in list: CardList, confirm: (Int) async -> Bool) async throws -> Bool {
-        guard !ids.isEmpty, !isBusy else { return false }
+    func delete(_ idsByList: [CardList: [Int64]], confirm: (Int) async -> Bool) async throws -> Bool {
+        let count = idsByList.values.reduce(0) { $0 + $1.count }
+        guard count > 0, !isBusy else { return false }
         isBusy = true
         defer { isBusy = false }
-        if ids.count > 1, await confirm(ids.count) == false {
+        if count > 1, await confirm(count) == false {
             return false
         }
         let started = generation
-        let deleted = try await deleteCards(ids, list)
-        if generation == started {
-            undoStack.append(deleted)
+        var deleted: [DeletedCards] = []
+        defer {
+            if generation == started, !deleted.isEmpty {
+                undoStack.append(deleted)
+            }
+        }
+        for (list, ids) in idsByList where !ids.isEmpty {
+            try await deleted.append(deleteCards(ids, list))
         }
         return true
     }
 
     func undo() async throws {
-        guard !isBusy, let last = undoStack.popLast() else { return }
+        guard !isBusy, var last = undoStack.popLast() else { return }
         isBusy = true
         defer { isBusy = false }
         let started = generation
-        do {
-            _ = try await restoreCards(last)
-        } catch {
-            if generation == started {
-                undoStack.append(last)
+        while let deleted = last.last {
+            do {
+                _ = try await restoreCards(deleted)
+            } catch {
+                if generation == started {
+                    undoStack.append(last)
+                }
+                throw error
             }
-            throw error
+            last.removeLast()
         }
     }
 

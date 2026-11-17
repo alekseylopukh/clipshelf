@@ -6,12 +6,13 @@ import SwiftUI
 struct CardBodyView: View {
     let card: CardSummary
     let content: CardContent
+    let highlightedPreview: AttributedString?
 
     var body: some View {
         Group {
             switch card.kind {
             case .text:
-                TextCardBody(card: card, isCodeLike: content.isCodeLike)
+                TextCardBody(card: card, isCodeLike: content.isCodeLike, highlightedPreview: highlightedPreview)
             case .link:
                 LinkCardBody(card: card, content: content)
             case .color:
@@ -37,6 +38,7 @@ struct CardBodyView: View {
 private struct TextCardBody: View {
     let card: CardSummary
     let isCodeLike: Bool
+    let highlightedPreview: AttributedString?
 
     @State private var richText: AttributedString?
     @Environment(\.richTextLoader) private var loader
@@ -47,7 +49,10 @@ private struct TextCardBody: View {
 
     var body: some View {
         Group {
-            if let richText {
+            if let highlightedPreview {
+                Text(highlightedPreview)
+                    .font(isCodeLike ? .body.monospaced() : .body)
+            } else if let richText {
                 Text(richText)
                     .font(.body)
             } else {

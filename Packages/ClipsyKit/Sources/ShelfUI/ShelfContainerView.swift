@@ -42,6 +42,9 @@ struct ShelfContainerView: View {
         .task {
             await model.observeBoards()
         }
+        .task(id: model.searchText) {
+            await model.observeSearch()
+        }
     }
 
     private static let riseTransition: AnyTransition = .offset(y: DesignTokens.shelfOpenOffset)
