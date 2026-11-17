@@ -93,17 +93,17 @@ private struct ShelfSearchField: View {
                 .frame(minWidth: DesignTokens.searchTextMinimumWidth)
                 .focused($isFocused)
                 .onKeyPress(.escape) {
-                    model.clearSearch() ? .handled : .ignored
+                    model.cancelSearchField() ? .handled : .ignored
                 }
                 .onKeyPress(.delete) {
                     model.removeLastToken() ? .handled : .ignored
                 }
-                .onKeyPress(keys: [.downArrow, .upArrow, .tab]) { press in
+                .onKeyPress(keys: [.downArrow, .upArrow]) { press in
+                    let direction: ShelfModel.Direction = press.key == .downArrow ? .next : .previous
+                    return model.handleSearchFieldArrow(direction, modifiers: press.modifiers) ? .handled : .ignored
+                }
+                .onKeyPress(keys: [.tab]) { press in
                     guard press.modifiers.isEmpty else { return .ignored }
-                    if press.key != .tab, model.moveSuggestionHighlight(press.key == .downArrow ? .next : .previous) {
-                        return .handled
-                    }
-                    guard press.key != .upArrow else { return .ignored }
                     model.focusCards()
                     return .handled
                 }

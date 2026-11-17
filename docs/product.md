@@ -298,8 +298,9 @@ Working default [WD-28](roadmap.md#working-defaults-for-open-todos): badges appe
 - Matched fields: title, text content, URL and page title, file names, source app name, recognized image text (v1).
 - Case- and diacritic-insensitive, word-prefix matching. Ordered newest first. Matches are highlighted.
 - Filters (v1): Type, App, Date (today, yesterday, last 7 days, last 30 days, custom range), Board. Typing a word that matches a type, app, date range or board name offers it as a filter token. Filters combine with AND. Pressing ⌘F again while the field is focused opens a browser of all filters (working default WD-46 in [roadmap.md](roadmap.md)).
+- While filter suggestions are showing, ↓ highlights the first suggestion and then the next one, ↑ the previous one (above the first it returns to no highlight), and Return adds the highlighted suggestion as a token. With nothing highlighted, Return pastes as usual. ← / → keep moving the caret.
 - Tab moves focus between the search field and the results.
-- Esc clears the search first, then closes the shelf on the next press.
+- Esc hides the filter suggestions first, then clears the search, then closes the shelf on the next press.
 
 ### 4.10 Editing (v1)
 

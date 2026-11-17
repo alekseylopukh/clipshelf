@@ -1,5 +1,6 @@
 import Foundation
 import Store
+import SwiftUI
 import Synchronization
 import Testing
 @testable import ShelfUI
@@ -130,6 +131,55 @@ final class ShelfModelFilterTests {
         #expect(model.query.isEmpty)
         #expect(model.highlightedSuggestion == nil)
         #expect(model.moveSuggestionHighlight(.next) == false)
+    }
+
+    @Test(arguments: [EventModifiers(), [.numericPad, .function]])
+    func `arrow keys move the suggestion highlight`(modifiers: EventModifiers) {
+        let model = makeModel()
+        model.isSearchFieldFocused = true
+        model.query = "last"
+
+        #expect(model.handleSearchFieldArrow(.next, modifiers: modifiers))
+        #expect(model.highlightedSuggestion == model.suggestions.first)
+        #expect(model.handleSearchFieldArrow(.next, modifiers: modifiers))
+        #expect(model.highlightedSuggestion == model.suggestions.dropFirst().first)
+        #expect(model.handleSearchFieldArrow(.previous, modifiers: modifiers))
+        #expect(model.handleSearchFieldArrow(.previous, modifiers: modifiers))
+        #expect(model.highlightedSuggestion == nil)
+        #expect(model.isSearchFieldFocused)
+    }
+
+    @Test(arguments: [EventModifiers.shift, .command, .option, .control])
+    func `modified arrow keys leave the suggestions to the field`(modifier: EventModifiers) {
+        let model = makeModel()
+        model.query = "last"
+
+        #expect(model.handleSearchFieldArrow(.next, modifiers: [modifier, .numericPad, .function]) == false)
+        #expect(model.highlightedSuggestion == nil)
+    }
+
+    @Test func `down arrow without suggestions moves focus to the cards`() {
+        let model = makeModel()
+        model.isSearchFieldFocused = true
+        model.query = "x"
+
+        #expect(model.handleSearchFieldArrow(.previous, modifiers: [.numericPad, .function]) == false)
+        #expect(model.handleSearchFieldArrow(.next, modifiers: [.numericPad, .function]))
+        #expect(model.isSearchFieldFocused == false)
+    }
+
+    @Test func `escape hides the suggestions before it clears the search`() {
+        let model = makeModel()
+        model.query = "last"
+        _ = model.moveSuggestionHighlight(.next)
+
+        #expect(model.cancelSearchField())
+        #expect(model.suggestions.isEmpty)
+        #expect(model.highlightedSuggestion == nil)
+        #expect(model.query == "last")
+        #expect(model.cancelSearchField())
+        #expect(model.query.isEmpty)
+        #expect(model.cancelSearchField() == false)
     }
 
     @Test func `a deleted board drops its token`() {
