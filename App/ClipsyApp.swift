@@ -100,6 +100,7 @@ struct ClipsyApp: App {
                 .environment(onboarding)
                 .environment(onboarding.access)
                 .environment(retention)
+                .environment(privacy)
         }
         .windowResizability(.contentSize)
         .restorationBehavior(.disabled)

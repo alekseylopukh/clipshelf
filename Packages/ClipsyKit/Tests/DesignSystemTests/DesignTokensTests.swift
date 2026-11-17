@@ -7,4 +7,8 @@ struct DesignTokensTests {
         let standard = DesignTokens.selectionRingWidth(for: .standard)
         #expect(DesignTokens.selectionRingWidth(for: .increased) == standard + 1)
     }
+
+    @Test func `the shadow margin leaves room for the open rise`() {
+        #expect(DesignTokens.shelfShadowMargin >= DesignTokens.shelfOpenOffset)
+    }
 }

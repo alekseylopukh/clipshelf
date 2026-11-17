@@ -26,12 +26,14 @@ public final class ShelfController {
     private static let cardMoveKeys: [Int: ShelfModel.Direction] = [kVK_LeftArrow: .previous, kVK_RightArrow: .next]
 
     let panel = ShelfPanel()
+    let flight = PasteFlightPanel()
+    let landingLocator = PasteLandingLocator()
     let dragSource = CardDragSource()
     var isDragging = false
     private let presentation = ShelfPresentation()
     private let calculator = ShelfFrameCalculator()
     let model: ShelfModel
-    private let paster: PasteCoordinator
+    let paster: PasteCoordinator
     private let deletion: CardDeletion
     let boardEditor: BoardEditor
     let representations: PasteCoordinator.RepresentationLoading
@@ -78,7 +80,8 @@ public final class ShelfController {
             onResizeEnded: { [weak self] in self?.endResize() }
         ).environment(actions).environment(boardEditor)
             .environment(\.richTextLoader, richTextLoader)
-            .environment(\.cardMediaLoader, mediaLoader))
+            .environment(\.cardMediaLoader, mediaLoader)
+            .padding(DesignTokens.shelfShadowMargin))
         hostingView.sizingOptions = []
         hostingView.autoresizingMask = [.width, .height]
         let contentView = NSView()
@@ -113,6 +116,7 @@ public final class ShelfController {
         preview.onResignKey = { [weak self] in self?.closeOnFocusLoss() }
         preview.onKeyDown = { [weak self] event in self?.handlePreviewKeyDown(event) ?? false }
         preview.sharingType = { [weak self] in self?.panel.sharingType ?? .none }
+        preview.availableSize = { [weak self] in self?.previewAvailableSize ?? PreviewSizeCalculator().defaultSize }
     }
 
     public var isShown: Bool {
@@ -141,11 +145,11 @@ public final class ShelfController {
         actions.plainTextModifier = plainText
         actions.isCopyAsPlainTextShortcutTaken = KeyboardShortcuts.getShortcut(for: .startSequence)
             == KeyboardShortcuts.Shortcut(.c, modifiers: plainText.flags.union(.command))
-        panel.setFrame(calculator.frame(height: storedHeight, in: screen.visibleFrame), display: false)
+        panel.setFrame(calculator.windowFrame(height: storedHeight, in: screen.visibleFrame), display: false)
         model.didOpen()
         updateQuickPasteModifier(NSEvent.modifierFlags)
         panel.makeKeyAndOrderFront(nil)
-        withAnimation(reduceMotion ? .default : .spring) {
+        withAnimation(reduceMotion ? DesignTokens.shelfFadeAnimation : DesignTokens.shelfOpenAnimation) {
             presentation.isVisible = true
         }
     }
@@ -158,36 +162,11 @@ public final class ShelfController {
         preview.dismiss()
         boardEditor.cancel()
         deletion.discardUndo()
-        withAnimation(reduceMotion ? .default : .snappy) {
+        withAnimation(reduceMotion ? DesignTokens.shelfFadeAnimation : DesignTokens.shelfCloseAnimation) {
             presentation.isVisible = false
         } completion: { [weak self] in
             guard let self, !isShown else { return }
             panel.orderOut(nil)
-        }
-    }
-
-    func perform(_ action: PasteCoordinator.Action, cards: [CardSummary], plainModifier: Bool) async {
-        do {
-            try await paster.perform(
-                action,
-                cards: cards,
-                plainModifier: plainModifier,
-                target: targetApplication,
-                hideShelf: { [weak self] in self?.hideImmediately() }
-            )
-        } catch is CancellationError {
-            return
-        } catch {
-            Self.logger.error("paste failed: \(String(describing: type(of: error)), privacy: .public)")
-            hideImmediately()
-            let alert = NSAlert(error: error)
-            alert.messageText = String(
-                localized: "Clipsy can’t paste this card.",
-                comment: "Title of the alert shown when a card's contents cannot be read for pasting"
-            )
-            alert.informativeText = error.localizedDescription
-            NSApplication.shared.activate()
-            alert.runModal()
         }
     }
 
@@ -302,7 +281,7 @@ public final class ShelfController {
         model.setQuickPasteModifierHeld(QuickPasteModifiers(defaults: defaults).isQuickPasteHeld(in: modifierFlags))
     }
 
-    private var reduceMotion: Bool {
+    var reduceMotion: Bool {
         NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
     }
 
@@ -312,19 +291,25 @@ public final class ShelfController {
             : defaults.double(forKey: Self.heightKey)
     }
 
+    private var previewAvailableSize: CGSize? {
+        guard let screen = panel.screen else { return nil }
+        let glassFrame = panel.frame.insetBy(dx: calculator.shadowMargin, dy: calculator.shadowMargin)
+        return PreviewSizeCalculator().availableSize(in: screen.visibleFrame, above: glassFrame)
+    }
+
     private func resize() {
         guard let screen = panel.screen else { return }
         let mouseY = NSEvent.mouseLocation.y
-        let start = resizeStart ?? (mouseY, panel.frame.height)
+        let start = resizeStart ?? (mouseY, calculator.glassHeight(windowHeight: panel.frame.height))
         resizeStart = start
         let height = start.height + mouseY - start.mouseY
-        panel.setFrame(calculator.frame(height: height, in: screen.visibleFrame), display: true)
+        panel.setFrame(calculator.windowFrame(height: height, in: screen.visibleFrame), display: true)
     }
 
     private func endResize() {
         guard resizeStart != nil else { return }
         resizeStart = nil
-        defaults.set(Double(panel.frame.height), forKey: Self.heightKey)
+        defaults.set(Double(calculator.glassHeight(windowHeight: panel.frame.height)), forKey: Self.heightKey)
     }
 }
 
@@ -491,6 +476,9 @@ public extension ShelfController {
 
     var isShownInScreenCapture: Bool {
         get { panel.sharingType != .none }
-        set { panel.sharingType = newValue ? .readOnly : .none }
+        set {
+            panel.sharingType = newValue ? .readOnly : .none
+            flight.sharingType = panel.sharingType
+        }
     }
 }

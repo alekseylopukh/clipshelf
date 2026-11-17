@@ -136,6 +136,21 @@ final class PasteCoordinatorTests {
             .filter { $0 != PasteboardMarker.ownWrite }
     }
 
+    private nonisolated static let directPasteCases = [PasteCoordinator.Action.paste, .copy].flatMap { action in
+        PasteBehavior.allCases.flatMap { behavior in [true, false].map { (action, behavior, $0) } }
+    }
+
+    @Test(arguments: directPasteCases)
+    func `only a trusted paste with paste into active app goes into the target`(
+        action: PasteCoordinator.Action,
+        behavior: PasteBehavior,
+        trusted: Bool
+    ) {
+        defaults.set(behavior.rawValue, forKey: PasteSettings.behaviorKey)
+        let expected = action == .paste && behavior == .pasteIntoActiveApp && trusted
+        #expect(makeCoordinator(trusted: trusted).pastesIntoTarget(action) == expected)
+    }
+
     @Test func `paste writes, hides and posts the keystroke`() async throws {
         try await paste(with: makeCoordinator())
 

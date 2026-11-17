@@ -47,8 +47,9 @@ let package = Package(
                 "App/Intents", "App/Sounds", "App/Credits.rtf", "App/Localizable.xcstrings"
             ],
             sources: [
-                "AppSnapshotTests.swift", "PopoverSnapshotTests.swift", "ShelfSnapshotTests.swift",
-                "SnapshotFixtures.swift", "SnapshotRenderer.swift",
+                "AppSnapshotTests.swift", "PopoverSnapshotTests.swift", "SearchSuggestionLayerTests.swift",
+                "ShelfContrastTests.swift", "ShelfSnapshotTests.swift", "SnapshotFixtures.swift",
+                "SnapshotRenderer.swift",
                 "App/SettingsView.swift", "App/GeneralSettingsView.swift", "App/ShortcutsSettingsView.swift",
                 "App/PrivacySettingsView.swift", "App/AboutSettingsView.swift", "App/AcknowledgementsView.swift",
                 "App/OnboardingView.swift", "App/PermissionStatusLabel.swift", "App/MenuBarSettings.swift",

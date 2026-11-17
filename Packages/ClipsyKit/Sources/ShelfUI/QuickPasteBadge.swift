@@ -21,7 +21,7 @@ struct QuickPasteBadgeModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .overlay(alignment: .topTrailing) {
+            .overlay(alignment: .bottomTrailing) {
                 ZStack {
                     if let number {
                         QuickPasteBadge(number: number)

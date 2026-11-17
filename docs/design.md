@@ -18,10 +18,10 @@ Values marked "proposed" are starting points to tune on real hardware, not measu
 
 ## 1. Design principles
 
-1. **Looks like Apple shipped it.** System controls, SF Symbols, system text styles, semantic colors, the user's accent color. If AppKit or SwiftUI has a control for it, we use that control. No custom fonts, no brand colors, no illustrations.
+1. **Looks like Apple shipped it.** System controls, SF Symbols, system text styles (one exception: the Card header band title, see [Header band](#header-band)), semantic colors, the user's accent color. If AppKit or SwiftUI has a control for it, we use that control. No custom fonts, no brand colors, no illustrations.
 2. **Liquid Glass is for controls, not content.** The Shelf container, the top bar, floating badges and the Sequence header are glass. Cards are content: opaque, readable, and they never sit in glass of their own.
-3. **Content first.** A Card spends its area on the preview. Metadata is small, secondary and neutral.
-4. **Color means something or it isn't there.** The only colors in the UI are the accent color (selection, primary action), Board colors (identity of a Board) and the content itself (images, color swatches, link thumbnails).
+3. **Content first.** A Card spends its area on the preview. Metadata is small; the one exception to neutral metadata is the header band, which shows the source app's color so the app reads at a glance.
+4. **Color means something or it isn't there.** The only colors in the UI are the accent color (selection, primary action), Board colors (identity of a Board), the source app's system color on the Card header band (identity of the app) and the content itself (images, color swatches, link thumbnails).
 5. **Keyboard is a first-class input.** Every action reachable by pointer is reachable by keyboard, and focus is always visible.
 6. **Respect system settings.** Light/Dark, accent color, Reduce Motion, Reduce Transparency, Increase Contrast, Liquid Glass appearance, Dynamic Type where macOS supports it.
 
@@ -29,14 +29,12 @@ Values marked "proposed" are starting points to tune on real hardware, not measu
 
 | Rejected option | Clipsy | Why |
 |---|---|---|
-| Saturated colored header band per Card (tinted by source app or type) | Neutral header: app icon, type label, relative time in secondary label color | HIG asks for sparing color and monochrome chrome; a rainbow of headers competes with content and with Board colors. The source app stays identifiable through its real icon. |
+| Neutral header with a small app icon | Solid header band in the source app's system color, with the app icon nested in its corner | The source app reads at a glance by color as well as by icon. The band uses the system palette, so it adapts to light and dark like other system colors; the Card body stays neutral, so content keeps its contrast. |
 | Glass on Cards at every size | Glass only on the Shelf container and controls | HIG: no Liquid Glass in the content layer. Opaque Cards keep text contrast stable over any wallpaper. |
 | Colored Board tabs | Board name with a small colored dot | Same information, less chroma; reads like Finder tags. |
 | Custom animated menu bar icon | Template SF Symbol with a system symbol effect | Matches every other menu bar extra; adapts to the menu bar appearance. |
 | In-app promotional banners | None. Only system alerts where a permission is actually missing | No nudges, no upsell. |
 | Brand-tinted Sequence window | Plain glass panel with system rows | First-party look. |
-
-An optional faint tint (8–12% opacity) of the source app's icon color behind the Card header is not part of v1; it is listed under Later in [roadmap.md](roadmap.md#later-not-scheduled).
 
 ---
 
@@ -48,10 +46,10 @@ An optional faint tint (8–12% opacity) of the source app's icon color behind t
 |---|---|
 | Edge | Bottom of the screen, centered horizontally. Bottom only in v1. |
 | Inset | Floats like the Dock: inset 8 pt from the bottom and side edges of the visible frame, with a soft system shadow. Never covers the menu bar. Respects the Dock: placed above it when the Dock is at the bottom and visible. |
-| Corners | 36 pt, concentric with the Cards at the 16 pt inner padding. Inner elements use concentric radii; see [Metrics](#metrics). |
+| Corners | ≈37.31 pt, concentric with the Cards at the 16 pt inner padding. Inner elements use concentric radii; see [Metrics](#metrics). |
 | Width | Full width of the visible frame minus the insets. |
 | Height | User-resizable by dragging the top edge; one remembered height for all displays ([WD-13](roadmap.md#working-defaults-for-open-todos)). Range: from one compact row (160 pt) to 40% of the visible height; default 300 pt ([WD-22](roadmap.md#working-defaults-for-open-todos)). |
-| Compact mode | When a regular Card would be under 150 pt tall ([WD-15](roadmap.md#working-defaults-for-open-todos)), Cards switch to a condensed layout: the header collapses to a 20 pt app icon and the time, the footer is hidden and the body fills the rest. Compact Cards are 4:3 instead of square so the time fits next to the icon. |
+| Compact mode | When a regular Card would be under 150 pt tall ([WD-15](roadmap.md#working-defaults-for-open-todos)), Cards switch to a condensed layout: the header band shrinks to 32 pt with a 24 pt app icon and the time, the footer is hidden and the body fills the rest. Compact Cards are 4:3 instead of square so the time fits next to the icon. |
 | Display | Opens on the display that holds the pointer. Moves with the user to the active Space and appears over full-screen apps. |
 
 ### Metrics
@@ -61,16 +59,18 @@ One radius system and an 8 pt grid (12 pt is the one half step, inside Cards). E
 | Metric | Value | Rule |
 |---|---|---|
 | Screen inset | 8 pt | `shelfInset` |
+| Shadow margin | 32 pt | `shelfShadowMargin`: the Shelf window extends this far past the glass on every side and the margin stays transparent, so the glass shadow fades out instead of being clipped to the window rectangle |
 | Shelf padding | 16 pt | `shelfPadding`: top, sides and bottom; the gap between the top bar and the Cards is the same 16 pt |
 | Card gap | 16 pt | `cardSpacing` = `shelfPadding`, so gaps between Cards equal the outer insets |
-| Card radius | 20 pt | `cardCornerRadius` |
-| Shelf radius | 36 pt | `shelfCornerRadius` = Card radius + Shelf padding (concentric) |
+| Card radius | ≈21.31 pt | `cardCornerRadius` = header icon squircle radius (25.7% of its 44 pt visible size) + its 10 pt inset, so the icon nests concentrically in the top-trailing corner. Exact concentricity wins over the 8-pt grid here |
+| Shelf radius | ≈37.31 pt | `shelfCornerRadius` = Card radius + Shelf padding (concentric) |
 | Card content inset | 12 pt | `cardContentInset`, on all four sides |
-| Card inner radius | 8 pt | `cardInnerCornerRadius` = Card radius − content inset. Body previews (link image, color swatch, image) clip to `ConcentricRectangle` against the Card's `containerShape`, with this as the minimum |
+| Card inner radius | ≈9.31 pt | `cardInnerCornerRadius` = Card radius − content inset. Body previews (link image, color swatch, image) clip to `ConcentricRectangle` against the Card's `containerShape`, with this as the minimum |
 | Selection ring | 3 pt (4 pt with Increase Contrast), 2 pt gap | Radius = Card radius + gap + width, so the ring is concentric outside the Card |
-| Quick-paste badge | 20 pt, inset 10 pt | Inset = Card radius − badge radius, so the badge circle is concentric with the corner |
+| Quick-paste badge | 20 pt, bottom-trailing, inset ≈11.31 pt | Inset = Card radius − badge radius, so the badge circle is concentric with the corner |
 | Top bar controls | 28 pt tall | Large control size; icon-only buttons are 28 pt circles (16 pt glyph box), the search field is a 28 pt capsule |
-| Header icon | 32 pt regular, 20 pt compact | 32 pt is a native app icon size, recognizable at a glance; its squircle corner (~7 pt) matches the 8 pt inner radius |
+| Header band | 64 pt regular, 32 pt compact | Icon squircle + 2 × its inset |
+| Header icon | 44 pt regular, 24 pt compact, measured on the visible squircle | Icon images carry transparent padding (the squircle is 824 of 1024 px), so the image is requested at squircle ÷ 0.8047. Inset 10 pt (4 pt compact) above, below and to the trailing edge. The squircle's corner is 25.7% of its size (measured against SwiftUI's continuous corner), so the regular icon nests concentrically in the Card corner; the compact one does not, which would need a ~54 pt band |
 | Header/body/footer spacing | 8 pt regular, 4 pt compact | `spacingMedium` / `spacingSmall` |
 | Text fade | 16 pt | `cardFadeHeight` |
 
@@ -85,7 +85,7 @@ All suites live in the `SnapshotTests` target:
 | Suite | Renders |
 |---|---|
 | `ShelfSnapshotTests` | `shelf-{regular,compact}`: the Shelf, 1920 pt wide |
-| `PopoverSnapshotTests` | `sequence`, `sequence-empty`, `rename`, `preview-<card id>`, `edit-{text,link,color,board}`, `filters` |
+| `PopoverSnapshotTests` | `sequence`, `sequence-empty`, `rename`, `preview-<card id>`, `preview-<card id>-small` (clamped to 1438 × 524 pt, a 13" MacBook Air above a 300 pt Shelf), `edit-{text,link,color,board}`, `filters` |
 | `AppSnapshotTests` | `settings-{general,shortcuts,privacy,about}`, `onboarding-{welcome,paste-directly,clipboard-access,finish}` |
 
 - Fixture: eight made-up Cards (`SnapshotFixtures`: text, rich text, link with preview image, color, code, image, file, three files) and three Boards. Images and files are generated into a temporary folder; app icons come from system apps. No clipboard data is read. Settings and onboarding use a private defaults suite, a temporary database, a fake updater and a fake pasteboard access status (`.ask`, so the clipboard step shows).
@@ -107,14 +107,32 @@ Placement uses the display's visible frame, so an auto-hidden Dock is not avoide
 
 | Event | Default | Reduce Motion |
 |---|---|---|
-| Open | Spring rise from just below the bottom edge plus glass materializing (opacity and scale ~0.98→1) | Crossfade only |
-| Close | Reverse of open, faster | Crossfade only |
+| Open | The Shelf rises 24 pt from the bottom edge on a near-critically damped spring while its glass materializes (`glassEffectTransition(.materialize)` on the background glass layer inside a `GlassEffectContainer`) and its content rises with it and fades in. The Cards visible at that moment cascade in from left to right: each rises 6 pt and fades in, 16 ms after its left neighbor. Cards that scroll into view later appear at once. | Crossfade only |
+| Close | The Shelf drops and dematerializes, faster than it opened. No cascade. A paste never waits for it: the Shelf leaves at once and the paste flight takes over. | Crossfade only |
+| Paste | The Shelf leaves at once and a snapshot of the Card flies along a gentle arc to the text insertion point of the target app, shrinking and fading as it lands. The paste is posted right away, so the text appears while the Card is in flight. Single-Card pastes into the target app only (Return, double-click, Quick Paste, Paste in the menu); copies and multi-Card pastes have no flight. | No flight; the paste happens alone |
 | Card inserted at front | Existing Cards slide right; new Card fades and scales in | Crossfade |
 | Card deleted | Neighbors close the gap | Instant reflow |
 | Board switch | Content crossfades; top-bar selection morphs between capsules (`glassEffectID`) | Crossfade, no morph |
 | Compact ↔ regular | Animated layout change | Instant |
 
-Durations: system spring defaults. We set no custom timing curves unless testing shows a need.
+Durations and springs live in `DesignTokens+Motion.swift`; change them there:
+
+| Token | Value | Used for |
+|---|---|---|
+| `shelfOpenAnimation` | `.spring(duration: 0.3, bounce: 0.04)` | Shelf rise and glass materialize |
+| `shelfOpenOffset` | 24 pt | Rise distance; it fits inside the 32 pt `shelfShadowMargin` below the glass, so the window never clips the rise |
+| `shelfCloseAnimation` | `.spring(duration: 0.2, bounce: 0)` | Shelf drop |
+| `shelfFadeAnimation` | `.easeInOut(duration: 0.2)` | Open and close with Reduce Motion |
+| `cardEntranceAnimation` | `.spring(duration: 0.22, bounce: 0)` | Each Card in the open cascade |
+| `cardEntranceStagger` | 16 ms | Delay between neighboring Cards, capped at the 9th Card (`cardEntranceMaximumIndex` 8) |
+| `cardEntranceOffset` | 6 pt | Card rise distance |
+| `cardEntranceWindow` | 350 ms | After this, Cards that appear no longer animate |
+| `pasteFlightDuration` | 0.3 s, ease in-out | Paste flight |
+| `pasteFlightEndScale` | 0.15 | Card scale on landing; opacity holds until 60% of the flight, then fades to 0 |
+| `pasteFlightArcFraction` | 0.85 | The arc's control point is 85% of the way up and 15% of the way across, so the Card lifts first and then turns toward the caret |
+| `pasteFadeDuration` | 0.18 s | Fade in place when no landing point is known |
+
+**Paste landing.** The landing point comes from Accessibility in the target app: the bounds of the focused element's selected text range (the caret), else the focused element's frame, else the focused window's frame; Accessibility's top-left coordinates are converted to AppKit's. With none of these, or when the landing point is on a different display than the Shelf, the snapshot fades where the Card was. The snapshot lives in a borderless, non-activating, click-through overlay panel above the Shelf that never takes focus, and it follows the "Show the Shelf in screenshots and screen sharing" setting. There is no setting to turn the flight off: it never delays the paste, and Reduce Motion removes it.
 
 ---
 
@@ -126,10 +144,18 @@ A Card is a rounded rectangle with an opaque fill (`controlBackgroundColor` or t
 
 | Part | Contents | Style |
 |---|---|---|
-| Header | Source app icon (32 pt, centered on the two text lines, like a two-line list row); title if the user renamed the Card, else the type label; relative time ("2 min ago") below it | Title or type label `.headline`, so every header has the same height; time `.caption` in secondary label color; digits monospaced |
+| Header | A solid band flush with the Card's top edge, in the source app's color; the app icon nested in the top-trailing corner ([Metrics](#metrics)); title if the user renamed the Card, else the type label; relative time ("2 min ago") below it | See [Header band](#header-band) |
 | Body | Type-specific preview (table below) | Clipped to the Card's inner radius |
 | Footer | Type-specific metadata | `.caption`, secondary label color (tertiary was too faint for 4.5:1), single line, truncated |
-| Board marker | When showing search results from all of History and Boards: the Board's colored dot next to the time | Board color, 6–8 pt dot (proposed) |
+| Board marker | When showing search results from all of History and Boards: the Board's colored dot next to the time on the header band | Board color, 8 pt dot with a 1 pt white ring, so a dot keeps its edge on a band of the same color |
+
+### Header band
+
+- **Color.** The dominant hue of the source app's icon snaps to the nearest system color: red, orange, yellow, green, teal, blue, indigo, purple, pink; dark orange hues become brown, and icons without a clear hue (Terminal) get gray. Cards without a source app are gray. When the app is unknown or no longer installed, the Card's type symbol takes the icon's place, white at 85%, sized to the 44 pt squircle.
+- **Text.** Always white: title 14 pt semibold, time `.subheadline` (11 pt) at 85% white with monospaced digits, both with a subtle shadow (black 22%, radius 1, y 0.5) so white stays crisp on light bands.
+- **Contrast.** A band keeps the system color unless white text would fall under its floor at mid-band; then it gets only as much darker as the floor needs. Floors: 3:1 for most colors, 2.5:1 for orange, green and teal, 2.2:1 for yellow, so light hues stay recognisable. With Increase Contrast every band darkens to 4.5:1 and the time is fully opaque.
+- **Sheen.** A white gradient from 12% at the top to clear at the bottom, like system fills; the contrast floors account for it.
+- **Quick-paste badges** sit at the bottom-trailing corner, concentric with it, so they never cover the icon.
 
 ### Per-type layouts
 
@@ -161,7 +187,7 @@ Details such as rich text scaling, the contrast threshold and the link body with
 
 ### Quick-paste badges
 
-- While the quick-paste modifier is held (see [product.md](product.md)), the first nine visible Cards show a small glass capsule with the number (1–9) at the top-trailing corner.
+- While the quick-paste modifier is held (see [product.md](product.md)), the first nine visible Cards show a small glass capsule with the number (1–9) at the bottom-trailing corner, clear of the header icon.
 - Badges appear and disappear with a short fade; with Reduce Motion, instantly.
 - Numbers count from the first visible Card, not the first Card in History.
 
@@ -325,7 +351,7 @@ The recorder rejects combinations already used by the app, by a menu item or by 
 | Ignore passwords and other concealed content | Toggle, on by default |
 | Ignore temporary content from other apps | Toggle, on by default |
 | Ignored apps | `List` with +/− buttons below (system app picker); Passwords is pre-added |
-| Fetch link previews | Toggle with a footnote that it makes a network request per link and may trigger one-time links; off by default (network use: [CLAUDE.md](../CLAUDE.md#decisions)) |
+| Show link previews | Toggle with a footnote that it makes a network request per link and may trigger one-time links; off by default (network use: [CLAUDE.md](../CLAUDE.md#decisions)) |
 | Recognize text in images | Toggle (on-device; makes images searchable) |
 | Show the Shelf in screenshots and screen sharing | Toggle, off by default |
 | Clipboard access status | Status row for the system pasteboard permission (see §9) |
@@ -348,7 +374,7 @@ A single window shown on first launch (SwiftUI, standard window chrome, glass to
 | 1. Welcome | App icon; one line: "Everything you copy, one shortcut away." Shows the current Open Shelf shortcut with a recorder to change it. | Continue |
 | 2. Paste directly | Explains that pasting into other apps needs Accessibility permission, and that without it Clipsy copies the item and the user presses ⌘V. Live status row that turns green when granted (polled while the step is visible). | Open System Settings…, Not Now |
 | 3. Clipboard access | On systems where macOS asks before an app reads the clipboard, explains why Clipsy needs ongoing access and how to allow it. Live status row. Skipped when the system does not gate access. | Open System Settings…, Not Now |
-| Finish | Two toggles: Open at login, Keep history for (pop-up). Hint: press the shortcut to try it. | Done |
+| Finish | Open at login (toggle), Keep history for (pop-up), Show link previews (toggle, off by default, with a one-line note that loading a link can use up a one-time link or let the site track the visit; same setting as Settings › Privacy). Hint: press the shortcut to try it. | Done |
 
 Rules:
 - Never block the app on a missing permission. The Shelf works in copy-only mode without Accessibility.
@@ -371,13 +397,13 @@ Step 3 and the Privacy pane row read `NSPasteboard.general.accessBehavior` (chec
 | VoiceOver: Shelf | The Card strip is a list with item count; Board switcher is a tab group; quick-paste badges are exposed as part of the Card label ("number 3") only while visible. |
 | Announcements | Announce capture paused/resumed, item deleted (with undo hint), Sequence item pasted. |
 | Keyboard only | Every action has a key or is in a menu reachable from the keyboard; Tab moves between search field, Board switcher and Card strip; focus ring always visible. Key map in [product.md](product.md). |
-| Reduce Motion | Crossfades replace springs, morphs and slides (see §2 Motion). |
+| Reduce Motion | Crossfades replace springs, morphs and slides; no Card cascade and no paste flight (see §2 Motion). |
 | Reduce Transparency | Glass falls back to the system opaque material automatically; we add no custom blur that would ignore the setting. |
-| Increase Contrast | Card borders become stronger (system behavior of `separatorColor`); selection ring thickens (proposed +1 pt); Board dots gain an outline. |
+| Increase Contrast | Card borders become stronger (system behavior of `separatorColor`); selection ring thickens (proposed +1 pt); Board dots gain an outline (on the Card header band they always have one); header bands darken to 4.5:1 for their white text and the time turns opaque (see [Header band](#header-band)). |
 | Liquid Glass appearance | Test with the system Clear and Tinted glass options. |
 | Color independence | Board identity never relies on color alone: the name is always shown next to the dot. Selection uses a ring, not only a fill. |
-| Text size | System text styles only, so the macOS text size setting (where honored) applies. |
-| Light / Dark | Semantic colors only; no hard-coded colors anywhere. Image and color Cards show content as-is in both modes. |
+| Text size | System text styles, so the macOS text size setting (where honored) applies. Exception: the Card header band title is a fixed 14 pt semibold, chosen by the maintainer to sit between `.headline` and `.title3`; the time below it uses `.subheadline`. |
+| Light / Dark | Semantic colors only; no hard-coded colors anywhere, with one exception: the Card header band's text, Board dot ring and sheen are white and the text has a faint black shadow, because they sit on a system color that is kept dark enough for white in both modes (see [Header band](#header-band)). Image and color Cards show content as-is in both modes. |
 
 ---
 
@@ -424,7 +450,7 @@ Metrics of everything other than the Shelf. Every value lives in `DesignTokens`.
 | About | 64 pt app icon; Acknowledgements sheet 460 × 420 pt |
 | Onboarding | 480 pt wide, at least 380 pt tall, 20 pt padding, 64 pt step icon |
 | Sequence panel | 280 pt wide, 18 pt radius, glass as a background layer (like the Shelf, so rows keep label colors); 44 pt rows, up to 6 before it scrolls, 8 pt list inset with a 10 pt concentric radius |
-| Quick Look popover | 520 × 400 pt |
+| Quick Look popover | 880 × 680 pt (`previewWidth` × `previewHeight`), scaled down with its aspect ratio kept to fit the space above the Shelf on the Shelf's screen (visible frame above the Shelf's glass, minus a 16 pt margin, `previewScreenMargin`) and the screen width minus 16 pt on each side. Image Cards fit the popover to the image's aspect ratio inside that box, at least 240 pt on each side (`previewMinimumSide`) but never larger than the box. Computed by `PreviewSizeCalculator` |
 | Rename popover | 220 pt text field, system padding |
 | Filters popover | 260 × 380 pt |
 | Edit sheets | 20 pt padding (`sheetPadding`) on every sheet. Link and color sheets are 420 pt and the Board sheet 400 pt wide grouped forms; text editor 480 × 320 pt, never taller than the Shelf, 6 pt text-area radius |

@@ -80,14 +80,14 @@ Clipsy is a clipboard manager for macOS 26 and later. It keeps a history of ever
 | Delete with undo | Delete cards; ⌘Z restores them. | MVP |
 | Share | System share sheet. | v1 |
 | Drag out | Dragging a card into another app inserts it like a paste; images can be dropped as files. | v1 |
-| Link previews | Fetch page title, icon and image for links. Opt-in, off by default. One of the two network uses listed in [CLAUDE.md](../CLAUDE.md#decisions). | v1 |
+| Link previews | Fetch page title, icon and image for links. Opt-in, off by default; offered on the onboarding Finish step and in Settings › Privacy, both bound to the same setting. One of the two network uses listed in [CLAUDE.md](../CLAUDE.md#decisions). | v1 |
 | File thumbnails | Quick Look thumbnails for file cards. | v1 |
 | Text in images | Recognize text in image cards on device so search finds it. | v1 |
 | Sounds | Optional sounds on capture and paste, our own assets. | v1 |
 | Hidden from screen sharing | The shelf is excluded from screen capture unless the user allows it. | MVP |
 | Menu bar item | Template SF Symbol with a menu (§6, Menu bar menu). Can be hidden. | MVP |
 | Open at login | Register as a login item. | MVP |
-| Permission onboarding | First-run explanation for Accessibility and pasteboard access, with links to System Settings. | MVP |
+| Permission onboarding | First-run explanation for Accessibility and pasteboard access, with links to System Settings. The last step offers Open at login, history retention and link previews (off by default). | MVP |
 
 ### 3.3 Pasting
 
@@ -244,7 +244,7 @@ Applied in order; the first match wins.
 
 1. The target app is the app that was frontmost when the shelf opened. Its name appears in "Paste to <App>" menu items.
 2. Write the card to the general pasteboard: clear it, write every stored representation (for plain text: only the plain string), add our private marker type, record the resulting change count.
-3. Hide the shelf. The shelf never activates Clipsy, so the target app stays frontmost.
+3. Hide the shelf. The shelf never activates Clipsy, so the target app stays frontmost. When a single card is pasted into the target app, a snapshot of it flies to the text insertion point while the paste goes ahead; the paste never waits for it, and Reduce Motion turns it off ([design.md §2 Motion](design.md#motion)).
 4. If the paste setting is "Paste into the active app" and Accessibility is granted, post a synthesized ⌘V key down/up. Resolve the key code for "V" from the current keyboard layout, and handle layouts that switch to QWERTY while ⌘ is held.
 5. If Accessibility is not granted, the first direct paste asks whether to grant it or just copy, with a "don't ask again" option. After declining, Return copies only.
 6. If the paste setting is "Copy to the clipboard only", Return copies only and the shelf closes.
@@ -298,8 +298,9 @@ Working default [WD-28](roadmap.md#working-defaults-for-open-todos): badges appe
 - Matched fields: title, text content, URL and page title, file names, source app name, recognized image text (v1).
 - Case- and diacritic-insensitive, word-prefix matching. Ordered newest first. Matches are highlighted.
 - Filters (v1): Type, App, Date (today, yesterday, last 7 days, last 30 days, custom range), Board. Typing a word that matches a type, app, date range or board name offers it as a filter token. Filters combine with AND. Pressing ⌘F again while the field is focused opens a browser of all filters (working default WD-46 in [roadmap.md](roadmap.md)).
+- While filter suggestions are showing, ↓ highlights the first suggestion and then the next one, ↑ the previous one (above the first it returns to no highlight), and Return adds the highlighted suggestion as a token. With nothing highlighted, Return pastes as usual. ← / → keep moving the caret.
 - Tab moves focus between the search field and the results.
-- Esc clears the search first, then closes the shelf on the next press.
+- Esc hides the filter suggestions first, then clears the search, then closes the shelf on the next press.
 
 ### 4.10 Editing (v1)
 
@@ -451,7 +452,7 @@ Content and defaults only; layout and exact label wording are in [design.md §8]
 | Ignored apps | list with add / remove | Apple Passwords |
 | Ignore passwords and other concealed content | on / off | on |
 | Ignore temporary content from other apps | on / off | on |
-| Fetch link previews | on / off, with a note that fetching may trigger one-time or tracking links | off |
+| Show link previews | on / off, with a note that fetching may trigger one-time or tracking links | off; offered during onboarding |
 | Show the Shelf in screenshots and screen sharing | on / off | off |
 | Recognize text in images | on / off (on device) | on |
 | Clipboard access status | allowed / asks / not allowed, button to open System Settings; hidden until macOS has asked about Clipsy | — |

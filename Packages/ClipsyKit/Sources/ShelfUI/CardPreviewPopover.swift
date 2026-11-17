@@ -9,17 +9,19 @@ final class CardPreviewPopover: NSObject, NSPopoverDelegate {
     var onResignKey: () -> Void = {}
     var onKeyDown: (NSEvent) -> Bool = { _ in false }
     var sharingType: () -> NSWindow.SharingType = { .none }
+    var availableSize: () -> CGSize = { PreviewSizeCalculator().defaultSize }
 
     private let popover = NSPopover()
-    private let makeContent: () -> NSViewController
+    private let makeContent: (CGSize) -> NSViewController
+    private var contentAvailableSize: CGSize?
     private weak var anchor: NSView?
     private var isRequested = false
     private var keyMonitor: Any?
     private var resignKeyTask: Task<Void, Never>?
 
     init(model: ShelfModel, richTextLoader: RichTextLoader, mediaLoader: CardMediaLoader) {
-        makeContent = {
-            let controller = NSHostingController(rootView: CardPreviewRoot(model: model)
+        makeContent = { available in
+            let controller = NSHostingController(rootView: CardPreviewRoot(model: model, available: available)
                 .environment(\.richTextLoader, richTextLoader)
                 .environment(\.cardMediaLoader, mediaLoader))
             controller.sizingOptions = .preferredContentSize
@@ -109,8 +111,10 @@ final class CardPreviewPopover: NSObject, NSPopoverDelegate {
 
     private func show() {
         guard let anchor, anchor.window != nil else { return }
-        if popover.contentViewController == nil {
-            popover.contentViewController = makeContent()
+        let available = availableSize()
+        if popover.contentViewController == nil || available != contentAvailableSize {
+            popover.contentViewController = makeContent(available)
+            contentAvailableSize = available
         }
         popover.animates = !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
         popover.show(relativeTo: anchor.bounds, of: anchor, preferredEdge: .maxY)
@@ -121,14 +125,12 @@ final class CardPreviewPopover: NSObject, NSPopoverDelegate {
 
 private struct CardPreviewRoot: View {
     let model: ShelfModel
+    let available: CGSize
 
     var body: some View {
-        Group {
-            if let card = model.cursorCard {
-                CardPreviewView(card: card)
-                    .id(card.id)
-            }
+        if let card = model.cursorCard {
+            CardPreviewView(card: card, available: available)
+                .id(card.id)
         }
-        .frame(width: DesignTokens.previewWidth, height: DesignTokens.previewHeight)
     }
 }

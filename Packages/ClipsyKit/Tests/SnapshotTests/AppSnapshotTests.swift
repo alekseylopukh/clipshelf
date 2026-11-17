@@ -61,6 +61,7 @@ final class AppSnapshotTests {
                 .environment(flow)
                 .environment(access)
                 .environment(retention)
+                .environment(PrivacySettings(defaults: defaults))
                 .background(.windowBackground)
             try await SnapshotRenderer.render(root, named: "onboarding-\(step)", appearance: appearance)
             flow.advance()

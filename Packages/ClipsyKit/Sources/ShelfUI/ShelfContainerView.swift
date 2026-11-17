@@ -17,10 +17,19 @@ struct ShelfContainerView: View {
     var body: some View {
         @Bindable var boardEditor = boardEditor
         ZStack {
+            GlassEffectContainer {
+                if presentation.isVisible {
+                    Color.clear
+                        .glassEffect(.regular, in: .rect(cornerRadius: DesignTokens.shelfCornerRadius))
+                        .glassEffectTransition(reduceMotion ? .identity : .materialize)
+                        .transition(reduceMotion ? .opacity : .offset(y: DesignTokens.shelfOpenOffset))
+                }
+            }
             if presentation.isVisible {
                 VStack(spacing: 0) {
                     ShelfTopBar(model: model, commands: commands)
                         .padding([.horizontal, .top], DesignTokens.shelfPadding)
+                        .zIndex(1)
                     ZStack {
                         CardStrip(model: model)
                         if let emptyState = model.emptyState(isCapturePaused: commands.isCapturePaused()) {
@@ -33,11 +42,7 @@ struct ShelfContainerView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .clipShape(.rect(cornerRadius: DesignTokens.shelfCornerRadius))
-                .background {
-                    Color.clear
-                        .glassEffect(.regular, in: .rect(cornerRadius: DesignTokens.shelfCornerRadius))
-                }
-                .transition(reduceMotion ? .opacity : Self.riseTransition)
+                .transition(reduceMotion ? .opacity : .offset(y: DesignTokens.shelfOpenOffset).combined(with: .opacity))
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -67,10 +72,6 @@ struct ShelfContainerView: View {
             await model.observeApps()
         }
     }
-
-    private static let riseTransition: AnyTransition = .offset(y: DesignTokens.shelfOpenOffset)
-        .combined(with: .scale(scale: DesignTokens.shelfOpenScale, anchor: .bottom))
-        .combined(with: .opacity)
 }
 
 #Preview {

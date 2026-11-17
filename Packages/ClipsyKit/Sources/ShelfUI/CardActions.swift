@@ -20,6 +20,7 @@ final class CardActions {
     @ObservationIgnored var beginDrag: (CardDrag) -> Void = { _ in }
     @ObservationIgnored var attachPreviewAnchor: (NSView) -> Void = { _ in }
     @ObservationIgnored var detachPreviewAnchor: (NSView) -> Void = { _ in }
+    @ObservationIgnored var cardFrames: [Int64: CGRect] = [:]
 
     func endEditing() {
         renamingCardID = nil

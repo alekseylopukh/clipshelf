@@ -6,14 +6,16 @@ struct CardStrip: View {
     let model: ShelfModel
 
     @State private var layout = CardLayout.regular
+    @State private var isEntering = true
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(CardActions.self) private var actions
 
     var body: some View {
         TimelineView(.everyMinute) { context in
             ScrollViewReader { proxy in
                 ScrollView(.horizontal) {
                     LazyHStack(spacing: DesignTokens.cardSpacing) {
-                        ForEach(model.cards) { card in
+                        ForEach(model.cards.enumerated(), id: \.element.id) { index, card in
                             CardView(
                                 card: card,
                                 model: model,
@@ -22,6 +24,11 @@ struct CardStrip: View {
                                 match: model.searchResult(for: card.id),
                                 board: model.board(of: card)
                             )
+                            .cardEntrance(delay: entranceDelay(at: index))
+                            .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: {
+                                actions.cardFrames[card.id] = $0
+                            }
+                            .onDisappear { actions.cardFrames[card.id] = nil }
                             .transition(.scale(scale: DesignTokens.shelfOpenScale).combined(with: .opacity))
                         }
                     }
@@ -53,11 +60,24 @@ struct CardStrip: View {
                 }
             }
         }
+        .task {
+            do {
+                try await Task.sleep(for: DesignTokens.cardEntranceWindow)
+            } catch {
+                return
+            }
+            isEntering = false
+        }
         .accessibilityElement(children: .contain)
         .accessibilityLabel(Text("Cards", comment: "VoiceOver label of the card strip on the shelf"))
         .accessibilityValue(Text(
             "\(model.cards.count) cards",
             comment: "VoiceOver value of the card strip: the number of cards"
         ))
+    }
+
+    private func entranceDelay(at index: Int) -> TimeInterval? {
+        guard isEntering, !reduceMotion else { return nil }
+        return Double(min(index, DesignTokens.cardEntranceMaximumIndex)) * DesignTokens.cardEntranceStagger
     }
 }

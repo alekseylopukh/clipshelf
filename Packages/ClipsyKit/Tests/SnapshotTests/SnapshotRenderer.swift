@@ -30,8 +30,25 @@ enum SnapshotRenderer {
         settle: Duration = .seconds(1)
     ) async throws {
         guard let directory = snapshotDirectory else { throw RenderError.noSnapshotDirectory }
+        let rep = try await bitmap(view, appearance: appearance, size: size, settle: settle)
+        guard let png = rep.representation(using: .png, properties: [:]) else { throw RenderError.captureFailed }
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        try png.write(to: directory.appending(path: "\(name)-\(appearance.rawValue).png"))
+    }
+
+    static func bitmap(
+        _ view: some View,
+        appearance: Appearance,
+        size: CGSize? = nil,
+        settle: Duration = .seconds(1)
+    ) async throws -> NSBitmapImageRep {
         let hostingView = NSHostingView(rootView: view)
-        let window = NSWindow(contentRect: .zero, styleMask: [.borderless], backing: .buffered, defer: false)
+        let window = NSWindow(
+            contentRect: CGRect(origin: .zero, size: size ?? .zero),
+            styleMask: [.borderless],
+            backing: .buffered,
+            defer: false
+        )
         window.isReleasedWhenClosed = false
         window.appearance = NSAppearance(named: appearance.name)
         window.contentView = hostingView
@@ -46,8 +63,6 @@ enum SnapshotRenderer {
         let frame = hostingView.bounds
         guard let rep = hostingView.bitmapImageRepForCachingDisplay(in: frame) else { throw RenderError.captureFailed }
         hostingView.cacheDisplay(in: frame, to: rep)
-        guard let png = rep.representation(using: .png, properties: [:]) else { throw RenderError.captureFailed }
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        try png.write(to: directory.appending(path: "\(name)-\(appearance.rawValue).png"))
+        return rep
     }
 }

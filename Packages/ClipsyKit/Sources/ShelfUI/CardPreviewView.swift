@@ -5,10 +5,17 @@ import SwiftUI
 struct CardPreviewView: View {
     let card: CardSummary
     private let content: CardContent
+    private let size: CGSize
 
-    init(card: CardSummary) {
+    init(card: CardSummary, available: CGSize = PreviewSizeCalculator().defaultSize) {
+        let content = CardContent(card)
+        var imagePixelSize: CGSize?
+        if card.kind == .image, let width = content.metadata.pixelWidth, let height = content.metadata.pixelHeight {
+            imagePixelSize = CGSize(width: width, height: height)
+        }
         self.card = card
-        content = CardContent(card)
+        self.content = content
+        size = PreviewSizeCalculator().size(in: available, imagePixelSize: imagePixelSize)
     }
 
     var body: some View {
@@ -43,7 +50,7 @@ struct CardPreviewView: View {
                 }
             }
         }
-        .frame(width: DesignTokens.previewWidth, height: DesignTokens.previewHeight)
+        .frame(width: size.width, height: size.height)
     }
 }
 

@@ -110,6 +110,26 @@ extension ShelfModel {
         return true
     }
 
+    func handleSearchFieldArrow(_ direction: Direction, modifiers: EventModifiers) -> Bool {
+        // arrow presses always carry .numericPad and .function
+        guard modifiers.isDisjoint(with: [.shift, .control, .option, .command]) else { return false }
+        if moveSuggestionHighlight(direction) {
+            return true
+        }
+        guard direction == .next else { return false }
+        focusCards()
+        return true
+    }
+
+    func cancelSearchField() -> Bool {
+        guard suggestions.isEmpty else {
+            suggestions = []
+            highlightedSuggestion = nil
+            return true
+        }
+        return clearSearch()
+    }
+
     func boardsDidChange() {
         tokens.removeAll { token in
             guard case let .board(id) = token else { return false }
