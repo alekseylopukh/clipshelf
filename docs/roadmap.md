@@ -163,6 +163,7 @@ What exists:
 - Deliverable: SHA-256 over sorted `(uti, data)` pairs (CryptoKit); preview text (first ~1000 chars); per-kind metadata (URL, pixel size, file count and names, color value, char/word/line counts); builds `NewCard`
 - Acceptance: tests `sameTextFromTwoAppsSameHash`, `richAndPlainDiffer`, `typeOrderDoesNotChangeHash`, `imageMetadataHasPixelSize`, `fileMetadataHasNames`
 - Size: S
+- Status: done
 
 ### T2.4 Skip rules
 - Module(s): Capture
