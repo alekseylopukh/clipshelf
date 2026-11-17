@@ -266,7 +266,7 @@ A thin Xcode app target plus one local Swift package with feature modules. Xcode
 ```text
 Clipsy.xcodeproj
 App/                        app target: entry point, AppDelegate, menu bar item, Settings scene,
-                            onboarding, hotkeys, launch at login, Sparkle wiring
+                            onboarding, hotkeys, launch at login, Sparkle wiring, App Intents declarations
 Packages/ClipsyKit/
   Package.swift
   Sources/
@@ -277,13 +277,14 @@ Packages/ClipsyKit/
     DesignSystem/           design tokens (spacing, radii, sizes from design.md), shared SwiftUI components
     ShelfUI/                NSPanel, SwiftUI Shelf, Cards, search field, Quick Look
     Updates/                Sparkle wrapper: the updater starts only after opt-in or a manual check
+    Integrations/           store calls behind App Intents
   Tests/                    one test target per module
 scripts/release/            release scripts: archive, notarize, DMG and zip, appcast (§6.4)
 ```
 
 This is the module list; other docs link here instead of repeating it.
 
-Dependency direction: `ShelfUI` → `DesignSystem`, `Pasting`, `Media`, `Store`, KeyboardShortcuts; `Pasting` → `Store`; `Capture` → `Store`; `Media` → `Store`; `Updates` → Sparkle; the app target's Settings and onboarding use `DesignSystem`; `Store` and `DesignSystem` depend on nothing in the package.
+Dependency direction: `ShelfUI` → `DesignSystem`, `Pasting`, `Media`, `Store`, KeyboardShortcuts; `Pasting` → `Store`; `Capture` → `Store`; `Media` → `Store`; `Updates` → Sparkle; `Integrations` → `Capture`, `DesignSystem`, `Store`; the app target's Settings and onboarding use `DesignSystem`; `Store` and `DesignSystem` depend on nothing in the package.
 
 Decided (2026-11-17): a plain, committed `Clipsy.xcodeproj`. `App/` is a folder-synchronized group, so new files there need no project edits. The app links one umbrella product, `ClipsyKit`, so adding a module only changes `Package.swift`. Never hand-edit `project.pbxproj` unless a build setting has to change.
 

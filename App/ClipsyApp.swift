@@ -1,6 +1,8 @@
+import AppIntents
 import AppKit
 import Capture
 import DesignSystem
+import Integrations
 import Media
 import os
 import Pasting
@@ -23,6 +25,7 @@ struct ClipsyApp: App {
 
     init() {
         let repository = CardRepository(database: Self.openDatabase())
+        AppDependencyManager.shared.add(dependency: CardIntentHandler(repository: repository))
         let writer = PasteboardWriter()
         let privacy = PrivacySettings()
         _privacy = State(initialValue: privacy)

@@ -10,6 +10,11 @@ public enum BoardColor: String, CaseIterable, Sendable {
     case purple
     case gray
 
+    public static func forNewBoard(usedColors: [String]) -> BoardColor {
+        let palette = allCases
+        return palette.first { !usedColors.contains($0.rawValue) } ?? palette[usedColors.count % palette.count]
+    }
+
     public var color: Color {
         switch self {
         case .red: .red

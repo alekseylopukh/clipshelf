@@ -61,6 +61,7 @@ Not maintainer decisions. They are the doc's current text or the simplest choice
 | WD-47 | Pause for a duration ([product §6 Menu bar menu](product.md#menu-bar-menu), [design §7](design.md#7-menu-bar-extra)) | "Until Tomorrow" ends at the next midnight in the user's calendar; 15 minutes, 1 hour and 8 hours are wall-clock time; every pause, including Until Resumed, is stored in UserDefaults and survives relaunch, and one that ended while the app was quit is cleared at launch; ⌘T pauses until resumed; the disabled line reads "Paused until <time>", with the abbreviated weekday when the time is not today |
 | WD-48 | Text editor details ([product §4.10](product.md#410-editing-v1), [design edit sheet](design.md#edit-sheet)) | No modified time is stored, since nothing shows it; an edit keeps created and copied times. The sheet is capped at the Shelf's height instead of opening a standalone window. Rich text is saved as RTF (RTFD with attachments) plus the plain string when the card had rich text or any B/I/U/S is applied; otherwise as the plain string only. ⌘E opens the editor for text cards; link and color cards follow in T8.5. Closing the Shelf discards an open editor |
 | WD-49 | Quick Look and file thumbnails ([design §5](design.md#quick-look), [product §6 Privacy](product.md#privacy)) | Space previews the Card under the keyboard cursor, so with several Cards selected the last one clicked or reached by arrow; Space again or Esc closes the preview, and Esc clears the search or closes the Shelf only when no preview is open; images use our own view instead of `QLPreviewView` so their data never leaves the store; several files show a list; text previews show at most 20,000 characters; colors show Hex, RGB and HSL; file thumbnails have no toggle, use Quick Look's icon mode (as Finder does), fall back to the workspace icon when the file is missing or Quick Look fails, and are cached in memory only |
+| WD-50 | App Intents details ([product §3.7](product.md#37-integrations)) | The intents are declared in the app target and call `CardIntentHandler` (Integrations), registered with `AppDependencyManager` at launch, and run in the background without showing the Shelf. Create Card takes text only, classified like a copy (so a link or color becomes that kind) with Clipsy as the source app, and goes to the front of the chosen board, else to History, as ⌘N does; empty text and text that is already a card are refused with an error. Create Board takes a name; its color follows WD-42. Get Card at Index counts from 1 in the Shelf's order, History newest first when no board is chosen. Get Latest Card of Type is the newest History card of that type. Create Card and both Get intents return a Card with Title, Type, Text (the plain text, else the preview), Source App, Created and Last Copied; a missing card is an error, not an empty result |
 
 ## Rules for every task
 
@@ -713,6 +714,7 @@ What exists:
 - Acceptance: tests on the intent handlers' store calls
 - Human check: each intent runs in the Shortcuts app
 - Size: M
+- Status: done
 
 ### T12.2 URL scheme
 - Module(s): App

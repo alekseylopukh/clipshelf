@@ -8,7 +8,7 @@ let package = Package(
     products: [
         .library(
             name: "ClipsyKit",
-            targets: ["Store", "Capture", "Media", "Pasting", "DesignSystem", "ShelfUI", "Updates"]
+            targets: ["Store", "Capture", "Media", "Pasting", "DesignSystem", "ShelfUI", "Updates", "Integrations"]
         )
     ],
     dependencies: [
@@ -30,12 +30,14 @@ let package = Package(
             ]
         ),
         .target(name: "Updates", dependencies: [.product(name: "Sparkle", package: "Sparkle")]),
+        .target(name: "Integrations", dependencies: ["Capture", "DesignSystem", "Store"]),
         .testTarget(name: "StoreTests", dependencies: ["Store"]),
         .testTarget(name: "CaptureTests", dependencies: ["Capture"]),
         .testTarget(name: "MediaTests", dependencies: ["Media"]),
         .testTarget(name: "PastingTests", dependencies: ["Pasting"]),
         .testTarget(name: "DesignSystemTests", dependencies: ["DesignSystem"]),
         .testTarget(name: "ShelfUITests", dependencies: ["ShelfUI"]),
-        .testTarget(name: "UpdatesTests", dependencies: ["Updates"])
+        .testTarget(name: "UpdatesTests", dependencies: ["Updates"]),
+        .testTarget(name: "IntegrationsTests", dependencies: ["Integrations"])
     ]
 )

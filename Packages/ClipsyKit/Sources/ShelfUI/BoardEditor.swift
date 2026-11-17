@@ -71,10 +71,7 @@ public final class BoardEditor {
     }
 
     func beginNew() {
-        let used = Set(model.boards.map(\.color))
-        let palette = BoardColor.allCases
-        let color = palette.first { !used.contains($0.rawValue) } ?? palette[model.boards.count % palette.count]
-        draft = Draft(boardID: nil, name: "", color: color)
+        draft = Draft(boardID: nil, name: "", color: .forNewBoard(usedColors: model.boards.map(\.color)))
     }
 
     func beginEditing(_ board: Board) {

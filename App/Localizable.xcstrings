@@ -1006,6 +1006,83 @@
     },
     "Clipsy can’t check for updates." : {
       "comment" : "Title of the alert shown when the updater cannot start"
+    },
+    "Adds a board to Clipsy." : {
+      "comment" : "Description of the Create Board action in Shortcuts"
+    },
+    "Adds a text card to Clipsy. Leave Board empty to add it to History." : {
+      "comment" : "Description of the Create Card action in Shortcuts"
+    },
+    "Boards" : {
+      "comment" : "Category of the board actions in Shortcuts"
+    },
+    "Card" : {
+      "comment" : "Name of the card type in Shortcuts"
+    },
+    "Card Type" : {
+      "comment" : "Name of the card type parameter type in Shortcuts"
+    },
+    "Create Board" : {
+      "comment" : "Title of the Shortcuts action that adds a board"
+    },
+    "Create Card" : {
+      "comment" : "Title of the Shortcuts action that adds a text card"
+    },
+    "Created" : {
+      "comment" : "Shortcuts property of a card: when it was created"
+    },
+    "Get Card at Index" : {
+      "comment" : "Title of the Shortcuts action that gets a card by position"
+    },
+    "Get Latest Card of Type" : {
+      "comment" : "Title of the Shortcuts action that gets the newest card of a type"
+    },
+    "Gets a card by its position, starting at 1. Leave Board empty to count from the newest card in History." : {
+      "comment" : "Description of the Get Card at Index action in Shortcuts"
+    },
+    "Gets the newest card of a type from History." : {
+      "comment" : "Description of the Get Latest Card of Type action in Shortcuts"
+    },
+    "Index" : {
+      "comment" : "Shortcuts parameter: position of the card, starting at 1"
+    },
+    "Last Copied" : {
+      "comment" : "Shortcuts property of a card: when it was last copied"
+    },
+    "Source App" : {
+      "comment" : "Shortcuts property of a card: the app it was copied from"
+    },
+    "Create a board named ${name}" : {
+      "comment" : "Summary of the Create Board action in Shortcuts; ${name} is the name parameter"
+    },
+    "Create a card with ${text} on ${board}" : {
+      "comment" : "Summary of the Create Card action in Shortcuts; ${text} and ${board} are parameters"
+    },
+    "Get card ${index} on ${board}" : {
+      "comment" : "Summary of the Get Card at Index action in Shortcuts; ${index} and ${board} are parameters"
+    },
+    "Get the latest ${type} card" : {
+      "comment" : "Summary of the Get Latest Card of Type action in Shortcuts; ${type} is the card type parameter"
+    },
+    "The card has no text." : {
+      "comment" : "Shortcuts error when Create Card gets empty text",
+      "extractionState" : "manual"
+    },
+    "There is no card at position %lld." : {
+      "comment" : "Shortcuts error when Get Card at Index is out of range; the number is the position",
+      "extractionState" : "manual"
+    },
+    "History has no card of this type." : {
+      "comment" : "Shortcuts error when Get Latest Card finds no card of the chosen type",
+      "extractionState" : "manual"
+    },
+    "The card no longer exists." : {
+      "comment" : "Shortcuts error when a card was deleted meanwhile",
+      "extractionState" : "manual"
+    },
+    "The board no longer exists." : {
+      "comment" : "Shortcuts error when a board was deleted meanwhile",
+      "extractionState" : "manual"
     }
   },
   "version" : "1.0"

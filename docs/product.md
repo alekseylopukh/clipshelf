@@ -130,7 +130,7 @@ Clipsy is a clipboard manager for macOS 26 and later. It keeps a history of ever
 
 | Feature | Behavior | Priority |
 |---|---|---|
-| App Intents | Create card, create board, get card at index, get latest card of a type. | v1 |
+| App Intents | Create card, create board, get card at index, get latest card of a type. Details: [WD-50](roadmap.md#working-defaults-for-open-todos). | v1 |
 | URL scheme | Our own scheme to open the shelf, search, create a text card, open settings. | v1 |
 | System Spotlight | Index board cards in Spotlight, opt-in. | later |
 
