@@ -325,7 +325,7 @@ The recorder rejects combinations already used by the app, by a menu item or by 
 | Ignore passwords and other concealed content | Toggle, on by default |
 | Ignore temporary content from other apps | Toggle, on by default |
 | Ignored apps | `List` with +/− buttons below (system app picker); Passwords is pre-added |
-| Fetch link previews | Toggle with a footnote that it makes a network request per link and may trigger one-time links; off by default (network use: [CLAUDE.md](../CLAUDE.md#decisions)) |
+| Show link previews | Toggle with a footnote that it makes a network request per link and may trigger one-time links; off by default (network use: [CLAUDE.md](../CLAUDE.md#decisions)) |
 | Recognize text in images | Toggle (on-device; makes images searchable) |
 | Show the Shelf in screenshots and screen sharing | Toggle, off by default |
 | Clipboard access status | Status row for the system pasteboard permission (see §9) |
@@ -348,7 +348,7 @@ A single window shown on first launch (SwiftUI, standard window chrome, glass to
 | 1. Welcome | App icon; one line: "Everything you copy, one shortcut away." Shows the current Open Shelf shortcut with a recorder to change it. | Continue |
 | 2. Paste directly | Explains that pasting into other apps needs Accessibility permission, and that without it Clipsy copies the item and the user presses ⌘V. Live status row that turns green when granted (polled while the step is visible). | Open System Settings…, Not Now |
 | 3. Clipboard access | On systems where macOS asks before an app reads the clipboard, explains why Clipsy needs ongoing access and how to allow it. Live status row. Skipped when the system does not gate access. | Open System Settings…, Not Now |
-| Finish | Two toggles: Open at login, Keep history for (pop-up). Hint: press the shortcut to try it. | Done |
+| Finish | Open at login (toggle), Keep history for (pop-up), Show link previews (toggle, off by default, with a one-line note that loading a link can use up a one-time link or let the site track the visit; same setting as Settings › Privacy). Hint: press the shortcut to try it. | Done |
 
 Rules:
 - Never block the app on a missing permission. The Shelf works in copy-only mode without Accessibility.

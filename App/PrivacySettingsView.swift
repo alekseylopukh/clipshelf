@@ -56,7 +56,7 @@ struct PrivacySettingsView: View {
             }
 
             Section {
-                Toggle("Fetch link previews", isOn: $privacy.fetchesLinkPreviews)
+                Toggle("Show link previews", isOn: $privacy.fetchesLinkPreviews)
             } footer: {
                 Text(
                     "Clipsy loads each web link you copy to show the page’s title and image. Loading a page can use up a one-time link or let the site track the visit."

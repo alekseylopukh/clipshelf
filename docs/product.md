@@ -80,14 +80,14 @@ Clipsy is a clipboard manager for macOS 26 and later. It keeps a history of ever
 | Delete with undo | Delete cards; ⌘Z restores them. | MVP |
 | Share | System share sheet. | v1 |
 | Drag out | Dragging a card into another app inserts it like a paste; images can be dropped as files. | v1 |
-| Link previews | Fetch page title, icon and image for links. Opt-in, off by default. One of the two network uses listed in [CLAUDE.md](../CLAUDE.md#decisions). | v1 |
+| Link previews | Fetch page title, icon and image for links. Opt-in, off by default; offered on the onboarding Finish step and in Settings › Privacy, both bound to the same setting. One of the two network uses listed in [CLAUDE.md](../CLAUDE.md#decisions). | v1 |
 | File thumbnails | Quick Look thumbnails for file cards. | v1 |
 | Text in images | Recognize text in image cards on device so search finds it. | v1 |
 | Sounds | Optional sounds on capture and paste, our own assets. | v1 |
 | Hidden from screen sharing | The shelf is excluded from screen capture unless the user allows it. | MVP |
 | Menu bar item | Template SF Symbol with a menu (§6, Menu bar menu). Can be hidden. | MVP |
 | Open at login | Register as a login item. | MVP |
-| Permission onboarding | First-run explanation for Accessibility and pasteboard access, with links to System Settings. | MVP |
+| Permission onboarding | First-run explanation for Accessibility and pasteboard access, with links to System Settings. The last step offers Open at login, history retention and link previews (off by default). | MVP |
 
 ### 3.3 Pasting
 
@@ -451,7 +451,7 @@ Content and defaults only; layout and exact label wording are in [design.md §8]
 | Ignored apps | list with add / remove | Apple Passwords |
 | Ignore passwords and other concealed content | on / off | on |
 | Ignore temporary content from other apps | on / off | on |
-| Fetch link previews | on / off, with a note that fetching may trigger one-time or tracking links | off |
+| Show link previews | on / off, with a note that fetching may trigger one-time or tracking links | off; offered during onboarding |
 | Show the Shelf in screenshots and screen sharing | on / off | off |
 | Recognize text in images | on / off (on device) | on |
 | Clipboard access status | allowed / asks / not allowed, button to open System Settings; hidden until macOS has asked about Clipsy | — |

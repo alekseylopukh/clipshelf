@@ -177,11 +177,13 @@ private struct FinishStep: View {
     let done: () -> Void
 
     @Environment(RetentionSettings.self) private var retention
+    @Environment(PrivacySettings.self) private var privacy
     @State private var loginItemStatus = SMAppService.mainApp.status
     @State private var shortcut = KeyboardShortcuts.getShortcut(for: .toggleShelf)
     @State private var failure: String?
 
     var body: some View {
+        @Bindable var privacy = privacy
         OnboardingPage(title: "You’re All Set", message: hint) {
             StepSymbol(systemName: "checkmark.circle")
         } content: {
@@ -190,6 +192,12 @@ private struct FinishStep: View {
                 ForEach(RetentionPeriod.allCases, id: \.self) { period in
                     Text(period.title)
                 }
+            }
+            Toggle(isOn: $privacy.fetchesLinkPreviews) {
+                Text("Show link previews")
+                Text(
+                    "Clipsy loads each link you copy. This can use up a one-time link or let the site track the visit."
+                )
             }
         } controls: {
             Button("Done", action: done)
