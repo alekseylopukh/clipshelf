@@ -725,6 +725,7 @@ What exists:
 - Acceptance: workflow lints clean; names every required secret in CONTRIBUTING.md
 - Human check: maintainer adds the Developer ID certificate, App Store Connect API key and Sparkle private key as secrets and runs the first tagged release
 - Size: M
+- Status: done
 
 ### T13.4 Docs for a public release
 - Module(s): docs

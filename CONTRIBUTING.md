@@ -49,3 +49,18 @@ Commit types: `feat`, `fix`, `perf`, `refactor`, `docs`, `test`, `build`, `ci`, 
 - Only maintainers create tags. Each tag gets a GitHub Release with a signed and notarized build attached.
 - Release notes are generated from merged pull requests and grouped by label (see [.github/release.yml](.github/release.yml)). Label your pull request so it lands in the right section.
 - A hotfix for an old version gets a `release/vX.Y` branch cut from that tag. This is needed only when `main` has moved on.
+- Pushing the tag runs [.github/workflows/release.yml](.github/workflows/release.yml). It imports the certificate into a temporary keychain, runs `scripts/release/release.sh` with the tag's version and the run number as the build number, and creates the GitHub Release with the DMG, the zip and `appcast.xml`. The steps are in [architecture §6.4](docs/architecture.md#64-release-pipeline).
+
+### Release secrets
+
+The workflow stops before building and names every repository secret that is missing. Add them under Settings › Secrets and variables › Actions.
+
+| Secret | Value |
+|---|---|
+| `DEVELOPER_ID_CERTIFICATE` | Developer ID Application certificate with its private key, exported as `.p12` and base64-encoded (`base64 -i cert.p12`). The signing identity and team ID are read from it. |
+| `DEVELOPER_ID_CERTIFICATE_PASSWORD` | Password of that `.p12` |
+| `NOTARY_KEY` | Contents of the App Store Connect API key file `AuthKey_XXXXXXXXXX.p8` (Developer role or higher) |
+| `NOTARY_KEY_ID` | Key ID of that API key |
+| `NOTARY_ISSUER_ID` | Issuer ID of the App Store Connect team |
+| `SPARKLE_PUBLIC_ED_KEY` | Sparkle EdDSA public key printed by Sparkle's `generate_keys` |
+| `SPARKLE_PRIVATE_ED_KEY` | Sparkle EdDSA private key exported with `generate_keys -x` |

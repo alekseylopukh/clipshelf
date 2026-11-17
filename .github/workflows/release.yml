@@ -1,0 +1,114 @@
+name: Release
+
+on:
+  push:
+    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+env:
+  DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+
+jobs:
+  release:
+    name: Build, notarize and publish
+    runs-on: macos-26
+    timeout-minutes: 150
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set paths
+        run: |
+          {
+            echo "KEYCHAIN=$RUNNER_TEMP/release.keychain-db"
+            echo "NOTARY_KEY_PATH=$RUNNER_TEMP/AuthKey.p8"
+          } >> "$GITHUB_ENV"
+      - name: Check secrets
+        env:
+          DEVELOPER_ID_CERTIFICATE: ${{ secrets.DEVELOPER_ID_CERTIFICATE }}
+          DEVELOPER_ID_CERTIFICATE_PASSWORD: ${{ secrets.DEVELOPER_ID_CERTIFICATE_PASSWORD }}
+          NOTARY_KEY: ${{ secrets.NOTARY_KEY }}
+          NOTARY_KEY_ID: ${{ secrets.NOTARY_KEY_ID }}
+          NOTARY_ISSUER_ID: ${{ secrets.NOTARY_ISSUER_ID }}
+          SPARKLE_PUBLIC_ED_KEY: ${{ secrets.SPARKLE_PUBLIC_ED_KEY }}
+          SPARKLE_PRIVATE_ED_KEY: ${{ secrets.SPARKLE_PRIVATE_ED_KEY }}
+        run: |
+          missing=()
+          for name in DEVELOPER_ID_CERTIFICATE DEVELOPER_ID_CERTIFICATE_PASSWORD NOTARY_KEY NOTARY_KEY_ID \
+            NOTARY_ISSUER_ID SPARKLE_PUBLIC_ED_KEY SPARKLE_PRIVATE_ED_KEY; do
+            [ -n "${!name}" ] || missing+=("$name")
+          done
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::error::missing repository secrets: ${missing[*]} (see CONTRIBUTING.md#release-secrets)"
+            exit 1
+          fi
+      - name: Import the Developer ID certificate
+        env:
+          DEVELOPER_ID_CERTIFICATE: ${{ secrets.DEVELOPER_ID_CERTIFICATE }}
+          DEVELOPER_ID_CERTIFICATE_PASSWORD: ${{ secrets.DEVELOPER_ID_CERTIFICATE_PASSWORD }}
+        run: |
+          keychain_password=$(openssl rand -base64 24)
+          certificate="$RUNNER_TEMP/certificate.p12"
+          base64 -d <<< "$DEVELOPER_ID_CERTIFICATE" > "$certificate"
+          security create-keychain -p "$keychain_password" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "$keychain_password" "$KEYCHAIN"
+          security import "$certificate" -k "$KEYCHAIN" -f pkcs12 -P "$DEVELOPER_ID_CERTIFICATE_PASSWORD" \
+            -T /usr/bin/codesign -T /usr/bin/security
+          rm -f "$certificate"
+          # without the partition list codesign waits for a keychain access prompt nobody can answer
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$keychain_password" "$KEYCHAIN" > /dev/null
+          existing=()
+          while IFS= read -r line; do
+            existing+=("$(xargs <<< "$line")")
+          done < <(security list-keychains -d user)
+          security list-keychains -d user -s "$KEYCHAIN" "${existing[@]}"
+
+          identity=$(security find-identity -v -p codesigning "$KEYCHAIN" |
+            sed -n 's/.*"\(Developer ID Application: .*\)"$/\1/p' | head -n 1)
+          [ -n "$identity" ] || { echo "::error::DEVELOPER_ID_CERTIFICATE holds no Developer ID Application identity"; exit 1; }
+          team_id=$(sed -n 's/.*(\([A-Z0-9]*\))$/\1/p' <<< "$identity")
+          [ -n "$team_id" ] || { echo "::error::no team ID in the identity name"; exit 1; }
+          {
+            echo "DEVELOPER_ID_APPLICATION=$identity"
+            echo "APPLE_TEAM_ID=$team_id"
+          } >> "$GITHUB_ENV"
+      - name: Write the App Store Connect API key
+        env:
+          NOTARY_KEY: ${{ secrets.NOTARY_KEY }}
+        run: |
+          umask 077
+          printf '%s\n' "$NOTARY_KEY" > "$NOTARY_KEY_PATH"
+      - name: Build, notarize and package
+        env:
+          TAG: ${{ github.ref_name }}
+          BUILD_NUMBER: ${{ github.run_number }}
+          NOTARY_KEY_ID: ${{ secrets.NOTARY_KEY_ID }}
+          NOTARY_ISSUER_ID: ${{ secrets.NOTARY_ISSUER_ID }}
+          SPARKLE_PUBLIC_ED_KEY: ${{ secrets.SPARKLE_PUBLIC_ED_KEY }}
+          SPARKLE_PRIVATE_ED_KEY: ${{ secrets.SPARKLE_PRIVATE_ED_KEY }}
+        run: scripts/release/release.sh "${TAG#v}" "$BUILD_NUMBER"
+      - name: Create the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          version=${TAG#v}
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --verify-tag --generate-notes \
+            --title "Clipsy $version" \
+            ".build/release/Clipsy-$version.dmg" \
+            ".build/release/Clipsy-$version.zip" \
+            .build/release/appcast.xml
+      - name: Remove the keychain and the API key
+        if: always()
+        run: |
+          security delete-keychain "$KEYCHAIN" 2> /dev/null || true
+          rm -f "$NOTARY_KEY_PATH"

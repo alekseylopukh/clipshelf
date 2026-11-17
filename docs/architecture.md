@@ -336,6 +336,8 @@ Triggered by a maintainer pushing tag `vX.Y.Z` on `main` (see [CONTRIBUTING.md](
 
 Secrets never enter the repository; only GitHub Actions secrets or the maintainer's shell environment.
 
+Workflow (T13.3): [.github/workflows/release.yml](../.github/workflows/release.yml) runs steps 1–7 on tags matching `vX.Y.Z`. It derives `DEVELOPER_ID_APPLICATION` and `APPLE_TEAM_ID` from the imported certificate, writes the API key to a temporary `.p8` for `NOTARY_KEY_PATH`, and removes the keychain and key file at the end even when a step fails. The secrets are listed in [CONTRIBUTING.md](../CONTRIBUTING.md#release-secrets).
+
 Decided (2026-11-17): the appcast is a GitHub Release asset at `https://github.com/alekseylopukh/clipsy/releases/latest/download/appcast.xml` (the `SPARKLE_FEED_URL` build setting). Each item downloads its zip from `releases/download/vX.Y.Z/`, so older items stay valid. The signing identity, notarization key and Sparkle keys come from environment variables; the public key stays a placeholder build setting and a release overrides it.
 
 Scripts (T13.2) in `scripts/release/` run steps 2–6; they write to `.build/release/` and stop with a list of the missing variables before doing any work. `release.sh [--dry-run] <version> <build-number>` runs them in order: `archive.sh` (steps 2–3), `notarize.sh` for the app and then the DMG (step 4), `package.sh` (step 5), `appcast.sh` (step 6). `--dry-run` keeps the ad-hoc signature, skips notarization, signs the appcast with a throwaway Sparkle key and needs no secrets.
