@@ -150,4 +150,21 @@ struct PasteboardMonitorTests {
 
         #expect(try await history().isEmpty)
     }
+
+    @Test func `secret is skipped unless concealed content is allowed`() async throws {
+        defer { pasteboard.releaseGlobally() }
+        var policy = CapturePolicy()
+        let monitor = makeMonitor(policy: { policy })
+        copy("DB_PASSWORD=hunter2")
+
+        await monitor.poll()
+        await monitor.poll()
+        #expect(try await history().isEmpty)
+
+        policy.ignoresConcealed = false
+        copy("API_TOKEN=hunter3")
+        await monitor.poll()
+        await monitor.poll()
+        #expect(try await history().map(\.preview) == ["API_TOKEN=hunter3"])
+    }
 }

@@ -405,6 +405,7 @@ What exists:
 - Deliverable: rule 7 matcher for the listed patterns, gated by the concealed-content setting
 - Acceptance: parameterized tests `secretsAreSkipped` and `ordinaryCodeIsKept` (synthetic snippets only)
 - Size: S
+- Status: done
 
 ### T7.2 Storage summary
 - Module(s): Store, App

@@ -5,4 +5,5 @@ public enum SkipReason: Sendable, Equatable, CaseIterable {
     case ignoredApp
     case concealed
     case transient
+    case secret
 }

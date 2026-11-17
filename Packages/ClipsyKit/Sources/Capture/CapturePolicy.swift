@@ -67,4 +67,12 @@ public struct CapturePolicy: Sendable, Equatable {
         }
         return nil
     }
+
+    public func secretSkipReason(for snapshot: PasteboardSnapshot) -> SkipReason? {
+        guard ignoresConcealed else { return nil }
+        let containsSecret = snapshot.representations
+            .filter { $0.uti == NSPasteboard.PasteboardType.string.rawValue }
+            .contains { String(data: $0.data, encoding: .utf8).map(SecretPatterns.matches) ?? false }
+        return containsSecret ? .secret : nil
+    }
 }

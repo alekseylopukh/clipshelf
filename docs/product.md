@@ -171,7 +171,10 @@ Clipsy is a clipboard manager for macOS 26 and later. It keeps a history of ever
 **Known limit.** Browser extensions of password managers may not mark their copies as concealed. Users can add the browser to Ignored Apps; say so in the settings help text.
 
 **Secret patterns (v1).** Text is treated as confidential when it contains: an assignment whose key is a password, passcode, secret, token, API key, private key or client secret; a JWT; a well-known token prefix (GitHub, Slack, AWS access key, `sk-` style API keys); an HTTP Bearer or Basic credential.
-> TODO: confirm false-positive rate on real code snippets; decide whether a match skips the capture or stores the card marked sensitive.
+- Only the plain-text representations are checked. A match skips the capture ([WD-3](roadmap.md#working-defaults-for-open-todos)).
+- To keep ordinary code, an assignment counts only when the key ends in one of the words and the value is a literal: a quoted string of at least 6 characters with no spaces and at least one character that is not a letter, an unquoted value of at least 8 characters with a letter and a digit, or an upper-case `NAME=value` line whose value does not start with `$`. `password: String`, `password = field.stringValue` and `case password = "password"` are kept.
+- A Bearer or Basic credential needs at least 8 characters with a digit, `+`, `/`, `=` or an inner capital, so prose such as "Basic authentication" is kept.
+> TODO: confirm false-positive rate on real code snippets.
 
 **Size cap.**
 Decided (2026-11-17): the per-representation cap is 50 MB.

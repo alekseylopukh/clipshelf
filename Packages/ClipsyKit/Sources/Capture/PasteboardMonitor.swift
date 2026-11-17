@@ -65,7 +65,8 @@ public final class PasteboardMonitor {
         changeCountStore.lastHandledChangeCount = changeCount
 
         let sourceApp = frontmostApp.frontmostApp
-        if let reason = policy().skipReason(
+        let policy = policy()
+        if let reason = policy.skipReason(
             types: pasteboard.items.flatMap(\.types),
             frontmostBundleID: sourceApp?.bundleID,
             isOwnWriteChangeCount: isOwnWrite(changeCount)
@@ -78,6 +79,10 @@ public final class PasteboardMonitor {
               let snapshot = PasteboardSnapshot(pasteboard: pasteboard),
               pasteboard.changeCount == changeCount else { return }
 
+        if let reason = await Self.secretSkipReason(for: snapshot, policy: policy) {
+            logger.debug("skipped change: \(String(describing: reason), privacy: .public)")
+            return
+        }
         let card = await Self.makeCard(from: snapshot, sourceApp: sourceApp)
         do {
             let id = try await repository.record(card)
@@ -85,6 +90,14 @@ public final class PasteboardMonitor {
         } catch {
             logger.error("recording a card failed: \(String(describing: type(of: error)), privacy: .public)")
         }
+    }
+
+    @concurrent
+    private nonisolated static func secretSkipReason(
+        for snapshot: PasteboardSnapshot,
+        policy: CapturePolicy
+    ) async -> SkipReason? {
+        policy.secretSkipReason(for: snapshot)
     }
 
     @concurrent
