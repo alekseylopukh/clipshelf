@@ -35,6 +35,7 @@ Not maintainer decisions. They are the doc's current text or the simplest choice
 | WD-21 | Clipboard previous contents after paste | Not restored; no `currentHostOnly` |
 | WD-22 | Shelf size and Dock auto-hide ([design §2](design.md#placement-and-size)) | Minimum height 160 pt (one compact row), default 300 pt, maximum 40% of the visible height; placement uses the display's visible frame, so an auto-hidden Dock is not avoided |
 | WD-23 | Frontmost app without a bundle ID ([product §4.1](product.md#41-capture) rule 3) | Counts as no frontmost app, so the capture is skipped |
+| WD-24 | Database fails to open at launch ([architecture §3.4](architecture.md#34-migrations)) | An alert shows the error with one "Quit Clipsy" button, then the app quits; no files are moved or deleted |
 
 ## Rules for every task
 
@@ -189,10 +190,11 @@ What exists:
 - Module(s): App
 - Depends on: T2.5
 - Spec: [architecture §3.4](architecture.md#34-migrations), [§4.1](architecture.md#41-capture)
-- Deliverable: app startup opens the database (migrations before any UI; on failure an alert and no file changes), starts the monitor with default policy, wires own-write closure placeholder
+- Deliverable: app startup opens the database (migrations before any UI; on failure an alert and no file changes, WD-24), starts the monitor with default policy, wires own-write closure placeholder
 - Acceptance: launching the built app creates the store in App Support with mode 0700
-- Human check: copy text, a URL, an image and a Finder file; `sqlite3 <store> "select kind, count(*) from card group by kind"` shows four kinds (never print contents)
+- Human check: copy text, a URL, an image and a Finder file; `sqlite3 <store> "select kind, count(*) from card group by kind"` shows four kinds (never print contents); the store folder is mode 0700 (`stat -f %Lp`); with the store folder at `chmod 000`, launching shows the WD-24 alert and quits, and the folder is unchanged (restore with `chmod 700`)
 - Size: S
+- Status: done
 
 ## M3. Shelf UI
 

@@ -4,6 +4,9 @@
     "Clipsy" : {
 
     },
+    "Clipsy can’t open its clipboard history." : {
+      "comment" : "Title of the alert shown when the database fails to open at launch"
+    },
     "Open Shelf" : {
 
     },
