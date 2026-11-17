@@ -78,7 +78,8 @@ public final class ShelfController {
             onResizeEnded: { [weak self] in self?.endResize() }
         ).environment(actions).environment(boardEditor)
             .environment(\.richTextLoader, richTextLoader)
-            .environment(\.cardMediaLoader, mediaLoader))
+            .environment(\.cardMediaLoader, mediaLoader)
+            .padding(DesignTokens.shelfShadowMargin))
         hostingView.sizingOptions = []
         hostingView.autoresizingMask = [.width, .height]
         let contentView = NSView()
@@ -141,7 +142,7 @@ public final class ShelfController {
         actions.plainTextModifier = plainText
         actions.isCopyAsPlainTextShortcutTaken = KeyboardShortcuts.getShortcut(for: .startSequence)
             == KeyboardShortcuts.Shortcut(.c, modifiers: plainText.flags.union(.command))
-        panel.setFrame(calculator.frame(height: storedHeight, in: screen.visibleFrame), display: false)
+        panel.setFrame(calculator.windowFrame(height: storedHeight, in: screen.visibleFrame), display: false)
         model.didOpen()
         updateQuickPasteModifier(NSEvent.modifierFlags)
         panel.makeKeyAndOrderFront(nil)
@@ -315,16 +316,16 @@ public final class ShelfController {
     private func resize() {
         guard let screen = panel.screen else { return }
         let mouseY = NSEvent.mouseLocation.y
-        let start = resizeStart ?? (mouseY, panel.frame.height)
+        let start = resizeStart ?? (mouseY, calculator.glassHeight(windowHeight: panel.frame.height))
         resizeStart = start
         let height = start.height + mouseY - start.mouseY
-        panel.setFrame(calculator.frame(height: height, in: screen.visibleFrame), display: true)
+        panel.setFrame(calculator.windowFrame(height: height, in: screen.visibleFrame), display: true)
     }
 
     private func endResize() {
         guard resizeStart != nil else { return }
         resizeStart = nil
-        defaults.set(Double(panel.frame.height), forKey: Self.heightKey)
+        defaults.set(Double(calculator.glassHeight(windowHeight: panel.frame.height)), forKey: Self.heightKey)
     }
 }
 

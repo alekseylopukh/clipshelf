@@ -61,6 +61,7 @@ One radius system and an 8 pt grid (12 pt is the one half step, inside Cards). E
 | Metric | Value | Rule |
 |---|---|---|
 | Screen inset | 8 pt | `shelfInset` |
+| Shadow margin | 32 pt | `shelfShadowMargin`: the Shelf window extends this far past the glass on every side and the margin stays transparent, so the glass shadow fades out instead of being clipped to the window rectangle |
 | Shelf padding | 16 pt | `shelfPadding`: top, sides and bottom; the gap between the top bar and the Cards is the same 16 pt |
 | Card gap | 16 pt | `cardSpacing` = `shelfPadding`, so gaps between Cards equal the outer insets |
 | Card radius | 20 pt | `cardCornerRadius` |

@@ -7,6 +7,7 @@ public enum DesignTokens {
     public static let spacingLarge: CGFloat = 12
 
     public static let shelfInset: CGFloat = 8
+    public static let shelfShadowMargin: CGFloat = 32
     public static let shelfPadding: CGFloat = 16
     public static let shelfCornerRadius: CGFloat = cardCornerRadius + shelfPadding
     public static let cardCornerRadius: CGFloat = 20

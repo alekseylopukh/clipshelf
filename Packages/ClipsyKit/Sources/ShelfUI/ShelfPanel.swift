@@ -1,6 +1,7 @@
 import AppKit
+import DesignSystem
 
-final class ShelfPanel: NSPanel {
+final class ShelfPanel: NSPanel, NSWindowDelegate {
     var onCancel: () -> Void = {}
     var onResignKey: () -> Void = {}
     var onKeyDown: (NSEvent) -> Bool = { _ in false }
@@ -24,6 +25,7 @@ final class ShelfPanel: NSPanel {
         hasShadow = false
         animationBehavior = .none
         sharingType = .none
+        delegate = self
     }
 
     override var canBecomeKey: Bool {
@@ -52,5 +54,9 @@ final class ShelfPanel: NSPanel {
     override func resignKey() {
         super.resignKey()
         onResignKey()
+    }
+
+    func window(_: NSWindow, willPositionSheet _: NSWindow, using rect: NSRect) -> NSRect {
+        rect.offsetBy(dx: 0, dy: -DesignTokens.shelfShadowMargin)
     }
 }
