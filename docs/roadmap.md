@@ -131,6 +131,8 @@ What exists:
 - Deliverable: `search(_ text:)` over History and boards, word-prefix, case- and diacritic-insensitive, newest first, returning `CardSummary` plus board id and match ranges for highlighting; query text escaped for FTS5 syntax
 - Acceptance: tests `prefixMatches`, `diacriticsAreFolded`, `matchesAppName`, `fts5OperatorsInInputAreLiteral`, `resultsIncludeBoardOnlyCards`
 - Size: M
+- Working default: "newest" is `last_copied_at`, or `created_at` for a board-only card; every run of letters and digits in the query is a quoted prefix term, terms combine with AND; match ranges cover the matched prefix in the title and preview text
+- Status: done
 
 ## M2. Capture
 
