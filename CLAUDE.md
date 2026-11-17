@@ -50,7 +50,7 @@ Each fact lives in exactly one place. To change it, edit it there and link to it
 ## Commands
 - Lint: `scripts/lint.sh`, or `scripts/lint.sh --staged` for staged files only.
 - Gate tests: `scripts/test-commit-gate.sh`
-- Build the app: `scripts/build.sh` (wraps `xcodebuild`; products go to `.build/DerivedData`)
+- Build the app: `scripts/build.sh` (wraps `xcodebuild`; products go to `.build/DerivedData`). It re-signs the Debug app with the first Apple Development identity in the keychain so Accessibility survives rebuilds; set `CLIPSY_SIGN_IDENTITY` to choose one, or `-` to keep the ad-hoc signature.
 - Run the tests: `scripts/build.sh test` (`swift test` on ClipsyKit)
 - Run the app: `open .build/DerivedData/Build/Products/Debug/Clipsy.app`
 - Autonomous build: ask Claude Code to "run the build-clipsy workflow" (args are listed at the top of `.claude/workflows/build-clipsy.js`). It works through docs/roadmap.md on `build/roadmap`: tasks whose dependencies are done run in parallel, each in its own worktree under `../clipsy-worktrees/`, and each is implemented, marked `- Status: done`, reviewed by `swift-reviewer` until PASS and committed through the gate. Finished tasks are cherry-picked onto the branch one at a time with a full build and test, and the branch is pushed after each. A blocked or failed task is reported and its dependents are skipped. One PR collects the branch with its human checks.
