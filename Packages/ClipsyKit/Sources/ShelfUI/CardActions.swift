@@ -8,6 +8,8 @@ final class CardActions {
     var renamingCardID: Int64?
     var popUp: CardPopUp?
     var textEditor: TextCardEditor?
+    var linkEditor: LinkCardEditor?
+    var colorEditor: ColorCardEditor?
     var plainTextModifier = QuickPasteModifiers.Key.shift
     var isCopyAsPlainTextShortcutTaken = false
     @ObservationIgnored var perform: (CardCommand, [Int64]) -> Void = { _, _ in }
@@ -23,5 +25,7 @@ final class CardActions {
         renamingCardID = nil
         popUp = nil
         textEditor = nil
+        linkEditor = nil
+        colorEditor = nil
     }
 }

@@ -36,6 +36,21 @@ struct CardCommandTests {
         ])
     }
 
+    @Test(arguments: [
+        (CardKind.text, true),
+        (.link, true),
+        (.color, true),
+        (.image, false),
+        (.file, false),
+        (.unknown, false)
+    ])
+    func `text, link and color cards can be edited`(kind: CardKind, isEditable: Bool) {
+        let menu = CardCommand.menu(for: [Self.card(1, kind)], in: .history, isSearchResult: false).joined()
+
+        #expect(menu.contains(.edit) == isEditable)
+        #expect(menu.contains(.rename))
+    }
+
     @Test func `file card on a board can be opened and removed`() {
         let menu = CardCommand.menu(for: [Self.card(1, .file)], in: .board(id: 1), isSearchResult: false)
 

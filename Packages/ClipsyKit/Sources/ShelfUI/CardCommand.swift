@@ -41,7 +41,8 @@ public enum CardCommand: Hashable, Sendable {
             hasPlainText ? [.paste, .pasteAsPlainText] : [.paste],
             hasPlainText ? [.copy, .copyAsPlainText] : [.copy],
             open,
-            [.quickLook] + (isSearchResult ? [.showInList] : []) + (card.kind == .text ? [.edit, .rename] : [.rename]),
+            [.quickLook] + (isSearchResult ? [.showInList] : []) +
+                ([.text, .link, .color].contains(card.kind) ? [.edit, .rename] : [.rename]),
             [.addToBoard, .addToSequence],
             share,
             [removal]

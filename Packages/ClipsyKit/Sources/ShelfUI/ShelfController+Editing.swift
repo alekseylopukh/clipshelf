@@ -31,11 +31,25 @@ extension ShelfController {
     }
 
     func edit(_ ids: [Int64]) {
-        guard ids.count == 1, let card = model.cards.first(where: { $0.id == ids.first }), card.kind == .text else {
+        guard ids.count == 1, let card = model.cards.first(where: { $0.id == ids.first }) else { return }
+        let id = card.id
+        switch card.kind {
+        case .text:
+            Task {
+                await openEditor(for: id)
+            }
+        case .link:
+            actions.linkEditor = LinkCardEditor(card: card) { [replaceText] in
+                try await replaceText(id, $0)
+            } rename: { [renameCard] in
+                try await renameCard(id, $0)
+            }
+        case .color:
+            actions.colorEditor = ColorCardEditor(card: card) { [replaceText] in
+                try await replaceText(id, $0)
+            }
+        case .image, .file, .unknown:
             return
-        }
-        Task {
-            await openEditor(for: card.id)
         }
     }
 

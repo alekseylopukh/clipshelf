@@ -96,16 +96,10 @@ final class TextCardEditor: Identifiable {
             try await persist(target, representations)
             return true
         } catch CardEditError.duplicateContent {
-            errorMessage = String(
-                localized: "A card with the same content already exists.",
-                comment: "Inline error in the text editor when saving would make the card identical to another"
-            )
+            errorMessage = CardEditorMessage.text(for: CardEditError.duplicateContent)
         } catch {
             Self.logger.error("saving text failed: \(String(describing: type(of: error)), privacy: .public)")
-            errorMessage = String(
-                localized: "Clipsy can’t save this card.",
-                comment: "Inline error in the text editor when saving fails"
-            )
+            errorMessage = CardEditorMessage.text(for: error)
         }
         return false
     }

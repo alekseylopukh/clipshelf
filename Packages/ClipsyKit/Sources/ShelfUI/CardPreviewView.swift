@@ -21,7 +21,7 @@ struct CardPreviewView: View {
             case .color:
                 ColorCardPreview(
                     swatch: content.swatch,
-                    components: content.metadata.color.flatMap(ColorComponents.init(hex:))
+                    components: content.metadata.color.flatMap(ColorComponents.init(copiedText:))
                 )
             case .image:
                 ImageCardPreview(card: card)

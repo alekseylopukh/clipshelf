@@ -62,6 +62,7 @@ Not maintainer decisions. They are the doc's current text or the simplest choice
 | WD-48 | Text editor details ([product §4.10](product.md#410-editing-v1), [design edit sheet](design.md#edit-sheet)) | No modified time is stored, since nothing shows it; an edit keeps created and copied times. The sheet is capped at the Shelf's height instead of opening a standalone window. Rich text is saved as RTF (RTFD with attachments) plus the plain string when the card had rich text or any B/I/U/S is applied; otherwise as the plain string only. ⌘E opens the editor for text cards; link and color cards follow in T8.5. Closing the Shelf discards an open editor |
 | WD-49 | Quick Look and file thumbnails ([design §5](design.md#quick-look), [product §6 Privacy](product.md#privacy)) | Space previews the Card under the keyboard cursor, so with several Cards selected the last one clicked or reached by arrow; Space again or Esc closes the preview, and Esc clears the search or closes the Shelf only when no preview is open; images use our own view instead of `QLPreviewView` so their data never leaves the store; several files show a list; text previews show at most 20,000 characters; colors show Hex, RGB and HSL; file thumbnails have no toggle, use Quick Look's icon mode (as Finder does), fall back to the workspace icon when the file is missing or Quick Look fails, and are cached in memory only |
 | WD-50 | App Intents details ([product §3.7](product.md#37-integrations)) | The intents are declared in the app target and call `CardIntentHandler` (Integrations), registered with `AppDependencyManager` at launch, and run in the background without showing the Shelf. Create Card takes text only, classified like a copy (so a link or color becomes that kind) with Clipsy as the source app, and goes to the front of the chosen board, else to History, as ⌘N does; empty text and text that is already a card are refused with an error. Create Board takes a name; its color follows WD-42. Get Card at Index counts from 1 in the Shelf's order, History newest first when no board is chosen. Get Latest Card of Type is the newest History card of that type. Create Card and both Get intents return a Card with Title, Type, Text (the plain text, else the preview), Source App, Created and Last Copied; a missing card is an error, not an empty result |
+| WD-51 | Link and color editing ([product §4.2](product.md#42-type-detection), [§4.10](product.md#410-editing-v1), [design edit sheet](design.md#edit-sheet)) | The link editor's title field is the card's custom title (prompt: the fetched page title); saving with an unchanged URL only renames, so the link preview is kept; a changed URL replaces the content with the trimmed plain string and is classified like a copy. Color formats are Hex (`#1A2B3C`) and RGB (`rgb(26, 43, 60)`), both exact for 8-bit sRGB; to keep an RGB value a color card, type detection accepts the rgb form too, also on capture. Colors picked in another space (Display P3) are converted and clamped to sRGB; opacity is not offered. The editor opens in the card's format; typing a valid value switches the picker to its format; saving an unchanged value writes nothing, otherwise the value is written canonically in the chosen format. While the editor is open the color panel stays visible although the app is inactive behind the non-activating Shelf, and it closes with the editor |
 
 ## Rules for every task
 
@@ -562,12 +563,16 @@ What exists:
 - Status: done
 
 ### T8.5 Link and color editing
-- Module(s): ShelfUI, Capture
+- Module(s): ShelfUI, Capture, Store
 - Depends on: T8.4
 - Spec: [product §4.10](product.md#410-editing-v1), [design edit sheet](design.md#edit-sheet)
 - Deliverable: link editor (URL and title, type re-detected on save); color editor with system color panel and format picker
 - Acceptance: tests `linkEditedToTextBecomesText`, `colorFormatsRoundTrip`
+- Human check: in the running app, ⌘E on a link card opens Edit Link over the Shelf; changing the URL to plain words and saving turns the card into a text card; changing only the title keeps the link preview; light and dark
+- Human check: ⌘E on a color card opens Edit Color; the color well opens the system color panel in front of the Shelf while the Shelf stays open, a pick updates the value in the chosen format, Hex/RGB rewrites it, Save updates the swatch, and the color panel closes with the sheet
 - Size: S
+- Working default: WD-51
+- Status: done
 
 ### T8.6 Show in List
 - Module(s): ShelfUI

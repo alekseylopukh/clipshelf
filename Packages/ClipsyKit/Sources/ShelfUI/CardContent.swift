@@ -16,14 +16,12 @@ struct CardContent {
     }
 
     var swatch: Color? {
-        guard let value = metadata.color?.trimmingCharacters(in: .whitespacesAndNewlines),
-              let rgb = UInt32(value.hasPrefix("#") ? value.dropFirst() : Substring(value), radix: 16)
-        else { return nil }
+        guard let color = metadata.color.flatMap(CardColor.init(copiedText:)) else { return nil }
         return Color(
             .sRGB,
-            red: Double(rgb >> 16 & 0xFF) / 255,
-            green: Double(rgb >> 8 & 0xFF) / 255,
-            blue: Double(rgb & 0xFF) / 255
+            red: Double(color.red) / 255,
+            green: Double(color.green) / 255,
+            blue: Double(color.blue) / 255
         )
     }
 

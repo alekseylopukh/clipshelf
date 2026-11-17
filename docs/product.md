@@ -195,17 +195,20 @@ Applied in order; the first match wins.
 | 1 | File / Multiple files | Pasteboard has one or more file URLs. One URL → File, several → Multiple files. |
 | 2 | Image | Pasteboard has an image representation (PNG, TIFF, JPEG, HEIC, PDF image) and no file URL. |
 | 3 | Link | The trimmed plain text is a single URL with no whitespace. |
-| 4 | Color | The trimmed plain text matches the hex rule below. |
+| 4 | Color | The trimmed plain text matches the hex or rgb rule below. |
 | 5 | Text | Any plain or rich text. |
 | 6 | Unknown | None of the above. Stored and pasteable, shown with a generic preview. |
 
 **Hex color rule.** The whole trimmed string is exactly six hex digits, and either starts with `#` or contains at least one letter A–F (either case).
 
+**RGB color rule.** The whole trimmed string is `rgb(` (either case), three whole numbers from 0 to 255 separated by commas (spaces around them allowed), and `)`. These are the two formats the color editor writes (§4.10, [WD-51](roadmap.md#working-defaults-for-open-todos)).
+
 | Input | Result |
 |---|---|
 | `#1A2B3C`, `1a2b3c`, `#235442` | Color |
 | `235442` (no `#`, digits only, e.g. a one-time code) | Text |
-| `#FFF`, `rgb(…)`, `red`, hex inside a sentence | Text |
+| `rgb(26, 43, 60)`, `RGB(0,255,7)` | Color |
+| `#FFF`, `rgba(…)`, `rgb(256, 0, 0)`, `red`, hex inside a sentence | Text |
 | `#1A2B3C4D` (8 digits, with alpha) | Text |
 
 **Link schemes.** http, https and ftp with a host, mailto, and any other scheme followed by `//` (for example `custom://x`). Working default [WD-5](roadmap.md#working-defaults-for-open-todos).
@@ -294,8 +297,8 @@ Working default [WD-28](roadmap.md#working-defaults-for-open-todos): badges appe
 - **Rename:** ⌘R or click on the card title. An empty title removes the custom title; the card shows its type label again.
 - **Edit:** ⌘E opens an editor for the card type.
   - Text: rich editing with bold, italic, underline, strikethrough; live character, word and line counts.
-  - Link: edit the URL; re-detect type on save.
-  - Color: system color panel.
+  - Link: edit the URL and the card's title; re-detect type on save.
+  - Color: system color panel, a Hex / RGB format picker and the value as text ([WD-51](roadmap.md#working-defaults-for-open-todos)).
   - Image and file cards: rename only (image editing later).
 - Save replaces the card's content in place and keeps its title, position, board and times (no separate modified time is stored, [WD-48](roadmap.md#working-defaults-for-open-todos)). Discard leaves it unchanged. Edits never touch the system clipboard.
 - Saved text is classified and hashed like a copy (§4.2), so text that is only a link or a color becomes that card type. A save that would make the card identical to another card is refused with an inline error ([WD-7](roadmap.md#working-defaults-for-open-todos)).

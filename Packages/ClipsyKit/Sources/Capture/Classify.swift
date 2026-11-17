@@ -17,7 +17,7 @@ func classify(_ snapshot: PasteboardSnapshot) -> CardKind {
         if isLink(plainText) {
             return .link
         }
-        if HexColor(copiedText: plainText) != nil {
+        if CardColor(copiedText: plainText) != nil {
             return .color
         }
     }

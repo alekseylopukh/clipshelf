@@ -11,6 +11,12 @@ struct CardContentTests {
         #expect(swatch == Color(.sRGB, red: 1, green: 128.0 / 255, blue: 0))
     }
 
+    @Test func `color swatch is read from an rgb value`() throws {
+        let card = CardSummary(id: 1, kind: .color, metadata: ##"{"color":"rgb(255, 128, 0)"}"##, createdAt: .now)
+        let swatch = try #require(CardContent(card).swatch)
+        #expect(swatch == Color(.sRGB, red: 1, green: 128.0 / 255, blue: 0))
+    }
+
     @Test func `invalid color value has no swatch`() {
         let card = CardSummary(id: 1, kind: .color, metadata: ##"{"color":"orange"}"##, createdAt: .now)
         #expect(CardContent(card).swatch == nil)

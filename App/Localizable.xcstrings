@@ -1,6 +1,30 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Edit Link" : {
+      "comment" : "Title of the sheet that edits a link card"
+    },
+    "Edit Color" : {
+      "comment" : "Title of the sheet that edits a color card"
+    },
+    "URL" : {
+      "comment" : "Label of the URL field in the link editor"
+    },
+    "Optional" : {
+      "comment" : "Placeholder of the title field in the link editor when the link has no page title"
+    },
+    "Format" : {
+      "comment" : "Label of the color format picker in the color editor"
+    },
+    "Value" : {
+      "comment" : "Label of the field with the color value in the color editor"
+    },
+    "Hex" : {
+      "comment" : "Color format picker option for values such as #1A2B3C"
+    },
+    "RGB" : {
+      "comment" : "Color format picker option for values such as rgb(26, 43, 60)"
+    },
     "%lld words" : {
       "comment" : "Word count below the text editor",
       "localizations" : {
@@ -40,7 +64,7 @@
       "comment" : "Inline error in the text editor when saving fails"
     },
     "Edit…" : {
-      "comment" : "Context menu item that opens the text editor for the selected card"
+      "comment" : "Context menu item that opens the editor for the selected text, link or color card"
     },
     "Italic" : {
       "comment" : "Text editor toggle that makes the selected text italic"
@@ -293,7 +317,7 @@
       "extractionState" : "manual"
     },
     "Color" : {
-      "comment" : "Card type name; label of the board color picker and the board color submenu",
+      "comment" : "Card type name; label of the board color picker, the board color submenu and the color editor's color well",
       "extractionState" : "manual"
     },
     "Copy" : {
@@ -407,7 +431,7 @@
       "extractionState" : "manual"
     },
     "Title" : {
-      "comment" : "Label and placeholder of the field that renames a card"
+      "comment" : "Label and placeholder of the field that renames a card; label of the title field in the link editor"
     },
     "To paste directly, Clipsy needs Accessibility permission in Privacy & Security settings. Until then, Clipsy copies the card and you can press ⌘V to paste it." : {
       "comment" : "Body of the alert shown on the first paste without Accessibility permission"

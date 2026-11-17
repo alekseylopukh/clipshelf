@@ -42,6 +42,12 @@ struct ShelfContainerView: View {
         .sheet(item: Bindable(actions).textEditor) { editor in
             TextCardEditorView(editor: editor, maxHeight: height)
         }
+        .sheet(item: Bindable(actions).linkEditor) { editor in
+            LinkCardEditorView(editor: editor, maxHeight: height)
+        }
+        .sheet(item: Bindable(actions).colorEditor) { editor in
+            ColorCardEditorView(editor: editor, maxHeight: height)
+        }
         .task(id: model.tab) {
             await model.observeCards()
         }

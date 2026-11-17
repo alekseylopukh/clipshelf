@@ -35,7 +35,7 @@ public final class ShelfController {
     private let deletion: CardDeletion
     let boardEditor: BoardEditor
     let representations: PasteCoordinator.RepresentationLoading
-    private let renameCard: Rename
+    let renameCard: Rename
     private let addToSequence: ([Int64]) -> Void
     let replaceText: ReplaceText
     let addText: AddText

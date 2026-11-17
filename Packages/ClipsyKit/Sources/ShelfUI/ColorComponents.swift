@@ -1,17 +1,16 @@
 import Foundation
+import Store
 
 struct ColorComponents: Equatable {
     let red: Int
     let green: Int
     let blue: Int
 
-    init?(hex value: String) {
-        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
-        let digits = trimmed.hasPrefix("#") ? trimmed.dropFirst() : Substring(trimmed)
-        guard digits.count == 6, let rgb = UInt32(digits, radix: 16) else { return nil }
-        red = Int(rgb >> 16 & 0xFF)
-        green = Int(rgb >> 8 & 0xFF)
-        blue = Int(rgb & 0xFF)
+    init?(copiedText: String) {
+        guard let color = CardColor(copiedText: copiedText) else { return nil }
+        red = Int(color.red)
+        green = Int(color.green)
+        blue = Int(color.blue)
     }
 
     func formatted(_ format: ColorFormat) -> String {

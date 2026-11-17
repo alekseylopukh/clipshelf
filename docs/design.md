@@ -199,7 +199,8 @@ Prototype result (T8.1): the popover uses `.applicationDefined` behavior, is anc
 - Toolbar per type, using system controls:
   - Text: Bold, Italic, Underline, Strikethrough as a segmented control (⌘B, ⌘I, ⌘U); character/word/line counts in the bottom bar; an inline error next to the buttons.
   - Link: URL field and optional title field.
-  - Color: `ColorPicker` / system color panel plus a format picker.
+  - Color: `ColorPicker` / system color panel plus a format picker (Hex, RGB) and a value field.
+  - Link and color editors are grouped forms with Cancel (Esc) and Save (Return); the form scrolls when the Shelf is shorter than the sheet.
   - Image (later): rotate left/right.
 - Buttons: Cancel (Esc) and Save (Return with ⌘ in text editors), standard placement.
 - Rename uses a small popover with a single text field; empty name clears the title.

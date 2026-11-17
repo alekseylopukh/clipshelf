@@ -28,4 +28,28 @@ struct EditedTextTests {
 
         #expect(card.kind == kind)
     }
+
+    @Test func `link edited to text becomes text`() async throws {
+        let repository = try CardRepository(database: AppDatabase.temporary())
+        let link = await NewCard.editedText([Self.plain("https://example.com")])
+        let id = try await repository.record(link)
+
+        try await repository.replaceContent(of: id, with: NewCard.editedText([Self.plain("hello world")]))
+
+        let card = try #require(try await repository.cards(in: .history).first)
+        #expect(card.id == id)
+        #expect(card.kind == .text)
+        #expect(card.metadata?.contains("url") == false)
+    }
+
+    @Test func `color edited to rgb stays a color`() async {
+        let card = await NewCard.editedText([Self.plain("rgb(26, 43, 60)")])
+
+        #expect(card.kind == .color)
+        #expect(card.previewText == "rgb(26, 43, 60)")
+    }
+
+    private static func plain(_ text: String) -> Representation {
+        Representation(itemIndex: 0, uti: "public.utf8-plain-text", data: Data(text.utf8))
+    }
 }
