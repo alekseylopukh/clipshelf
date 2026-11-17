@@ -20,3 +20,4 @@ Every package added later gets a row here.
 | Package | Version | Use | License |
 |---|---|---|---|
 | [groue/GRDB.swift](https://github.com/groue/GRDB.swift) | 7.12.0 | SQLite, FTS5, migrations (`Store`) | MIT, © Gwendal Roué |
+| [sindresorhus/KeyboardShortcuts](https://github.com/sindresorhus/KeyboardShortcuts) | 2.4.0 | Global hotkeys, recorder (`ShelfUI`, re-exported to the app) | MIT, © Sindre Sorhus |

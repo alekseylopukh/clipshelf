@@ -3,7 +3,15 @@ import SwiftUI
 
 @main
 struct ClipsyApp: App {
-    @State private var shelf = ShelfController()
+    @State private var shelf: ShelfController
+
+    init() {
+        let shelf = ShelfController()
+        _shelf = State(initialValue: shelf)
+        KeyboardShortcuts.onKeyUp(for: .toggleShelf) {
+            shelf.toggle()
+        }
+    }
 
     var body: some Scene {
         MenuBarExtra("Clipsy", systemImage: "list.clipboard") {

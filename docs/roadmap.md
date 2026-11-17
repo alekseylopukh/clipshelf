@@ -31,7 +31,7 @@ Not maintainer decisions. They are the doc's current text or the simplest choice
 | WD-17 | Own-write marker type | `app.gonar.clipsy.own-write`, declared in `Store` so `Capture` and `Pasting` share it |
 | WD-18 | App Support folder | `~/Library/Application Support/Clipsy/` |
 | WD-19 | Update settings location | About pane |
-| WD-20 | Linking new modules into the app | One library product `ClipsyKit` lists every package target; the app links only it. If the app must import a third-party module directly and cannot, stop and ask the maintainer to link it in Xcode. |
+| WD-20 | Linking new modules into the app | One library product `ClipsyKit` lists every package target; the app links only it. A third-party module reaches the app through a ClipsyKit module that re-exports it with `@_exported import` (KeyboardShortcuts through `ShelfUI`). If the app must link a third-party product directly, stop and ask the maintainer to link it in Xcode. |
 | WD-21 | Clipboard previous contents after paste | Not restored; no `currentHostOnly` |
 | WD-22 | Shelf size and Dock auto-hide ([design §2](design.md#placement-and-size)) | Minimum height 160 pt (one compact row), default 300 pt, maximum 40% of the visible height; placement uses the display's visible frame, so an auto-hidden Dock is not avoided |
 | WD-23 | Frontmost app without a bundle ID ([product §4.1](product.md#41-capture) rule 3) | Counts as no frontmost app, so the capture is skipped |
@@ -220,6 +220,7 @@ What exists:
 - Acceptance: build passes with the dependency resolved through the umbrella product (WD-20)
 - Human check: ⇧⌘V toggles the shelf from Finder, Safari and a full-screen app
 - Size: S
+- Status: done
 
 ### T3.4 Shelf model: list, selection, navigation
 - Module(s): ShelfUI
