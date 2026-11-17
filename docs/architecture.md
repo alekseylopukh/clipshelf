@@ -195,7 +195,7 @@ Rules:
 2. On paste: `clearContents()`, write every stored representation in original item and type order, and add our marker type. For "paste as plain text", write only `public.utf8-plain-text`; a Card without it is written in full (WD-25 in [roadmap.md](roadmap.md)). Record the resulting `changeCount` so capture ignores it. Whether a paste also updates `last_copied_at` is open in [product.md §4.3](product.md#43-dedupe-and-re-copy).
 3. Hide the Shelf.
 4. If the target app is no longer frontmost, activate it and wait for activation.
-5. If `AXIsProcessTrusted()`: post Cmd+V via `CGEvent`: source `.combinedSessionState`, local events suppressed during the post, key code for "V" from the current ASCII-capable layout, Cmd flag plus the left-Cmd device bit, posted to `.cgSessionEventTap`.
+5. If `AXIsProcessTrusted()`: post Cmd+V via `CGEvent`: source `.combinedSessionState`, local events suppressed during the post, key code for "V" from the current ASCII-capable layout (`UCKeyTranslate` with ⌘ held, so layouts such as Dvorak – QWERTY ⌘ get their ⌘ key; `kVK_ANSI_V` if no key types "v"), Cmd flag plus the left-Cmd device bit, posted to `.cgSessionEventTap`.
 6. Without Accessibility: the Card stays on the pasteboard (copy-only); the first time, explain how to enable direct paste.
 
 Multiple selected Cards: text only → one text joined with `\n`; mixed kinds → one write with several `NSPasteboardItem`s; files → one item list with several file URLs. Card order follows the open decision in [product.md §4.12](product.md#412-multi-select).

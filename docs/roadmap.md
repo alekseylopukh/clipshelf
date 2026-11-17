@@ -283,6 +283,7 @@ What exists:
 - Acceptance: test `keyCodeForVOnUSLayoutIs9` against the US layout input source
 - Human check: paste works into TextEdit, Safari, Terminal and an Electron app; with Dvorak–QWERTY ⌘ layout
 - Size: M
+- Status: done
 
 ### T4.3 Paste flow from the shelf
 - Module(s): ShelfUI, Pasting, App
