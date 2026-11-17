@@ -1,3 +1,4 @@
+import Capture
 import Store
 import SwiftUI
 
@@ -9,6 +10,9 @@ struct SettingsView: View {
             Tab("General", systemImage: "gearshape", value: SettingsPane.general) {
                 GeneralSettingsView()
             }
+            Tab("Privacy", systemImage: "hand.raised", value: SettingsPane.privacy) {
+                PrivacySettingsView()
+            }
         }
         .frame(width: 500)
     }
@@ -16,11 +20,13 @@ struct SettingsView: View {
 
 enum SettingsPane: String {
     case general
+    case privacy
 }
 
 #Preview {
     if let database = try? AppDatabase.temporary() {
         SettingsView()
             .environment(RetentionSettings(repository: CardRepository(database: database)))
+            .environment(PrivacySettings())
     }
 }

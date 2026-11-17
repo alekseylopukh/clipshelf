@@ -427,6 +427,36 @@
     "Clipsy can still paste this item." : {
       "comment" : "Body of a card whose type is unknown",
       "extractionState" : "manual"
+    },
+    "Privacy" : {
+      "comment" : "Settings tab for privacy options"
+    },
+    "Ignore passwords and other concealed content" : {
+      "comment" : "Privacy setting that skips copies marked as concealed or made in a password manager"
+    },
+    "Ignore temporary content from other apps" : {
+      "comment" : "Privacy setting that skips copies other apps mark as transient or auto-generated"
+    },
+    "Ignored Apps" : {
+      "comment" : "Header of the list of apps whose copies are never kept"
+    },
+    "Add App…" : {
+      "comment" : "Button that opens a picker to add apps to Ignored Apps"
+    },
+    "Remove App" : {
+      "comment" : "Button that removes the selected apps from Ignored Apps"
+    },
+    "Clipsy doesn’t keep anything copied in these apps. Browser extensions of password managers may not mark copied passwords as concealed; to keep them out of your history, add your browser." : {
+      "comment" : "Explanation under the Ignored Apps list in Settings"
+    },
+    "Show the Shelf in screenshots and screen sharing" : {
+      "comment" : "Privacy setting that lets screenshots and screen sharing capture the Shelf"
+    },
+    "Some apps can’t be ignored." : {
+      "comment" : "Title of the alert shown when a chosen app has no bundle identifier"
+    },
+    "%@ can’t be identified, so Clipsy can’t tell when you copy in them." : {
+      "comment" : "Message of the alert shown when chosen apps have no bundle identifier; the placeholder is a list of app names"
     }
   },
   "version" : "1.0"

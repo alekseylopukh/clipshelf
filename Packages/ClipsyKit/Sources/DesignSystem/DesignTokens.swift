@@ -39,6 +39,9 @@ public enum DesignTokens {
     public static let sequenceMaximumVisibleRows = 6
     public static let sequenceNextMarkerSize: CGFloat = 6
 
+    public static let settingsListHeight: CGFloat = 120
+    public static let settingsListIconSize: CGFloat = 16
+
     public static let selectionRingGap: CGFloat = 2
     public static let boardDotSize: CGFloat = 8
     public static let boardDotOutlineWidth: CGFloat = 1

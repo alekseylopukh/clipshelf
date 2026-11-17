@@ -341,3 +341,10 @@ private extension ShelfController {
         return nil
     }
 }
+
+public extension ShelfController {
+    var isShownInScreenCapture: Bool {
+        get { panel.sharingType != .none }
+        set { panel.sharingType = newValue ? .readOnly : .none }
+    }
+}

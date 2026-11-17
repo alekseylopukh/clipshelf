@@ -21,6 +21,11 @@ public final class SequencePanelController {
         panel.setFrameAutosaveName(Self.frameName)
     }
 
+    public var isShownInScreenCapture: Bool {
+        get { panel.sharingType != .none }
+        set { panel.sharingType = newValue ? .readOnly : .none }
+    }
+
     /// shows the panel while the Sequence is open and hides it when it closes, until the calling task is cancelled
     public func run() async {
         let sequence = model.sequence

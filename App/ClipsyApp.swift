@@ -10,13 +10,16 @@ import SwiftUI
 struct ClipsyApp: App {
     @State private var shelf: ShelfController
     @State private var retention: RetentionSettings
+    @State private var privacy: PrivacySettings
 
     init() {
         let repository = CardRepository(database: Self.openDatabase())
         let writer = PasteboardWriter()
+        let privacy = PrivacySettings()
+        _privacy = State(initialValue: privacy)
         let monitor = PasteboardMonitor(
             isOwnWrite: { writer.isOwnWrite($0) },
-            policy: { CapturePolicy() },
+            policy: { privacy.capturePolicy },
             repository: repository
         )
         _ = Task {
@@ -39,6 +42,11 @@ struct ClipsyApp: App {
             rename: { try await repository.rename(card: $0, to: $1) }
         )
         _shelf = State(initialValue: shelf)
+        _ = Task {
+            for await isShown in Observations({ privacy.showsShelfInScreenCapture }) {
+                shelf.isShownInScreenCapture = isShown
+            }
+        }
         KeyboardShortcuts.onKeyUp(for: .toggleShelf) {
             shelf.toggle()
         }
@@ -64,6 +72,7 @@ struct ClipsyApp: App {
         Settings {
             SettingsView()
                 .environment(retention)
+                .environment(privacy)
         }
     }
 
