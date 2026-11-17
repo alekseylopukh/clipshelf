@@ -4,6 +4,10 @@
     "Allow Clipsy to paste into other apps?" : {
       "comment" : "Title of the alert shown on the first paste without Accessibility permission"
     },
+    "Clear" : {
+      "comment" : "Sequence panel menu item that removes every card and keeps the panel open",
+      "extractionState" : "manual"
+    },
     "Cancel" : {
       "comment" : "Button that dismisses a confirmation"
     },
@@ -31,11 +35,23 @@
     "Clipsy’s clipboard history was damaged." : {
       "comment" : "Title of the alert shown after a damaged database was moved aside at launch"
     },
+    "Close" : {
+      "comment" : "Sequence panel button that closes the panel and clears the Sequence",
+      "extractionState" : "manual"
+    },
+    "Color" : {
+      "comment" : "Card type name",
+      "extractionState" : "manual"
+    },
     "Copy" : {
       "comment" : "Context menu item that copies the card to the clipboard"
     },
     "Copy Only" : {
       "comment" : "Alert button that keeps the card on the clipboard without pasting"
+    },
+    "Copy something, or drag cards here from the shelf." : {
+      "comment" : "Empty state of the Sequence panel",
+      "extractionState" : "manual"
     },
     "Copy as Plain Text" : {
       "comment" : "Context menu item that copies the card without formatting"
@@ -48,6 +64,26 @@
     },
     "Don’t ask again" : {
       "comment" : "Checkbox in the Accessibility alert that stops it from appearing"
+    },
+    "File" : {
+      "comment" : "Card type name",
+      "extractionState" : "manual"
+    },
+    "Image" : {
+      "comment" : "Card type name",
+      "extractionState" : "manual"
+    },
+    "Link" : {
+      "comment" : "Card type name",
+      "extractionState" : "manual"
+    },
+    "More" : {
+      "comment" : "Sequence panel menu button with more actions",
+      "extractionState" : "manual"
+    },
+    "Next" : {
+      "comment" : "Accessibility value of the Sequence row that is pasted next",
+      "extractionState" : "manual"
     },
     "number %lld" : {
       "comment" : "Part of a card's VoiceOver label while its Quick Paste badge shows"
@@ -64,11 +100,19 @@
     "Open System Settings…" : {
       "comment" : "Alert button that asks macOS for Accessibility permission"
     },
+    "Other" : {
+      "comment" : "Card type name for content of an unknown type",
+      "extractionState" : "manual"
+    },
+    "Paste All" : {
+      "comment" : "Sequence panel menu item that pastes all remaining cards at once",
+      "extractionState" : "manual"
+    },
     "Paste" : {
       "comment" : "Context menu item that pastes the card when no target app is known"
     },
     "Paste as Plain Text" : {
-      "comment" : "Context menu item that pastes the card without formatting"
+      "comment" : "Context menu item that pastes the card without formatting, and Sequence panel menu toggle that pastes cards without formatting"
     },
     "Paste to %@" : {
       "comment" : "Context menu item that pastes the card into the app the shelf was opened from; the argument is that app's name"
@@ -77,7 +121,15 @@
 
     },
     "Remove" : {
-      "comment" : "Button that confirms removing cards from a board"
+      "comment" : "Button that confirms removing cards from a board, and button and accessibility action that removes a card from the Sequence"
+    },
+    "Reverse Order" : {
+      "comment" : "Sequence panel menu toggle that adds new cards at the head instead of the end",
+      "extractionState" : "manual"
+    },
+    "Sequence" : {
+      "comment" : "Title of the Sequence panel",
+      "extractionState" : "manual"
     },
     "Remove %lld cards from this board?" : {
       "comment" : "Title of the confirmation shown before removing several cards from a board"
@@ -91,8 +143,16 @@
     "Show in Finder" : {
       "comment" : "Button that reveals the backup of a damaged database"
     },
+    "Text" : {
+      "comment" : "Card type name",
+      "extractionState" : "manual"
+    },
     "To paste directly, Clipsy needs Accessibility permission in Privacy & Security settings. Until then, Clipsy copies the card and you can press ⌘V to paste it." : {
       "comment" : "Body of the alert shown on the first paste without Accessibility permission"
+    },
+    "Undo" : {
+      "comment" : "Sequence panel button that restores the last pasted or removed card",
+      "extractionState" : "manual"
     },
     "Untitled" : {
       "comment" : "Name of a board created without one",

@@ -23,6 +23,14 @@ public enum DesignTokens {
     public static let cardHeaderIconSize: CGFloat = 18
     public static let cardLiftScale: CGFloat = 1.02
 
+    public static let sequencePanelWidth: CGFloat = 280
+    public static let sequencePanelScreenInset: CGFloat = 16
+    public static let sequencePanelCornerRadius: CGFloat = 18
+    public static let sequenceRowHeight: CGFloat = 44
+    public static let sequenceRowInsets = EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8)
+    public static let sequenceMaximumVisibleRows = 6
+    public static let sequenceNextMarkerSize: CGFloat = 6
+
     public static let selectionRingGap: CGFloat = 2
     public static let boardDotSize: CGFloat = 8
     public static let boardDotOutlineWidth: CGFloat = 1

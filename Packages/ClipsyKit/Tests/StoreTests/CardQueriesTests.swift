@@ -80,6 +80,17 @@ struct CardQueriesTests {
         #expect(cards.map(\.id) == [id])
     }
 
+    @Test func `cards with ids returns only those cards`() async throws {
+        let first = try await record("First", hash: 1, at: 100)
+        try await record("Other", hash: 2, at: 200)
+        let third = try await record("Third", hash: 3, at: 300)
+
+        let cards = try await repository.cards(withIDs: [third, first, 999])
+
+        #expect(Set(cards.map(\.id)) == [first, third])
+        #expect(try await repository.cards(withIDs: []).isEmpty)
+    }
+
     @discardableResult
     private func record(_ text: String, hash: UInt8, at time: TimeInterval) async throws -> Int64 {
         try await repository.record(

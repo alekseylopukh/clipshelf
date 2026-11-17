@@ -8,6 +8,18 @@ public extension CardRepository {
         }
     }
 
+    @concurrent
+    func cards(withIDs ids: [Int64]) async throws -> [CardSummary] {
+        guard ids.isEmpty == false else { return [] }
+        return try await database.pool.read { connection in
+            try CardSummary.fetchAll(
+                connection,
+                sql: CardSummary.selection + "\nWHERE card.id IN (\(databaseQuestionMarks(count: ids.count)))",
+                arguments: StatementArguments(ids)
+            )
+        }
+    }
+
     func observeCards(in list: CardList) -> some AsyncSequence<[CardSummary], any Error> & Sendable {
         ValueObservation
             .tracking { connection in try Self.fetchCards(in: list, from: connection) }

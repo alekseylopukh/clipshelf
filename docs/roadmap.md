@@ -40,6 +40,7 @@ Not maintainer decisions. They are the doc's current text or the simplest choice
 | WD-26 | Sequence details ([product §4.7](product.md#47-sequence)) | Paste All with any non-text Card writes one item per Card, as a multi-paste does; Reverse Order lasts for the app session and affects only Cards added later; the same Card copied twice is queued twice; Clear empties the panel and keeps it open; removing the last Card keeps the panel open, pasting it closes the panel |
 | WD-27 | Accessibility alert on paste ([product §4.5](product.md#45-paste-mechanics) step 5, [design §9](design.md#9-onboarding-and-permissions)) | Shown at most once per launch; "Don't ask again" makes that permanent; either way later pastes copy only until Accessibility is granted. "Open System Settings…" calls `AXIsProcessTrustedWithOptions` with the prompt, which lists Clipsy in Privacy & Security and offers the system's own "Open System Settings"; "Copy Only" reactivates the target app so ⌘V works. Since T11.1, Return and ⌘C with several cards selected paste or copy them all |
 | WD-28 | Quick Paste details ([product §4.6](product.md#46-quick-paste)) | Badges show only while the modifier is held; a card counts as visible when at least half of it is in view; digits are matched by key position (number row and keypad), so they work on any layout; a stored modifier that is not allowed, or a plain-text modifier equal to the Quick Paste one, falls back to the default; Return and double-click keep ⇧ until T6.2 makes them read the plain-text modifier setting |
+| WD-29 | Sequence panel ([design §6](design.md#6-sequence)) | First shown at the top-right of the display under the pointer, then wherever the user moved it (AppKit frame autosave); hidden from screen sharing like the Shelf until the screenshot setting exists; rows are a fixed two-line height, up to 6 visible before scrolling; the next marker is an accent dot; the trailing symbol shows the card type; ⌘Z, ⌫ and Esc work while the panel is key, which happens only when the user clicks into it |
 
 ## Rules for every task
 
@@ -463,7 +464,7 @@ What exists:
 - Module(s): ShelfUI
 - Depends on: T5.3
 - Spec: [product §3.2](product.md#32-shelf-and-cards), [design card context menu](design.md#card-context-menu), WD-14
-- Deliverable: Open With submenu for files, Show in Finder, Share submenu for single and multi selection; drag one or several cards into other apps, images also as PNG files
+- Deliverable: Open With submenu for files, Show in Finder, Share submenu for single and multi selection; drag one or several cards into other apps, images also as PNG files; each dragged card also carries a `CardReference` (T11.4) so the Sequence panel accepts it
 - Acceptance: tests `openWithHiddenForText`, `dragItemsMatchPasteRepresentations`
 - Human check: share a link to Notes; drag an image card to Finder and a text card to TextEdit
 - Size: M
@@ -597,12 +598,13 @@ What exists:
 - Acceptance: test `panelModelReflectsQueue`
 - Human check: works over a full-screen app; hidden from screen recording by default
 - Size: M
+- Status: done
 
 ### T11.5 Sequence shortcuts and collection
 - Module(s): App, Pasting, ShelfUI
 - Depends on: T11.4, T6.2
 - Spec: [product §4.7](product.md#47-sequence), [§5](product.md#global-customizable)
-- Deliverable: ⇧⌘C starts a Sequence (synthesized ⌘C in the frontmost app, needs Accessibility) or seeds from shelf selection; ⌃⌥⌘V pastes all; captures stream into the open Sequence; the app runs `SequencePasteDetector` (data provider), publishes each new head and advances on its reports; Add to Sequence in the context menu and menu bar; recorders in the Shortcuts pane
+- Deliverable: ⇧⌘C starts a Sequence (synthesized ⌘C in the frontmost app, needs Accessibility) or seeds from shelf selection; ⌃⌥⌘V pastes all; captures stream into the open Sequence; content dropped on the Sequence panel from other apps is captured as a card and joins it; the app runs `SequencePanelController` (cards from `CardRepository.cards(withIDs:)`, Paste All through the multi-paste) and `SequencePasteDetector` (data provider), publishes each new head and advances on its reports; Add to Sequence in the context menu and menu bar; recorders in the Shortcuts pane
 - Acceptance: test `capturesJoinOpenSequence`
 - Human check: collect three lines in TextEdit, paste them in order in Notes with ⌘V
 - Size: M
