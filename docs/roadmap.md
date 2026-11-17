@@ -38,7 +38,7 @@ Not maintainer decisions. They are the doc's current text or the simplest choice
 | WD-24 | Database fails to open at launch ([architecture §3.4](architecture.md#34-migrations)) | An alert shows the error with one "Quit Clipsy" button, then the app quits; no files are moved or deleted. A damaged store is recovered instead (T7.4) |
 | WD-25 | Plain-text paste of a Card without a plain string ([architecture §4.2](architecture.md#42-paste)) | Writes every representation, as a normal paste would |
 | WD-26 | Sequence details ([product §4.7](product.md#47-sequence)) | Paste All with any non-text Card writes one item per Card, as a multi-paste does; Reverse Order lasts for the app session and affects only Cards added later; the same Card copied twice is queued twice; Clear empties the panel and keeps it open; removing the last Card keeps the panel open, pasting it closes the panel |
-| WD-27 | Accessibility alert on paste ([product §4.5](product.md#45-paste-mechanics) step 5, [design §9](design.md#9-onboarding-and-permissions)) | Shown at most once per launch; "Don't ask again" makes that permanent; either way later pastes copy only until Accessibility is granted. "Open System Settings…" calls `AXIsProcessTrustedWithOptions` with the prompt, which lists Clipsy in Privacy & Security and offers the system's own "Open System Settings"; "Copy Only" reactivates the target app so ⌘V works. Before T11.1, Return and ⌘C with several cards selected do nothing |
+| WD-27 | Accessibility alert on paste ([product §4.5](product.md#45-paste-mechanics) step 5, [design §9](design.md#9-onboarding-and-permissions)) | Shown at most once per launch; "Don't ask again" makes that permanent; either way later pastes copy only until Accessibility is granted. "Open System Settings…" calls `AXIsProcessTrustedWithOptions` with the prompt, which lists Clipsy in Privacy & Security and offers the system's own "Open System Settings"; "Copy Only" reactivates the target app so ⌘V works. Since T11.1, Return and ⌘C with several cards selected paste or copy them all |
 
 ## Rules for every task
 
@@ -559,6 +559,7 @@ What exists:
 - Deliverable: multi-selection paste: text joined with newline, files as one write, mixed as one item per card; oldest first
 - Acceptance: tests `textsJoinOldestFirst`, `filesBecomeOneWrite`, `mixedIsOneItemPerCard`
 - Size: S
+- Status: done
 
 ### T11.2 Sequence state machine
 - Module(s): Pasting

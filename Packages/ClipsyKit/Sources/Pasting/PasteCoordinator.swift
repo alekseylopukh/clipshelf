@@ -37,12 +37,12 @@ public final class PasteCoordinator {
     /// `hideShelf` must take the shelf off screen synchronously, so the keystroke reaches the target
     public func perform(
         _ action: Action,
-        cardID: Int64,
+        cards: [CardSummary],
         plainModifier: Bool,
         target: (any PasteTarget)?,
         hideShelf: () -> Void
     ) async throws {
-        let representations = try await representations(cardID)
+        let representations = try await combinedRepresentations(of: cards)
         writer.write(representations, plainTextOnly: plainModifier || defaults.pastesPlainTextByDefault)
         hideShelf()
         guard action == .paste, defaults.pasteBehavior == .pasteIntoActiveApp else { return }
@@ -54,6 +54,19 @@ public final class PasteCoordinator {
             await target.activate()
         }
         keystroke.postCommandV()
+    }
+
+    private func combinedRepresentations(of cards: [CardSummary]) async throws -> [Representation] {
+        let ordered = cards
+            .sorted { ($0.lastCopiedAt ?? $0.createdAt, $0.id) < ($1.lastCopiedAt ?? $1.createdAt, $1.id) }
+        if ordered.count == 1 {
+            return try await representations(ordered[0].id)
+        }
+        var loaded: [(kind: CardKind, representations: [Representation])] = []
+        for card in ordered {
+            try await loaded.append((card.kind, representations(card.id)))
+        }
+        return CombinedPayload.representations(of: loaded)
     }
 
     private func askForAccessibilityIfNeeded(target: (any PasteTarget)?) async {

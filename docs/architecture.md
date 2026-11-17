@@ -198,7 +198,7 @@ Rules:
 5. If `AXIsProcessTrusted()`: post Cmd+V via `CGEvent`: source `.combinedSessionState`, local events suppressed during the post, key code for "V" from the current ASCII-capable layout (`UCKeyTranslate` with ⌘ held, so layouts such as Dvorak – QWERTY ⌘ get their ⌘ key; `kVK_ANSI_V` if no key types "v"), Cmd flag plus the left-Cmd device bit, posted to `.cgSessionEventTap`.
 6. Without Accessibility: the Card stays on the pasteboard (copy-only); the first time, explain how to enable direct paste.
 
-Multiple selected Cards: text only → one text joined with `\n`; mixed kinds → one write with several `NSPasteboardItem`s; files → one item list with several file URLs. Card order follows the open decision in [product.md §4.12](product.md#412-multi-select).
+Multiple selected Cards (`PasteCoordinator`, `CombinedPayload`): text only (text, link and color Cards) → one plain string joined with `\n`; files → one write with every file URL, one item per URL; mixed kinds → one write with each Card's items in turn. Cards go oldest first by `last_copied_at`, falling back to `created_at` for a Board Card that has left History ([product.md §4.12](product.md#412-multi-select)).
 
 > TODO: whether to restore the user's previous clipboard after a paste, and whether to use `prepareForNewContents(with: .currentHostOnly)` ([doc](https://developer.apple.com/documentation/appkit/nspasteboard/prepareforcontents(with:))) to keep pastes out of Universal Clipboard.
 

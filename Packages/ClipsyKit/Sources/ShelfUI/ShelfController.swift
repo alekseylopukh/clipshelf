@@ -3,6 +3,7 @@ import Carbon.HIToolbox
 import DesignSystem
 import os
 import Pasting
+import Store
 import SwiftUI
 
 @MainActor
@@ -80,11 +81,11 @@ public final class ShelfController {
         }
     }
 
-    func perform(_ action: PasteCoordinator.Action, cardID: Int64, plainModifier: Bool) async {
+    func perform(_ action: PasteCoordinator.Action, cards: [CardSummary], plainModifier: Bool) async {
         do {
             try await paster.perform(
                 action,
-                cardID: cardID,
+                cards: cards,
                 plainModifier: plainModifier,
                 target: targetApplication,
                 hideShelf: { [weak self] in self?.hideImmediately() }
@@ -115,9 +116,10 @@ public final class ShelfController {
         } else {
             return false
         }
-        guard !event.isARepeat, model.selection.count == 1, let cardID = model.selection.first else { return true }
+        let cards = model.cards.filter { model.selection.contains($0.id) }
+        guard !event.isARepeat, !cards.isEmpty else { return true }
         Task {
-            await perform(action, cardID: cardID, plainModifier: modifiers.contains(.shift))
+            await perform(action, cards: cards, plainModifier: modifiers.contains(.shift))
         }
         return true
     }
