@@ -44,7 +44,7 @@ struct BoardContextMenu: View {
     }
 
     /// a palette symbol, because menus draw SwiftUI symbols as monochrome templates
-    private static func swatch(_ color: BoardColor) -> NSImage {
+    static func swatch(_ color: BoardColor) -> NSImage {
         let configuration = NSImage.SymbolConfiguration(paletteColors: [color.nsColor])
         guard let image = NSImage(systemSymbolName: "circle.fill", accessibilityDescription: nil)?
             .withSymbolConfiguration(configuration)

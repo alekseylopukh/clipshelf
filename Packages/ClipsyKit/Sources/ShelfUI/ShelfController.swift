@@ -17,7 +17,10 @@ public final class ShelfController {
 
     private static let heightKey = "ShelfHeight"
     private static let logger = Logger(subsystem: "app.gonar.clipsy", category: "Shelf")
-    private static let commandKeys: [String: CardCommand] = ["o": .open, "r": .rename, "g": .showInList]
+    private static let commandKeys: [String: CardCommand] = [
+        "b": .addToBoard, "o": .open, "r": .rename, "g": .showInList
+    ]
+    private static let cardMoveKeys: [Int: ShelfModel.Direction] = [kVK_LeftArrow: .previous, kVK_RightArrow: .next]
 
     let panel = ShelfPanel()
     private let presentation = ShelfPresentation()
@@ -77,6 +80,7 @@ public final class ShelfController {
             }
         }
         actions.pasteOnDoubleClick = { [weak self] ids in self?.pasteOnDoubleClick(ids) }
+        actions.showBoardMenu = { [weak self] frame in self?.showBoardMenu(at: frame) }
         commands.newBoard = { [weak boardEditor] in boardEditor?.beginNew() }
         boardEditor.confirmDeletion = { [weak self] board in await self?.confirmDeletion(of: board) ?? false }
         boardEditor.reportError = { [weak self] error, title in await self?.presentError(error, title: title) }
@@ -122,6 +126,7 @@ public final class ShelfController {
         resizeStart = nil
         model.setQuickPasteModifierHeld(false)
         actions.renamingCardID = nil
+        actions.boardMenuCardID = nil
         boardEditor.cancel()
         deletion.discardUndo()
         withAnimation(reduceMotion ? .default : .snappy) {
@@ -160,13 +165,7 @@ public final class ShelfController {
     private func perform(_ command: CardCommand, on ids: [Int64]) {
         switch command {
         case .paste, .pasteAsPlainText, .copy, .copyAsPlainText:
-            let cards = model.cards.filter { ids.contains($0.id) }
-            guard !cards.isEmpty else { return }
-            let action: PasteCoordinator.Action = command == .paste || command == .pasteAsPlainText ? .paste : .copy
-            let plain = command == .pasteAsPlainText || command == .copyAsPlainText
-            Task {
-                await perform(action, cards: cards, plainModifier: plain)
-            }
+            pasteOrCopy(command, on: ids)
         case .open:
             guard ids.count == 1, let cardID = ids.first else { return }
             Task {
@@ -178,12 +177,24 @@ public final class ShelfController {
         case .rename:
             guard ids.count == 1 else { return }
             actions.renamingCardID = ids.first
+        case .addToBoard:
+            actions.boardMenuCardID = model.cursorID.flatMap { ids.contains($0) ? $0 : nil } ?? ids.first
         case .addToSequence:
             addToSequence(model.cards.map(\.id).filter { ids.contains($0) })
         case .removeFromBoard, .delete:
             Task {
                 await delete(ids)
             }
+        }
+    }
+
+    private func pasteOrCopy(_ command: CardCommand, on ids: [Int64]) {
+        let cards = model.cards.filter { ids.contains($0.id) }
+        guard !cards.isEmpty else { return }
+        let action: PasteCoordinator.Action = command == .paste || command == .pasteAsPlainText ? .paste : .copy
+        let plain = command == .pasteAsPlainText || command == .copyAsPlainText
+        Task {
+            await perform(action, cards: cards, plainModifier: plain)
         }
     }
 
@@ -222,13 +233,6 @@ public final class ShelfController {
             return true
         }
         return handleCommandOrTyping(event, character: key, modifiers: modifiers, quickPaste: quickPaste)
-    }
-
-    private func pasteOnDoubleClick(_ ids: [Int64]) {
-        perform(
-            QuickPasteModifiers(defaults: defaults).doubleClickCommand(modifierFlags: NSEvent.modifierFlags),
-            on: ids
-        )
     }
 
     private func open(_ cardID: Int64) async {
@@ -343,6 +347,22 @@ private extension ShelfController {
         }
     }
 
+    func pasteOnDoubleClick(_ ids: [Int64]) {
+        perform(
+            QuickPasteModifiers(defaults: defaults).doubleClickCommand(modifierFlags: NSEvent.modifierFlags),
+            on: ids
+        )
+    }
+
+    func showBoardMenu(at frame: CGRect) {
+        guard let contentView = panel.contentView else { return }
+        let menu = NSHostingMenu(rootView: AddToBoardItems(cards: model.selectedCards).environment(boardEditor))
+        let point = NSPoint(x: frame.midX, y: contentView.bounds.height - frame.midY)
+        Task {
+            menu.popUp(positioning: nil, at: point, in: contentView)
+        }
+    }
+
     func handleCommandKey(_ key: String?, isRepeat: Bool) -> Bool {
         switch key {
         case "t":
@@ -362,8 +382,17 @@ private extension ShelfController {
     }
 
     func handleBoardKey(_ event: NSEvent, character: String?, modifiers: NSEvent.ModifierFlags) -> Bool {
-        guard modifiers == [.shift, .command] else { return false }
         let isRepeat = event.isARepeat
+        if modifiers == [.option, .command], let direction = Self.cardMoveKeys[Int(event.keyCode)] {
+            guard case .board = model.tab, !model.isSearching else { return false }
+            if !isRepeat {
+                Task {
+                    await boardEditor.moveSelection(direction)
+                }
+            }
+            return true
+        }
+        guard modifiers == [.shift, .command] else { return false }
         switch (Int(event.keyCode), character) {
         case (_, "n") where !isRepeat:
             boardEditor.beginNew()
@@ -423,6 +452,7 @@ public extension ShelfController {
         resizeStart = nil
         model.setQuickPasteModifierHeld(false)
         actions.renamingCardID = nil
+        actions.boardMenuCardID = nil
         boardEditor.cancel()
         deletion.discardUndo()
         presentation.isVisible = false

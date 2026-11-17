@@ -35,7 +35,9 @@ final class BoardEditorTests {
             rename: { try await repository.renameBoard($0, to: $1) },
             recolor: { try await repository.recolorBoard($0, to: $1) },
             move: { try await repository.moveBoard($0, after: $1) },
-            delete: { try await repository.deleteBoard($0) }
+            delete: { try await repository.deleteBoard($0) },
+            addCards: { try await repository.addCards($0, toBoard: $1) },
+            moveCards: { try await repository.moveCards($0, after: $1) }
         )
     }
 

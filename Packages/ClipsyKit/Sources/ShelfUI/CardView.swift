@@ -14,6 +14,7 @@ struct CardView: View {
 
     @State private var isHovered = false
     @Environment(CardActions.self) private var actions
+    @Environment(BoardEditor.self) private var boardEditor
 
     init(
         card: CardSummary,
@@ -56,6 +57,15 @@ struct CardView: View {
             )
         }
         .draggable(CardReference(cardID: card.id))
+        .dropDestination(
+            for: CardReference.self,
+            isEnabled: model.tab != .history && !model.isSearching
+        ) { references, _ in
+            let ids = references.map(\.cardID)
+            Task {
+                await boardEditor.reorder(ids, onto: card.id)
+            }
+        }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityLabel)
         .accessibilityValue(accessibilityValue)
@@ -69,13 +79,10 @@ struct CardView: View {
         .accessibilityAddTraits(isSelected ? .isSelected : [])
         .accessibilityAction { model.select(card.id) }
         .accessibilityActions {
-            ForEach(CardCommand.menu(
-                for: [card],
-                in: model.list(of: card),
-                isSearchResult: model.isSearching
-            ).flatMap(\.self), id: \.self) { command in
+            ForEach(accessibilityCommands, id: \.self) { command in
                 CardCommandButton(
                     command: command,
+                    cards: [card],
                     targetAppName: actions.targetAppName,
                     plainTextModifiers: actions.plainTextModifier.eventModifiers,
                     isCopyAsPlainTextShortcutTaken: actions.isCopyAsPlainTextShortcutTaken
@@ -83,8 +90,32 @@ struct CardView: View {
                     actions.perform(command, [card.id])
                 }
             }
+            ForEach(boardEditor.boards(forAdding: [card])) { board in
+                Button(String(
+                    localized: "Add to \(board.name)",
+                    comment: "VoiceOver action of a card that adds it to the named board"
+                )) {
+                    Task {
+                        await boardEditor.add([card.id], to: board.id)
+                    }
+                }
+            }
+            Button(String(
+                localized: "Add to New Board…",
+                comment: "VoiceOver action of a card that creates a board for it"
+            )) {
+                boardEditor.beginNew(adding: [card.id])
+            }
         }
         .quickPasteBadge(model.quickPasteNumber(for: card.id))
+        .cardBoardMenuAnchor(for: card)
+    }
+
+    /// add to board is a submenu, so voiceover gets one action per board instead
+    private var accessibilityCommands: [CardCommand] {
+        CardCommand.menu(for: [card], in: model.list(of: card), isSearchResult: model.isSearching)
+            .joined()
+            .filter { $0 != .addToBoard }
     }
 
     private var accessibilityValue: Text {
@@ -216,6 +247,16 @@ private struct CardPreview: View {
             .frame(height: layout == .compact ? compactHeight : DesignTokens.cardSide)
             .padding(DesignTokens.shelfPadding)
             .environment(CardActions())
+            .environment(BoardEditor(
+                model: model,
+                create: { _, _ in 0 },
+                rename: { _, _ in },
+                recolor: { _, _ in },
+                move: { _, _ in },
+                delete: { _ in },
+                addCards: { _, _ in },
+                moveCards: { _, _ in }
+            ))
             .environment(\.richTextLoader, RichTextLoader { _ in
                 let text = NSAttributedString(string: "Quarterly plan\nShip the shelf by Friday.", attributes: [
                     .font: NSFont.boldSystemFont(ofSize: 24),

@@ -8,6 +8,7 @@ public enum CardCommand: Hashable, Sendable {
     case open
     case showInList
     case rename
+    case addToBoard
     case addToSequence
     case removeFromBoard
     case delete
@@ -19,7 +20,7 @@ public enum CardCommand: Hashable, Sendable {
             .delete
         }
         guard cards.count == 1, let card = cards.first else {
-            return cards.isEmpty ? [] : [[.paste, .pasteAsPlainText], [.copy], [.addToSequence], [removal]]
+            return cards.isEmpty ? [] : [[.paste, .pasteAsPlainText], [.copy], [.addToBoard, .addToSequence], [removal]]
         }
         let hasPlainText = card.kind != .image && card.kind != .file
         let sections: [[CardCommand]] = [
@@ -27,7 +28,7 @@ public enum CardCommand: Hashable, Sendable {
             hasPlainText ? [.copy, .copyAsPlainText] : [.copy],
             card.kind == .link || card.kind == .file ? [.open] : [],
             isSearchResult ? [.showInList, .rename] : [.rename],
-            [.addToSequence],
+            [.addToBoard, .addToSequence],
             [removal]
         ]
         return sections.filter { !$0.isEmpty }

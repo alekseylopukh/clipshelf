@@ -10,13 +10,16 @@ struct CardCommandTests {
 
     @Test(arguments: [CardList.history, .board(id: 1)])
     func `multi selection menu has only batch items`(list: CardList) {
-        let batch: Set<CardCommand> = [.paste, .pasteAsPlainText, .copy, .addToSequence, .removeFromBoard, .delete]
+        let batch: Set<CardCommand> = [
+            .paste, .pasteAsPlainText, .copy, .addToBoard, .addToSequence, .removeFromBoard, .delete
+        ]
 
         let menu = CardCommand.menu(for: [Self.card(1, .text), Self.card(2, .link)], in: list, isSearchResult: false)
 
         #expect(Set(menu.joined()).isSubset(of: batch))
         #expect(menu == [
-            [.paste, .pasteAsPlainText], [.copy], [.addToSequence], [list == .history ? .delete : .removeFromBoard]
+            [.paste, .pasteAsPlainText], [.copy], [.addToBoard, .addToSequence],
+            [list == .history ? .delete : .removeFromBoard]
         ])
     }
 
@@ -27,7 +30,7 @@ struct CardCommandTests {
             [.paste, .pasteAsPlainText],
             [.copy, .copyAsPlainText],
             [.rename],
-            [.addToSequence],
+            [.addToBoard, .addToSequence],
             [.delete]
         ])
     }
@@ -35,7 +38,7 @@ struct CardCommandTests {
     @Test func `file card on a board can be opened and removed`() {
         let menu = CardCommand.menu(for: [Self.card(1, .file)], in: .board(id: 1), isSearchResult: false)
 
-        #expect(menu == [[.paste], [.copy], [.open], [.rename], [.addToSequence], [.removeFromBoard]])
+        #expect(menu == [[.paste], [.copy], [.open], [.rename], [.addToBoard, .addToSequence], [.removeFromBoard]])
     }
 
     @Test func `search result can be shown in its list`() {

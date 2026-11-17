@@ -15,6 +15,7 @@ struct CardContextMenu: View {
                 ForEach(section, id: \.self) { command in
                     CardCommandButton(
                         command: command,
+                        cards: cards,
                         targetAppName: actions.targetAppName,
                         plainTextModifiers: actions.plainTextModifier.eventModifiers,
                         isCopyAsPlainTextShortcutTaken: actions.isCopyAsPlainTextShortcutTaken
@@ -29,6 +30,7 @@ struct CardContextMenu: View {
 
 struct CardCommandButton: View {
     let command: CardCommand
+    let cards: [CardSummary]
     let targetAppName: String?
     let plainTextModifiers: EventModifiers
     let isCopyAsPlainTextShortcutTaken: Bool
@@ -66,6 +68,8 @@ struct CardCommandButton: View {
         case .rename:
             Button("Rename…", action: action)
                 .keyboardShortcut("r")
+        case .addToBoard:
+            AddToBoardMenu(cards: cards)
         case .addToSequence:
             Button("Add to Sequence", systemImage: "list.number", action: action)
                 .globalKeyboardShortcut(.startSequence)

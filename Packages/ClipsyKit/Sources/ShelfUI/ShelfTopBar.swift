@@ -113,10 +113,11 @@ private struct BoardCapsule: View {
     let isSelected: Bool
     let action: () -> Void
 
+    @State private var isTargeted = false
     @Environment(BoardEditor.self) private var editor
 
     var body: some View {
-        TabCapsule(isSelected: isSelected, action: action) {
+        TabCapsule(isSelected: isSelected || isTargeted, action: action) {
             BoardLabel(board: board)
         }
         .contextMenu {
@@ -125,12 +126,13 @@ private struct BoardCapsule: View {
         .draggable(BoardReference(boardID: board.id)) {
             BoardLabel(board: board)
         }
-        .dropDestination(for: BoardReference.self) { references, _ in
-            guard let reference = references.first, reference.boardID != board.id else { return false }
+        .dropDestination(for: TabDropItem.self) { items, _ in
             Task {
-                await editor.move(reference.boardID, onto: board.id)
+                await editor.drop(items, onBoard: board.id)
             }
-            return true
+            return !items.isEmpty
+        } isTargeted: {
+            isTargeted = $0
         }
     }
 }

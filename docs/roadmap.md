@@ -370,7 +370,11 @@ What exists:
 - Deliverable: Add to Board submenu (with New Board…) and Remove from Board for single and multi selection; drop cards on a capsule; drag to reorder inside a board
 - Acceptance: tests `addSelectionToBoard`, `dropOnCapsuleAdds`
 - Human check: reordered board survives relaunch
+- Human check: select one card, then several, and press ⌘B; the board menu opens at the selected card, arrows and Return add the cards, Esc closes it, and New Board… opens the sheet
+- Human check: drag a card and a multi-selection onto a board capsule (the capsule highlights while targeted), then drag cards inside the board to reorder them; light and dark
 - Size: M
+- Working default: Add to Board sits in the Organize section before Add to Sequence and lists every board except one that already holds all the selected cards, then New Board…, which opens the New Board sheet and adds the cards on save while the shelf stays on the current tab. Dragging a card that is part of the selection carries the whole selection in shelf order, as in Finder, both onto a capsule and inside a board. A capsule ignores dropped cards that are already on its board. Inside a board a drop puts the cards before the target card when moving left and after it when moving right, like capsules (WD-42). ⌥⌘← / ⌥⌘→ move the selected cards one place on a board, gathered in shelf order; key repeats are ignored. VoiceOver gets one "Add to *Board*" action per board plus "Add to New Board…", because a submenu cannot be a custom action. ⌘B opens the same board list as a menu at the selected card, so Add to Board works from the keyboard; the context menu does not show the shortcut
+- Status: done
 
 ### T5.4 Search in the shelf
 - Module(s): ShelfUI

@@ -66,7 +66,9 @@ struct ShelfContainerView: View {
         rename: { _, _ in },
         recolor: { _, _ in },
         move: { _, _ in },
-        delete: { _ in }
+        delete: { _ in },
+        addCards: { _, _ in },
+        moveCards: { _, _ in }
     )
     return ShelfContainerView(
         presentation: presentation,

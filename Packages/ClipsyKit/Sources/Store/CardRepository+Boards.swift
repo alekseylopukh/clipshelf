@@ -101,22 +101,32 @@ public extension CardRepository {
     /// `previousID` nil moves the card to the front of its board
     @concurrent
     func moveCard(_ id: Int64, after previousID: Int64?) async throws {
+        try await moveCards([id], after: previousID)
+    }
+
+    @concurrent
+    func moveCards(_ ids: [Int64], after previousID: Int64?) async throws {
         try await database.pool.write { connection in
+            guard let first = ids.first else { return }
             guard let boardID = try Int64.fetchOne(
                 connection,
                 sql: "SELECT board_id FROM card WHERE id = ? AND board_id IS NOT NULL",
-                arguments: [id]
-            ) else { throw Self.notFound(table: "card", id: id) }
-            let siblings = try Self.positions(
-                in: connection,
-                sql: "SELECT id, board_position FROM card WHERE board_id = ? ORDER BY board_position, id",
-                arguments: [boardID]
-            )
-            try Self.place(id, after: previousID, among: siblings, table: "card") { id, position in
-                try connection.execute(
-                    sql: "UPDATE card SET board_position = ? WHERE id = ?",
-                    arguments: [position, id]
+                arguments: [first]
+            ) else { throw Self.notFound(table: "card", id: first) }
+            var previousID = previousID
+            for id in ids {
+                let siblings = try Self.positions(
+                    in: connection,
+                    sql: "SELECT id, board_position FROM card WHERE board_id = ? ORDER BY board_position, id",
+                    arguments: [boardID]
                 )
+                try Self.place(id, after: previousID, among: siblings, table: "card") { id, position in
+                    try connection.execute(
+                        sql: "UPDATE card SET board_position = ? WHERE id = ?",
+                        arguments: [position, id]
+                    )
+                }
+                previousID = id
             }
         }
     }

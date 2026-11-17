@@ -167,6 +167,21 @@ struct BoardTests {
         #expect(try await Set(boardPositions(board).values).count == 3)
     }
 
+    @Test func `moving several cards keeps their order`() async throws {
+        let board = try await repository.createBoard(named: "B", color: "blue")
+        let alpha = try await record("A", hash: 1)
+        let bravo = try await record("B", hash: 2)
+        let charlie = try await record("C", hash: 3)
+        let delta = try await record("D", hash: 4)
+        try await repository.addCards([alpha, bravo, charlie, delta], toBoard: board)
+
+        try await repository.moveCards([delta, alpha], after: bravo)
+        #expect(try await repository.cards(in: .board(id: board)).map(\.id) == [bravo, delta, alpha, charlie])
+
+        try await repository.moveCards([charlie, bravo], after: nil)
+        #expect(try await repository.cards(in: .board(id: board)).map(\.id) == [charlie, bravo, delta, alpha])
+    }
+
     @Test func `moving a card off a board throws`() async throws {
         let card = try await record("A", hash: 1)
 
