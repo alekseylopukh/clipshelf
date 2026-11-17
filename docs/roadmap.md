@@ -39,6 +39,7 @@ Not maintainer decisions. They are the doc's current text or the simplest choice
 | WD-25 | Plain-text paste of a Card without a plain string ([architecture §4.2](architecture.md#42-paste)) | Writes every representation, as a normal paste would |
 | WD-26 | Sequence details ([product §4.7](product.md#47-sequence)) | Paste All with any non-text Card writes one item per Card, as a multi-paste does; Reverse Order lasts for the app session and affects only Cards added later; the same Card copied twice is queued twice; Clear empties the panel and keeps it open; removing the last Card keeps the panel open, pasting it closes the panel |
 | WD-27 | Accessibility alert on paste ([product §4.5](product.md#45-paste-mechanics) step 5, [design §9](design.md#9-onboarding-and-permissions)) | Shown at most once per launch; "Don't ask again" makes that permanent; either way later pastes copy only until Accessibility is granted. "Open System Settings…" calls `AXIsProcessTrustedWithOptions` with the prompt, which lists Clipsy in Privacy & Security and offers the system's own "Open System Settings"; "Copy Only" reactivates the target app so ⌘V works. Since T11.1, Return and ⌘C with several cards selected paste or copy them all |
+| WD-28 | Quick Paste details ([product §4.6](product.md#46-quick-paste)) | Badges show only while the modifier is held; a card counts as visible when at least half of it is in view; digits are matched by key position (number row and keypad), so they work on any layout; a stored modifier that is not allowed, or a plain-text modifier equal to the Quick Paste one, falls back to the default; Return and double-click keep ⇧ until T6.2 makes them read the plain-text modifier setting |
 
 ## Rules for every task
 
@@ -306,7 +307,10 @@ What exists:
 - Deliverable: badges 1–9 on the first visible cards while the modifier is held; modifier + digit pastes, with ⇧ as plain text; modifiers from settings
 - Acceptance: tests `badgesCountFromFirstVisibleCard`, `digitBeyondVisibleCountDoesNothing`
 - Human check: badges follow scrolling; ⇧⌘3 pastes the third visible card as plain text
+- Human check: badge digits are legible on glass in light and dark (offscreen rendering cannot draw Liquid Glass)
+- Note: settings keys `QuickPasteModifier` and `PlainTextModifier` (`QuickPasteModifiers`), WD-28. The card strip (T3.5) wires the badges: it reports `onScrollTargetVisibilityChange(idType: Int64.self, threshold: 0.5)` to `ShelfModel.setVisibleCards(_:)` and applies `.quickPasteBadge(model.quickPasteNumber(for: card.id))` to each card; whichever of T3.5 and T4.4 lands second adds those two lines, so the human checks need both
 - Size: S
+- Status: done
 
 ## M5. Organize
 
@@ -361,7 +365,7 @@ What exists:
 - Module(s): App, Pasting
 - Depends on: T6.1, T3.3
 - Spec: [product §6 Shortcuts](product.md#shortcuts), [shortcut recorder rules](product.md#shortcut-recorder-rules)
-- Deliverable: recorders for Open Shelf and Next/Previous Board (Sequence recorders added in T11.5); Quick Paste and plain-text modifier pop-ups that must differ; Restore Defaults with confirmation; ⌥-only warning
+- Deliverable: recorders for Open Shelf and Next/Previous Board (Sequence recorders added in T11.5); Quick Paste and plain-text modifier pop-ups that must differ, writing the `QuickPasteModifiers` keys; Return and double-click honor the plain-text modifier (WD-28); Restore Defaults with confirmation; ⌥-only warning
 - Acceptance: tests `modifiersMustDiffer`, `restoreDefaultsResetsAll`
 - Human check: a recorder rejects ⌘Q with the conflict shown inline
 - Size: S

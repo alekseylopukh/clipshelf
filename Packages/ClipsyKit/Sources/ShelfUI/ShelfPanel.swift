@@ -4,6 +4,7 @@ final class ShelfPanel: NSPanel {
     var onCancel: () -> Void = {}
     var onResignKey: () -> Void = {}
     var onKeyDown: (NSEvent) -> Bool = { _ in false }
+    var onFlagsChanged: (NSEvent) -> Void = { _ in }
 
     init() {
         super.init(
@@ -41,6 +42,11 @@ final class ShelfPanel: NSPanel {
         if !onKeyDown(event) {
             super.keyDown(with: event)
         }
+    }
+
+    override func flagsChanged(with event: NSEvent) {
+        onFlagsChanged(event)
+        super.flagsChanged(with: event)
     }
 
     override func resignKey() {

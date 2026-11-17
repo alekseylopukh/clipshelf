@@ -25,6 +25,9 @@
     "Don’t ask again" : {
       "comment" : "Checkbox in the Accessibility alert that stops it from appearing"
     },
+    "number %lld" : {
+      "comment" : "Part of a card's VoiceOver label while its Quick Paste badge shows"
+    },
     "OK" : {
 
     },

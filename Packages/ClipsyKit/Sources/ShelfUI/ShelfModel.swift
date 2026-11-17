@@ -17,6 +17,9 @@ public final class ShelfModel {
     public private(set) var cards: [CardSummary] = []
     public private(set) var selection: Set<Int64> = []
     public private(set) var observationError: (any Error)?
+    public private(set) var isQuickPasteModifierHeld = false
+    private var visibleCardIDs: Set<Int64> = []
+    private var quickPasteCardIDs: [Int64] = []
 
     private var anchorID: Int64?
     private var cursorID: Int64?
@@ -64,6 +67,25 @@ public final class ShelfModel {
         observationError = nil
         clearSelection()
         selectsFirstOnLoad = true
+        setVisibleCards([])
+    }
+
+    public func setVisibleCards(_ ids: [Int64]) {
+        visibleCardIDs = Set(ids)
+        updateQuickPasteCards()
+    }
+
+    public func setQuickPasteModifierHeld(_ isHeld: Bool) {
+        isQuickPasteModifierHeld = isHeld
+    }
+
+    public func quickPasteNumber(for id: Int64) -> Int? {
+        guard isQuickPasteModifierHeld, let index = quickPasteCardIDs.firstIndex(of: id) else { return nil }
+        return index + 1
+    }
+
+    public func quickPasteCard(number: Int) -> Int64? {
+        quickPasteCardIDs.indices.contains(number - 1) ? quickPasteCardIDs[number - 1] : nil
     }
 
     public func move(_ direction: Direction, extending: Bool = false) {
@@ -129,7 +151,12 @@ public final class ShelfModel {
         if let cursorID, !ids.contains(cursorID) {
             self.cursorID = nil
         }
+        updateQuickPasteCards()
         selectFirstIfPending()
+    }
+
+    private func updateQuickPasteCards() {
+        quickPasteCardIDs = Array(cards.lazy.map(\.id).filter(visibleCardIDs.contains).prefix(9))
     }
 
     private func selectFirstIfPending() {

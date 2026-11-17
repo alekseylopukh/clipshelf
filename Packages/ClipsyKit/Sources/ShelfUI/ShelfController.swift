@@ -39,6 +39,7 @@ public final class ShelfController {
         panel.onCancel = { [weak self] in self?.hide() }
         panel.onResignKey = { [weak self] in self?.closeOnFocusLoss() }
         panel.onKeyDown = { [weak self] event in self?.handleKeyDown(event) ?? false }
+        panel.onFlagsChanged = { [weak self] event in self?.updateQuickPasteModifier(event.modifierFlags) }
     }
 
     public var isShown: Bool {
@@ -64,6 +65,7 @@ public final class ShelfController {
         targetApplication = frontmost == NSRunningApplication.current ? nil : frontmost
         panel.setFrame(calculator.frame(height: storedHeight, in: screen.visibleFrame), display: false)
         model.didOpen()
+        updateQuickPasteModifier(NSEvent.modifierFlags)
         panel.makeKeyAndOrderFront(nil)
         withAnimation(reduceMotion ? .default : .spring) {
             presentation.isVisible = true
@@ -73,6 +75,7 @@ public final class ShelfController {
     public func hide() {
         guard isShown else { return }
         resizeStart = nil
+        model.setQuickPasteModifierHeld(false)
         withAnimation(reduceMotion ? .default : .snappy) {
             presentation.isVisible = false
         } completion: { [weak self] in
@@ -107,6 +110,17 @@ public final class ShelfController {
     }
 
     private func handleKeyDown(_ event: NSEvent) -> Bool {
+        let quickPaste = QuickPasteModifiers(defaults: defaults)
+        if let shortcut = quickPaste.shortcut(keyCode: event.keyCode, modifierFlags: event.modifierFlags) {
+            guard !event.isARepeat,
+                  let cardID = model.quickPasteCard(number: shortcut.number),
+                  let card = model.cards.first(where: { $0.id == cardID })
+            else { return true }
+            Task {
+                await perform(.paste, cards: [card], plainModifier: shortcut.plainText)
+            }
+            return true
+        }
         let modifiers = event.modifierFlags.intersection([.shift, .control, .option, .command])
         let action: PasteCoordinator.Action
         if [kVK_Return, kVK_ANSI_KeypadEnter].contains(Int(event.keyCode)), modifiers.isSubset(of: .shift) {
@@ -127,8 +141,13 @@ public final class ShelfController {
     /// orders the panel out at once, because a keystroke posted while it is key would land in the shelf
     private func hideImmediately() {
         resizeStart = nil
+        model.setQuickPasteModifierHeld(false)
         presentation.isVisible = false
         panel.orderOut(nil)
+    }
+
+    private func updateQuickPasteModifier(_ modifierFlags: NSEvent.ModifierFlags) {
+        model.setQuickPasteModifierHeld(QuickPasteModifiers(defaults: defaults).isQuickPasteHeld(in: modifierFlags))
     }
 
     private var reduceMotion: Bool {
