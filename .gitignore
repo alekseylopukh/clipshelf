@@ -1,0 +1,21 @@
+# local-only analysis of the original app (third-party strings, screenshots); never commit
+research/
+
+# macOS
+.DS_Store
+
+# Xcode
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+DerivedData/
+build/
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# release artifacts
+*.dmg
+*.zip
+*.xcarchive
