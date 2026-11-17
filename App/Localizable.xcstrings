@@ -105,6 +105,66 @@
       "comment" : "Shelf More menu item and empty-state button that start saving copies again",
       "extractionState" : "manual"
     },
+    "Filters" : {
+      "comment" : "Shelf top bar button that opens the filter browser",
+      "extractionState" : "manual"
+    },
+    "Type" : {
+      "comment" : "Search filter category: card type",
+      "extractionState" : "manual"
+    },
+    "App" : {
+      "comment" : "Search filter category: the app a card was copied from",
+      "extractionState" : "manual"
+    },
+    "Date" : {
+      "comment" : "Search filter category: when a card was copied",
+      "extractionState" : "manual"
+    },
+    "Today" : {
+      "comment" : "Search date filter",
+      "extractionState" : "manual"
+    },
+    "Yesterday" : {
+      "comment" : "Search date filter",
+      "extractionState" : "manual"
+    },
+    "Last 7 Days" : {
+      "comment" : "Search date filter",
+      "extractionState" : "manual"
+    },
+    "Last 30 Days" : {
+      "comment" : "Search date filter",
+      "extractionState" : "manual"
+    },
+    "Custom Range…" : {
+      "comment" : "Filter browser row that shows the date pickers",
+      "extractionState" : "manual"
+    },
+    "From" : {
+      "comment" : "Start day of a custom date filter",
+      "extractionState" : "manual"
+    },
+    "Through" : {
+      "comment" : "Last day of a custom date filter",
+      "extractionState" : "manual"
+    },
+    "Apply Range" : {
+      "comment" : "Filter browser button that adds the custom date filter",
+      "extractionState" : "manual"
+    },
+    "Filter Suggestions" : {
+      "comment" : "VoiceOver name of the list of suggested search filters",
+      "extractionState" : "manual"
+    },
+    "Remove Filter %@" : {
+      "comment" : "VoiceOver label of a search filter token; the argument is the filter",
+      "extractionState" : "manual"
+    },
+    "Remove Filter" : {
+      "comment" : "Tooltip of a search filter token",
+      "extractionState" : "manual"
+    },
     "Search" : {
       "comment" : "Placeholder of the shelf search field",
       "extractionState" : "manual"

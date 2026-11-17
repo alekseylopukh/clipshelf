@@ -42,8 +42,11 @@ struct ShelfContainerView: View {
         .task {
             await model.observeBoards()
         }
-        .task(id: model.searchText) {
+        .task(id: model.searchKey) {
             await model.observeSearch()
+        }
+        .task {
+            await model.observeApps()
         }
     }
 

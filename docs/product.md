@@ -285,7 +285,7 @@ The pasteboard keeps the pasted content afterwards; the previous clipboard is no
   > TODO: confirm global scope vs current tab.
 - Matched fields: title, text content, URL and page title, file names, source app name, recognized image text (v1).
 - Case- and diacritic-insensitive, word-prefix matching. Ordered newest first. Matches are highlighted.
-- Filters (v1): Type, App, Date (today, yesterday, last 7 days, last 30 days, custom range), Board. Typing a word that matches a type or app name offers it as a filter token. Filters combine with AND. Pressing ⌘F again while the field is focused opens a browser of all filters.
+- Filters (v1): Type, App, Date (today, yesterday, last 7 days, last 30 days, custom range), Board. Typing a word that matches a type, app, date range or board name offers it as a filter token. Filters combine with AND. Pressing ⌘F again while the field is focused opens a browser of all filters (working default WD-46 in [roadmap.md](roadmap.md)).
 - Tab moves focus between the search field and the results.
 - Esc clears the search first, then closes the shelf on the next press.
 

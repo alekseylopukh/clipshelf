@@ -19,7 +19,7 @@ final class ShelfModelSearchTests {
     }
 
     private func makeModel(cards ids: [Int64] = []) -> ShelfModel {
-        makeSearchModel(cards: ids) { _ in AsyncThrowingStream { $0.finish() } }
+        makeSearchModel(cards: ids) { _, _ in AsyncThrowingStream { $0.finish() } }
     }
 
     private nonisolated static func results(_ ids: [Int64], boardID: Int64? = nil) -> [SearchResult] {
@@ -90,14 +90,16 @@ final class ShelfModelSearchTests {
         #expect(model.searchSelection == TextSelection(range: model.query.startIndex ..< model.query.endIndex))
     }
 
-    @Test func `command F selects the query in a focused field`() {
+    @Test func `command F twice opens the filter browser`() {
         let model = makeModel()
-        model.searchFieldFocusDidChange(true)
         model.query = "inv"
 
         model.focusSearch()
+        #expect(model.isFilterBrowserPresented == false)
+        model.searchFieldFocusDidChange(true)
+        model.focusSearch()
 
-        #expect(model.searchSelection == TextSelection(range: model.query.startIndex ..< model.query.endIndex))
+        #expect(model.isFilterBrowserPresented)
         model.searchFieldFocusDidChange(false)
         model.searchSelection = nil
         model.searchFieldFocusDidChange(true)
@@ -133,7 +135,7 @@ final class ShelfModelSearchTests {
     }
 
     @Test func `results keep one selected`() {
-        let model = makeSearchModel(cards: [9, 8]) { _ in AsyncThrowingStream { $0.finish() } }
+        let model = makeSearchModel(cards: [9, 8]) { _, _ in AsyncThrowingStream { $0.finish() } }
         model.didOpen()
         model.query = "in"
 
@@ -165,7 +167,7 @@ final class ShelfModelSearchTests {
     func `query debounce cancels stale`() async {
         let requested = Mutex<[String]>([])
         let (stale, staleContinuation) = AsyncThrowingStream.makeStream(of: [SearchResult].self)
-        let model = makeSearchModel(searchDelay: .milliseconds(200)) { text in
+        let model = makeSearchModel(searchDelay: .milliseconds(200)) { text, _ in
             requested.withLock { $0.append(text) }
             return text == "ab" ? stale : AsyncThrowingStream { continuation in
                 continuation.yield(Self.results([2]))
@@ -252,6 +254,23 @@ final class ShelfModelSearchTests {
         model.move(.next)
         #expect(model.selection == [19])
         #expect(model.revealedID == nil)
+    }
+
+    @Test func `show in list with a token selects card in its tab`() {
+        let model = makeModel(cards: [5, 4, 3, 2, 1])
+        model.didOpen()
+        let card = CardSummary(id: 3, kind: .text, createdAt: .now, lastCopiedAt: .now)
+
+        model.query = "in"
+        model.tokens = [.kind(.text)]
+        model.receiveResults([SearchResult(card: card, titleMatches: [], previewMatches: [])])
+        model.showInList(3)
+
+        #expect(model.query.isEmpty)
+        #expect(model.tokens.isEmpty)
+        #expect(model.tab == .history)
+        #expect(model.selection == [3])
+        #expect(model.revealedID == 3)
     }
 
     @Test func `show in list falls back to the first card when the card is gone`() {

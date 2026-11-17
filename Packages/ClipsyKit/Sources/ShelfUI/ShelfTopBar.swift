@@ -12,6 +12,7 @@ struct ShelfTopBar: View {
         GlassEffectContainer(spacing: DesignTokens.spacingMedium) {
             HStack(spacing: DesignTokens.spacingMedium) {
                 ShelfSearchField(model: model)
+                ShelfFiltersButton(model: model)
                 ScrollView(.horizontal) {
                     HStack(spacing: DesignTokens.spacingMedium) {
                         TabCapsule(isSelected: model.tab == .history) {
@@ -38,7 +39,33 @@ struct ShelfTopBar: View {
             }
             .controlSize(.large)
         }
+        .overlay(alignment: .bottomLeading) {
+            Color.clear
+                .frame(height: 0)
+                .overlay(alignment: .topLeading) {
+                    if model.isSearchFieldFocused, !model.suggestions.isEmpty {
+                        SearchSuggestionList(model: model)
+                            .padding(.top, DesignTokens.spacingSmall)
+                    }
+                }
+        }
         .animation(reduceMotion ? nil : .default, value: model.tab)
+    }
+}
+
+private struct ShelfFiltersButton: View {
+    let model: ShelfModel
+
+    var body: some View {
+        @Bindable var model = model
+        Button("Filters", systemImage: "line.3.horizontal.decrease") {
+            model.isFilterBrowserPresented.toggle()
+        }
+        .labelStyle(.iconOnly)
+        .buttonStyle(.glass)
+        .popover(isPresented: $model.isFilterBrowserPresented, arrowEdge: .top) {
+            FilterBrowser(model: model)
+        }
     }
 }
 
@@ -54,19 +81,32 @@ private struct ShelfSearchField: View {
             Image(systemName: "magnifyingglass")
                 .foregroundStyle(.secondary)
                 .accessibilityHidden(true)
+            ForEach(model.tokens) { token in
+                SearchTokenChip(token: token, model: model)
+            }
             TextField("Search", text: $model.query, selection: $model.searchSelection)
                 .textFieldStyle(.plain)
+                .frame(minWidth: DesignTokens.searchTextMinimumWidth)
                 .focused($isFocused)
                 .onKeyPress(.escape) {
                     model.clearSearch() ? .handled : .ignored
                 }
-                .onKeyPress(keys: [.downArrow, .tab]) { press in
+                .onKeyPress(.delete) {
+                    model.removeLastToken() ? .handled : .ignored
+                }
+                .onKeyPress(keys: [.downArrow, .upArrow, .tab]) { press in
                     guard press.modifiers.isEmpty else { return .ignored }
+                    if press.key != .tab, model.moveSuggestionHighlight(press.key == .downArrow ? .next : .previous) {
+                        return .handled
+                    }
+                    guard press.key != .upArrow else { return .ignored }
                     model.focusCards()
                     return .handled
                 }
                 .onKeyPress(.return) {
-                    actions.pasteOnDoubleClick(model.selectedCards.map(\.id))
+                    if !model.acceptHighlightedSuggestion() {
+                        actions.pasteOnDoubleClick(model.selectedCards.map(\.id))
+                    }
                     return .handled
                 }
                 .onChange(of: model.isSearchFieldFocused) { _, isFocused in
@@ -75,7 +115,7 @@ private struct ShelfSearchField: View {
                 .onChange(of: isFocused) { _, isFocused in
                     model.searchFieldFocusDidChange(isFocused)
                 }
-            if !model.query.isEmpty {
+            if !model.query.isEmpty || !model.tokens.isEmpty {
                 Button("Clear Search", systemImage: "xmark.circle.fill") {
                     _ = model.clearSearch()
                 }
@@ -86,7 +126,8 @@ private struct ShelfSearchField: View {
         }
         .padding(.horizontal, DesignTokens.spacingLarge)
         .padding(.vertical, DesignTokens.spacingMedium)
-        .frame(width: DesignTokens.searchFieldWidth)
+        .frame(minWidth: DesignTokens.searchFieldWidth)
+        .fixedSize(horizontal: true, vertical: false)
         .glassEffect(.regular.interactive(), in: .capsule)
     }
 }
@@ -186,5 +227,33 @@ private struct ShelfMoreMenu: View {
         .menuIndicator(.hidden)
         .buttonStyle(.glass)
         .fixedSize()
+    }
+}
+
+private struct SearchTokenChip: View {
+    let token: SearchToken
+    let model: ShelfModel
+
+    var body: some View {
+        let title = model.title(of: token)
+        Button {
+            model.removeToken(token)
+        } label: {
+            HStack(spacing: DesignTokens.spacingSmall) {
+                SearchTokenLabel(token: token, title: title, boards: model.boards)
+                Image(systemName: "xmark")
+                    .imageScale(.small)
+                    .foregroundStyle(.secondary)
+            }
+            .font(.callout)
+            .padding(DesignTokens.searchTokenInsets)
+            .background(.fill.secondary, in: .capsule)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text(
+            "Remove Filter \(title)",
+            comment: "VoiceOver label of a search filter token; the argument is the filter"
+        ))
+        .help(Text("Remove Filter", comment: "Tooltip of a search filter token"))
     }
 }

@@ -91,6 +91,26 @@ struct CardFilterTests {
         #expect(results.map(\.id) == [id])
     }
 
+    @Test func `observed search applies the filter`() async throws {
+        try await record("alpha note", kind: .text, app: Self.editor, at: .now - 60)
+        let link = try await record("beta note", kind: .link, app: Self.browser, at: .now - 60)
+
+        var updates = repository.observeSearch("note", filter: CardFilter(kind: .link)).makeAsyncIterator()
+
+        #expect(try await updates.next()?.map(\.id) == [link])
+    }
+
+    @Test func `source apps list apps that have cards by name`() async throws {
+        try await record("alpha", kind: .text, app: Self.editor, at: Self.now)
+        let beta = try await record("beta", kind: .text, app: Self.browser, at: Self.now)
+        var updates = repository.observeSourceApps().makeAsyncIterator()
+
+        #expect(try await updates.next() == [Self.browser, Self.editor])
+
+        _ = try await repository.delete(cards: [beta], in: .history)
+        #expect(try await updates.next() == [Self.editor])
+    }
+
     @Test func `date ranges use calendar`() throws {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = try #require(TimeZone(identifier: "America/New_York"))

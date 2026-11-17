@@ -1,4 +1,4 @@
-public struct SourceApp: Sendable, Equatable {
+public struct SourceApp: Sendable, Hashable {
     public var bundleID: String
     public var name: String
 

@@ -17,6 +17,13 @@ public enum DesignTokens {
     public static let shelfOpenOffset: CGFloat = 24
     public static let shelfOpenScale: CGFloat = 0.98
     public static let searchFieldWidth: CGFloat = 220
+    public static let searchTextMinimumWidth: CGFloat = 80
+    public static let searchTokenInsets = EdgeInsets(top: 2, leading: 6, bottom: 2, trailing: 4)
+    public static let searchSuggestionInsets = EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8)
+    public static let searchSuggestionCornerRadius: CGFloat = 6
+    public static let searchSuggestionListCornerRadius: CGFloat = 12
+    public static let filterBrowserWidth: CGFloat = 260
+    public static let filterBrowserHeight: CGFloat = 380
 
     public static let cardSide: CGFloat = 220
     public static let compactCardHeightThreshold: CGFloat = 150

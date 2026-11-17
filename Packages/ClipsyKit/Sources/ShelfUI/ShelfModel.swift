@@ -1,5 +1,3 @@
-import AppKit
-import Carbon.HIToolbox
 import Foundation
 import KeyboardShortcuts
 import Observation
@@ -12,7 +10,9 @@ import SwiftUI
 public final class ShelfModel {
     public typealias CardObservation = @Sendable (CardList) -> any AsyncSequence<[CardSummary], any Error> & Sendable
     public typealias BoardObservation = @Sendable () -> any AsyncSequence<[Board], any Error> & Sendable
-    public typealias SearchObservation = @Sendable (String) -> any AsyncSequence<[SearchResult], any Error> & Sendable
+    public typealias SearchObservation = @Sendable (String, CardFilter)
+        -> any AsyncSequence<[SearchResult], any Error> & Sendable
+    public typealias AppObservation = @Sendable () -> any AsyncSequence<[SourceApp], any Error> & Sendable
 
     public enum Direction: Sendable {
         case previous
@@ -24,11 +24,29 @@ public final class ShelfModel {
     public private(set) var boards: [Board] = []
     var query = "" {
         didSet {
-            if Self.searchText(of: oldValue) != searchText {
+            highlightedSuggestion = nil
+            updateSuggestions()
+            if !isResettingSearch, Self.searchText(of: oldValue) != searchText {
                 searchTextDidChange()
             }
         }
     }
+
+    var tokens: [SearchToken] = [] {
+        didSet {
+            if oldValue != tokens {
+                updateSuggestions()
+                if !isResettingSearch {
+                    searchTextDidChange()
+                }
+            }
+        }
+    }
+
+    var apps: [SourceApp] = []
+    var suggestions: [SearchToken] = []
+    var highlightedSuggestion: SearchToken?
+    var isFilterBrowserPresented = false
 
     var searchSelection: TextSelection?
     var isSearchFieldFocused = false
@@ -49,27 +67,31 @@ public final class ShelfModel {
     private(set) var revealedID: Int64?
     private var selectsFirstOnLoad = true
     private var pendingRevealID: Int64?
+    @ObservationIgnored private var isResettingSearch = false
 
     @ObservationIgnored private let observe: CardObservation
     @ObservationIgnored private let observeBoardList: BoardObservation
     @ObservationIgnored private let observeSearchResults: SearchObservation
+    @ObservationIgnored let observeAppList: AppObservation
     @ObservationIgnored private let searchDelay: Duration
     @ObservationIgnored private let defaults: UserDefaults
 
     private static let tabKey = "ShelfTab"
-    private static let logger = Logger(subsystem: "app.gonar.clipsy", category: "Shelf")
+    static let logger = Logger(subsystem: "app.gonar.clipsy", category: "Shelf")
 
     public init(
         defaults: UserDefaults = .standard,
         observe: @escaping CardObservation,
         observeBoards: @escaping BoardObservation,
-        observeSearch: @escaping SearchObservation = { _ in AsyncThrowingStream { $0.finish() } },
+        observeSearch: @escaping SearchObservation = { _, _ in AsyncThrowingStream { $0.finish() } },
+        observeApps: @escaping AppObservation = { AsyncThrowingStream { $0.finish() } },
         searchDelay: Duration = .milliseconds(150)
     ) {
         self.defaults = defaults
         self.observe = observe
         observeBoardList = observeBoards
         observeSearchResults = observeSearch
+        observeAppList = observeApps
         self.searchDelay = searchDelay
         tab = Self.decodeTab(defaults.string(forKey: Self.tabKey)) ?? .history
     }
@@ -118,7 +140,7 @@ public final class ShelfModel {
     }
 
     func clearSearch() -> Bool {
-        guard !query.isEmpty else { return false }
+        guard !query.isEmpty || !tokens.isEmpty else { return false }
         resetSearch()
         return true
     }
@@ -232,48 +254,12 @@ public final class ShelfModel {
         selection = Set(cards.map(\.id))
     }
 
-    func handleSelectionKey(keyCode: Int, character: String?, modifiers: NSEvent.ModifierFlags) -> Bool {
-        switch (keyCode, modifiers) {
-        case (kVK_LeftArrow, []), (kVK_LeftArrow, .shift):
-            move(.previous, extending: modifiers == .shift)
-        case (kVK_RightArrow, []), (kVK_RightArrow, .shift):
-            move(.next, extending: modifiers == .shift)
-        case (kVK_UpArrow, .command):
-            selectFirst()
-        case (kVK_DownArrow, .command):
-            selectLast()
-        case (_, .command) where character == "a":
-            selectAll()
-        default:
-            return false
-        }
-        return true
-    }
-
-    var selectedCards: [CardSummary] {
-        cards.filter { selection.contains($0.id) }
-    }
-
-    func neighbor(afterRemoving ids: Set<Int64>) -> Int64? {
-        guard let last = cards.lastIndex(where: { ids.contains($0.id) }) else { return nil }
-        if let next = cards[(last + 1)...].first(where: { !ids.contains($0.id) }) {
-            return next.id
-        }
-        return cards[..<last].last { !ids.contains($0.id) }?.id
-    }
-
     func receive(_ newCards: [CardSummary]) {
         listCards = newCards
         hasLoadedList = true
         observationError = nil
         guard !isSearching else { return }
         show(newCards)
-    }
-
-    private func resetSearch() {
-        searchSelection = nil
-        requestedSearchSelection = nil
-        query = ""
     }
 
     private func show(_ newCards: [CardSummary]) {
@@ -298,6 +284,7 @@ public final class ShelfModel {
         let previousIDs = hasLoadedBoards ? Set(boards.map(\.id)) : nil
         boards = newBoards
         hasLoadedBoards = true
+        boardsDidChange()
         if case let .board(id) = tab, !newBoards.contains(where: { $0.id == id }), previousIDs?.contains(id) ?? true {
             showTab(.history)
         }
@@ -351,19 +338,24 @@ public final class ShelfModel {
 }
 
 extension ShelfModel {
+    struct SearchKey: Equatable {
+        var text: String
+        var filter: CardFilter
+    }
+
     public func observeSearch() async {
-        let text = searchText
-        guard !text.isEmpty else { return }
+        let key = searchKey
+        guard isSearching else { return }
         do {
             try await Task.sleep(for: searchDelay)
-            for try await results in observeSearchResults(text) {
-                guard text == searchText else { return }
+            for try await results in observeSearchResults(key.text, key.filter) {
+                guard key == searchKey else { return }
                 receiveResults(results)
             }
         } catch is CancellationError {
             return
         } catch {
-            guard text == searchText else { return }
+            guard key == searchKey else { return }
             Self.logger.error("search failed: \(String(describing: type(of: error)), privacy: .public)")
             observationError = error
         }
@@ -373,8 +365,12 @@ extension ShelfModel {
         Self.searchText(of: query)
     }
 
+    var searchKey: SearchKey {
+        SearchKey(text: searchText, filter: SearchToken.filter(of: tokens))
+    }
+
     var isSearching: Bool {
-        !searchText.isEmpty
+        !searchText.isEmpty || !tokens.isEmpty
     }
 
     func searchResult(for id: Int64) -> SearchResult? {
@@ -416,11 +412,10 @@ extension ShelfModel {
     }
 
     func focusSearch() {
-        let selection = TextSelection(range: query.startIndex ..< query.endIndex)
         if isSearchFieldFocused, requestedSearchSelection == nil {
-            searchSelection = selection
+            isFilterBrowserPresented = true
         } else {
-            requestedSearchSelection = selection
+            requestedSearchSelection = TextSelection(range: query.startIndex ..< query.endIndex)
             isSearchFieldFocused = true
         }
     }
@@ -454,6 +449,20 @@ extension ShelfModel {
         hasLoadedResults = true
         observationError = nil
         show(results.map(\.card))
+    }
+
+    private func resetSearch() {
+        searchSelection = nil
+        requestedSearchSelection = nil
+        isFilterBrowserPresented = false
+        let wasSearching = isSearching
+        isResettingSearch = true
+        query = ""
+        tokens = []
+        isResettingSearch = false
+        if wasSearching {
+            searchTextDidChange()
+        }
     }
 
     private func searchTextDidChange() {

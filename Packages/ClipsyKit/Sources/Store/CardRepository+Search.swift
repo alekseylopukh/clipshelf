@@ -17,12 +17,29 @@ public extension CardRepository {
         return Self.results(cards, query: query)
     }
 
-    func observeSearch(_ text: String) -> some AsyncSequence<[SearchResult], any Error> & Sendable {
+    func observeSearch(
+        _ text: String,
+        filter: CardFilter = CardFilter()
+    ) -> some AsyncSequence<[SearchResult], any Error> & Sendable {
         let query = SearchQuery(text)
-        let request = Self.searchRequest(query, filter: CardFilter(), now: .now, calendar: .current)
+        let request = Self.searchRequest(query, filter: filter, now: .now, calendar: .current)
         return ValueObservation
             .tracking { connection in
                 try Self.results(request?.fetchAll(connection) ?? [], query: query)
+            }
+            .removeDuplicates()
+            .values(in: database.pool, bufferingPolicy: .bufferingNewest(1))
+    }
+
+    func observeSourceApps() -> some AsyncSequence<[SourceApp], any Error> & Sendable {
+        ValueObservation
+            .tracking { connection in
+                try Row.fetchAll(connection, sql: """
+                SELECT bundle_id, name FROM source_app
+                WHERE EXISTS (SELECT 1 FROM card WHERE card.source_app_id = source_app.id)
+                """)
+                .map { SourceApp(bundleID: $0["bundle_id"], name: $0["name"]) }
+                .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
             }
             .removeDuplicates()
             .values(in: database.pool, bufferingPolicy: .bufferingNewest(1))
