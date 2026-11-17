@@ -9,6 +9,7 @@ import SwiftUI
 @main
 struct ClipsyApp: App {
     @State private var shelf: ShelfController
+    @State private var retention: RetentionSettings
 
     init() {
         let repository = CardRepository(database: Self.openDatabase())
@@ -21,6 +22,11 @@ struct ClipsyApp: App {
         _ = Task {
             try await monitor.run()
         }
+        let retention = RetentionSettings(repository: repository)
+        _ = Task {
+            try await retention.runPurgeSchedule()
+        }
+        _retention = State(initialValue: retention)
 
         let shelf = ShelfController(
             model: ShelfModel { repository.observeCards(in: $0) },
@@ -56,6 +62,7 @@ struct ClipsyApp: App {
 
         Settings {
             SettingsView()
+                .environment(retention)
         }
     }
 

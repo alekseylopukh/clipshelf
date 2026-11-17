@@ -158,11 +158,110 @@
       "comment" : "Name of a board created without one",
       "extractionState" : "manual"
     },
-    "Version" : {
-
-    },
     "You can undo this until the shelf closes." : {
       "comment" : "Informative text of the confirmation shown before deleting several cards"
+    },
+    "General" : {
+      "comment" : "Title of the General pane in Settings"
+    },
+    "Open at login" : {
+      "comment" : "Settings toggle that registers Clipsy as a login item"
+    },
+    "Needs your approval" : {
+      "comment" : "Settings row shown when the login item waits for approval in System Settings"
+    },
+    "Allow Clipsy in System Settings › General › Login Items." : {
+      "comment" : "Explanation under the login item approval row in Settings"
+    },
+    "Open Login Items…" : {
+      "comment" : "Settings button that opens Login Items in System Settings"
+    },
+    "Sound effects" : {
+      "comment" : "Settings toggle for sounds on paste and capture"
+    },
+    "Pasting" : {
+      "comment" : "Section header in the General settings pane"
+    },
+    "Paste behavior" : {
+      "comment" : "Label of the radio group that chooses what pasting a card does"
+    },
+    "Paste into the active app" : {
+      "comment" : "Paste behavior option that pastes the card into the frontmost app"
+    },
+    "Copy to the clipboard only" : {
+      "comment" : "Paste behavior option that only copies the card"
+    },
+    "Paste without formatting by default" : {
+      "comment" : "Settings toggle that makes every paste plain text"
+    },
+    "Accessibility" : {
+      "comment" : "Label of the Accessibility permission status row in Settings"
+    },
+    "Allowed" : {
+      "comment" : "Status of a granted permission in Settings"
+    },
+    "Clipsy can paste directly into other apps." : {
+      "comment" : "Explanation under the Accessibility row when the permission is granted"
+    },
+    "Not allowed. Clipsy copies cards to the clipboard instead of pasting them." : {
+      "comment" : "Explanation under the Accessibility row when the permission is missing"
+    },
+    "History" : {
+      "comment" : "Section header in the General settings pane"
+    },
+    "Keep history for" : {
+      "comment" : "Label of the retention slider in Settings"
+    },
+    "1 Day" : {
+      "comment" : "Retention slider tick"
+    },
+    "1 Week" : {
+      "comment" : "Retention slider tick"
+    },
+    "1 Month" : {
+      "comment" : "Retention slider tick"
+    },
+    "1 Year" : {
+      "comment" : "Retention slider tick"
+    },
+    "Forever" : {
+      "comment" : "Retention slider tick"
+    },
+    "Remove all cards from History" : {
+      "comment" : "Label of the Erase History row in Settings"
+    },
+    "Cards on boards are kept." : {
+      "comment" : "Explanation under the Erase History row in Settings"
+    },
+    "Erase History…" : {
+      "comment" : "Settings button that asks to erase the history"
+    },
+    "Erase all History?" : {
+      "comment" : "Title of the alert confirming Erase History"
+    },
+    "All cards will be removed from History. Cards on boards are kept. You can’t undo this action." : {
+      "comment" : "Message of the alert confirming Erase History"
+    },
+    "Erase History" : {
+      "comment" : "Destructive button in the alert confirming Erase History"
+    },
+    "Clipsy can’t erase the history." : {
+      "comment" : "Title of the alert shown when erasing the history fails"
+    },
+    "Remove older cards from History?" : {
+      "comment" : "Title of the alert shown when a shorter retention limit would remove cards"
+    },
+    "Cards older than the new limit will be removed from History. Cards on boards are kept. You can’t undo this action." : {
+      "comment" : "Message of the alert shown when a shorter retention limit would remove cards"
+    },
+    "Remove Cards" : {
+      "comment" : "Destructive button that confirms a shorter retention limit"
+    },
+    "Clipsy can’t change how long it keeps history." : {
+      "comment" : "Title of the alert shown when changing the retention limit fails"
+    },
+    "Clipsy can’t change the login item." : {
+      "comment" : "Title of the alert shown when registering or unregistering the login item fails"
     }
   },
   "version" : "1.0"

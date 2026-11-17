@@ -41,6 +41,7 @@ Not maintainer decisions. They are the doc's current text or the simplest choice
 | WD-27 | Accessibility alert on paste ([product §4.5](product.md#45-paste-mechanics) step 5, [design §9](design.md#9-onboarding-and-permissions)) | Shown at most once per launch; "Don't ask again" makes that permanent; either way later pastes copy only until Accessibility is granted. "Open System Settings…" calls `AXIsProcessTrustedWithOptions` with the prompt, which lists Clipsy in Privacy & Security and offers the system's own "Open System Settings"; "Copy Only" reactivates the target app so ⌘V works. Since T11.1, Return and ⌘C with several cards selected paste or copy them all |
 | WD-28 | Quick Paste details ([product §4.6](product.md#46-quick-paste)) | Badges show only while the modifier is held; a card counts as visible when at least half of it is in view; digits are matched by key position (number row and keypad), so they work on any layout; a stored modifier that is not allowed, or a plain-text modifier equal to the Quick Paste one, falls back to the default; Return and double-click keep ⇧ until T6.2 makes them read the plain-text modifier setting |
 | WD-29 | Sequence panel ([design §6](design.md#6-sequence)) | First shown at the top-right of the display under the pointer, then wherever the user moved it (AppKit frame autosave); hidden from screen sharing like the Shelf until the screenshot setting exists; rows are a fixed two-line height, up to 6 visible before scrolling; the next marker is an accent dot; the trailing symbol shows the card type; ⌘Z, ⌫ and Esc work while the panel is key, which happens only when the user clicks into it |
+| WD-30 | General pane details ([product §6 General](product.md#general), [§4.4](product.md#44-retention)) | The retention slider commits when the drag ends (keyboard steps commit at once); confirmation is asked only when lowering the limit and some History card, on a board or not, is older than the new limit; raising it never purges; the hourly purge uses `ContinuousClock`, so time asleep counts; the Accessibility row's "Open System Settings…" calls the same prompt as WD-27; a login item waiting for approval shows as on, with a button that opens Login Items; Show in menu bar and the click toggle come with T6.4, the storage summary with T7.2 |
 
 ## Rules for every task
 
@@ -366,6 +367,7 @@ What exists:
 - Acceptance: test `loweringRetentionNeedsConfirmation` on the settings model; test `purgeScheduleRunsAtLaunch` with a fake clock
 - Human check: login item appears in System Settings › General › Login Items
 - Size: M
+- Status: done
 
 ### T6.2 Shortcuts pane
 - Module(s): App, Pasting

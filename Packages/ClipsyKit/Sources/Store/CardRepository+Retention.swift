@@ -9,6 +9,17 @@ public extension CardRepository {
     }
 
     @concurrent
+    func hasHistory(olderThan cutoff: Date) async throws -> Bool {
+        try await database.pool.read { connection in
+            try Bool.fetchOne(
+                connection,
+                sql: "SELECT EXISTS (SELECT 1 FROM card WHERE last_copied_at < ?)",
+                arguments: [cutoff.timeIntervalSince1970]
+            ) ?? false
+        }
+    }
+
+    @concurrent
     func eraseHistory() async throws {
         try await removeHistory(before: .infinity)
     }

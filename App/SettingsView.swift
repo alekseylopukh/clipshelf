@@ -1,21 +1,26 @@
+import Store
 import SwiftUI
 
 struct SettingsView: View {
+    @AppStorage("SettingsPane") private var pane = SettingsPane.general
+
     var body: some View {
-        Form {
-            LabeledContent("Version", value: Bundle.main.marketingVersion)
+        TabView(selection: $pane) {
+            Tab("General", systemImage: "gearshape", value: SettingsPane.general) {
+                GeneralSettingsView()
+            }
         }
-        .formStyle(.grouped)
-        .frame(width: 420)
+        .frame(width: 500)
     }
 }
 
-private extension Bundle {
-    var marketingVersion: String {
-        object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
-    }
+enum SettingsPane: String {
+    case general
 }
 
 #Preview {
-    SettingsView()
+    if let database = try? AppDatabase.temporary() {
+        SettingsView()
+            .environment(RetentionSettings(repository: CardRepository(database: database)))
+    }
 }

@@ -1,6 +1,6 @@
 import Foundation
 
-public enum RetentionPeriod: String, CaseIterable, Sendable {
+public enum RetentionPeriod: String, CaseIterable, Comparable, Sendable {
     case day
     case week
     case month
@@ -8,6 +8,10 @@ public enum RetentionPeriod: String, CaseIterable, Sendable {
     case forever
 
     public static let `default` = RetentionPeriod.month
+
+    public static func < (lhs: RetentionPeriod, rhs: RetentionPeriod) -> Bool {
+        allCases.firstIndex(of: lhs) ?? 0 < allCases.firstIndex(of: rhs) ?? 0
+    }
 
     /// nil for `forever`
     public func cutoff(before date: Date, calendar: Calendar = .current) -> Date? {

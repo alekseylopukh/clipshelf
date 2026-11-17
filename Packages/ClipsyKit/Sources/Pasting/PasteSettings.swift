@@ -9,6 +9,7 @@ public enum PasteSettings {
     public static let behaviorKey = "PasteBehavior"
     public static let plainTextByDefaultKey = "PastePlainTextByDefault"
     public static let accessibilityAlertSuppressedKey = "AccessibilityAlertSuppressed"
+    public static let soundEffectsKey = "SoundEffects"
 }
 
 extension UserDefaults {
