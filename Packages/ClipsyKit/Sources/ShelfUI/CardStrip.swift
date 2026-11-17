@@ -40,9 +40,15 @@ struct CardStrip: View {
                     model.setVisibleCards(ids)
                 }
                 .onChange(of: model.cursorID) { _, cursorID in
-                    guard let cursorID else { return }
+                    guard let cursorID, cursorID != model.revealedID else { return }
                     withAnimation(reduceMotion ? nil : .default) {
                         proxy.scrollTo(cursorID)
+                    }
+                }
+                .onChange(of: model.revealedID) { _, revealedID in
+                    guard let revealedID else { return }
+                    withAnimation(reduceMotion ? nil : .default) {
+                        proxy.scrollTo(revealedID, anchor: .center)
                     }
                 }
             }

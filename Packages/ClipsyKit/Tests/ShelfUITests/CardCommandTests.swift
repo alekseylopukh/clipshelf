@@ -12,7 +12,7 @@ struct CardCommandTests {
     func `multi selection menu has only batch items`(list: CardList) {
         let batch: Set<CardCommand> = [.paste, .pasteAsPlainText, .copy, .addToSequence, .removeFromBoard, .delete]
 
-        let menu = CardCommand.menu(for: [Self.card(1, .text), Self.card(2, .link)], in: list)
+        let menu = CardCommand.menu(for: [Self.card(1, .text), Self.card(2, .link)], in: list, isSearchResult: false)
 
         #expect(Set(menu.joined()).isSubset(of: batch))
         #expect(menu == [
@@ -21,7 +21,7 @@ struct CardCommandTests {
     }
 
     @Test func `text card in history has every applicable item`() {
-        let menu = CardCommand.menu(for: [Self.card(1, .text)], in: .history)
+        let menu = CardCommand.menu(for: [Self.card(1, .text)], in: .history, isSearchResult: false)
 
         #expect(menu == [
             [.paste, .pasteAsPlainText],
@@ -33,13 +33,24 @@ struct CardCommandTests {
     }
 
     @Test func `file card on a board can be opened and removed`() {
-        let menu = CardCommand.menu(for: [Self.card(1, .file)], in: .board(id: 1))
+        let menu = CardCommand.menu(for: [Self.card(1, .file)], in: .board(id: 1), isSearchResult: false)
 
         #expect(menu == [[.paste], [.copy], [.open], [.rename], [.addToSequence], [.removeFromBoard]])
     }
 
+    @Test func `search result can be shown in its list`() {
+        let menu = CardCommand.menu(for: [Self.card(1, .text)], in: .history, isSearchResult: true)
+
+        #expect(menu.contains([.showInList, .rename]))
+        #expect(CardCommand.menu(
+            for: [Self.card(1, .text), Self.card(2, .text)],
+            in: .history,
+            isSearchResult: true
+        ).joined().contains(.showInList) == false)
+    }
+
     @Test func `no cards means no menu`() {
-        #expect(CardCommand.menu(for: [], in: .history).isEmpty)
+        #expect(CardCommand.menu(for: [], in: .history, isSearchResult: false).isEmpty)
     }
 
     @Test func `link opens its url`() {

@@ -17,7 +17,7 @@ public final class ShelfController {
 
     private static let heightKey = "ShelfHeight"
     private static let logger = Logger(subsystem: "app.gonar.clipsy", category: "Shelf")
-    private static let commandKeys: [String: CardCommand] = ["o": .open, "r": .rename]
+    private static let commandKeys: [String: CardCommand] = ["o": .open, "r": .rename, "g": .showInList]
 
     let panel = ShelfPanel()
     private let presentation = ShelfPresentation()
@@ -172,6 +172,9 @@ public final class ShelfController {
             Task {
                 await open(cardID)
             }
+        case .showInList:
+            guard ids.count == 1, let cardID = ids.first else { return }
+            model.showInList(cardID)
         case .rename:
             guard ids.count == 1 else { return }
             actions.renamingCardID = ids.first

@@ -269,6 +269,9 @@
     "Rename…" : {
       "comment" : "Context menu item that opens a popover to give the selected card a custom title"
     },
+    "Show in List" : {
+      "comment" : "Context menu item on a search result that clears the search and selects the card in its History or board tab"
+    },
     "Reverse Order" : {
       "comment" : "Sequence panel menu toggle that adds new cards at the head instead of the end",
       "extractionState" : "manual"

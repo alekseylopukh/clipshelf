@@ -6,12 +6,13 @@ public enum CardCommand: Hashable, Sendable {
     case copy
     case copyAsPlainText
     case open
+    case showInList
     case rename
     case addToSequence
     case removeFromBoard
     case delete
 
-    static func menu(for cards: [CardSummary], in list: CardList) -> [[CardCommand]] {
+    static func menu(for cards: [CardSummary], in list: CardList, isSearchResult: Bool) -> [[CardCommand]] {
         let removal: CardCommand = if case .board = list {
             .removeFromBoard
         } else {
@@ -25,7 +26,7 @@ public enum CardCommand: Hashable, Sendable {
             hasPlainText ? [.paste, .pasteAsPlainText] : [.paste],
             hasPlainText ? [.copy, .copyAsPlainText] : [.copy],
             card.kind == .link || card.kind == .file ? [.open] : [],
-            [.rename],
+            isSearchResult ? [.showInList, .rename] : [.rename],
             [.addToSequence],
             [removal]
         ]

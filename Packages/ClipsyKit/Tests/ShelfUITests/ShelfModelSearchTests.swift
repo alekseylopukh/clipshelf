@@ -217,4 +217,65 @@ final class ShelfModelSearchTests {
         model.showTab(.board(id: 1))
         #expect(model.query.isEmpty)
     }
+
+    @Test func `show in list selects card in its tab`() {
+        let model = makeModel(cards: [5, 4, 3, 2, 1])
+        model.receiveBoards(Self.boards([7]))
+        model.didOpen()
+        let boardOnly = CardSummary(id: 20, kind: .text, createdAt: .now, boardID: 7)
+        let historyCard = CardSummary(id: 3, kind: .text, createdAt: .now, lastCopiedAt: .now)
+        let results = [boardOnly, historyCard].map { SearchResult(card: $0, titleMatches: [], previewMatches: []) }
+
+        model.query = "in"
+        model.receiveResults(results)
+        model.select(3)
+        model.showInList(3)
+
+        #expect(model.query.isEmpty)
+        #expect(model.tab == .history)
+        #expect(model.cards.map(\.id) == [5, 4, 3, 2, 1])
+        #expect(model.selection == [3])
+        #expect(model.revealedID == 3)
+        #expect(model.isSearchFieldFocused == false)
+
+        model.query = "in"
+        model.receiveResults(results)
+        model.showInList(20)
+
+        #expect(model.query.isEmpty)
+        #expect(model.tab == .board(id: 7))
+        #expect(model.selection.isEmpty)
+        model.receive(Self.cards([21, 20, 19]))
+        #expect(model.selection == [20])
+        #expect(model.revealedID == 20)
+
+        model.move(.next)
+        #expect(model.selection == [19])
+        #expect(model.revealedID == nil)
+    }
+
+    @Test func `show in list falls back to the first card when the card is gone`() {
+        let model = makeModel(cards: [2, 1])
+        model.receiveBoards(Self.boards([7]))
+        model.didOpen()
+        let boardOnly = CardSummary(id: 20, kind: .text, createdAt: .now, boardID: 7)
+        model.query = "in"
+        model.receiveResults([SearchResult(card: boardOnly, titleMatches: [], previewMatches: [])])
+
+        model.showInList(20)
+        model.receive(Self.cards([9, 8]))
+
+        #expect(model.selection == [9])
+        #expect(model.revealedID == nil)
+    }
+
+    @Test func `show in list needs a search`() {
+        let model = makeModel(cards: [2, 1])
+        model.didOpen()
+
+        model.showInList(1)
+
+        #expect(model.selection == [2])
+        #expect(model.revealedID == nil)
+    }
 }

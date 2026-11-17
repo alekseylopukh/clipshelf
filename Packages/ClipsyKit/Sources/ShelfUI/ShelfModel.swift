@@ -46,7 +46,9 @@ public final class ShelfModel {
 
     private var anchorID: Int64?
     private(set) var cursorID: Int64?
+    private(set) var revealedID: Int64?
     private var selectsFirstOnLoad = true
+    private var pendingRevealID: Int64?
 
     @ObservationIgnored private let observe: CardObservation
     @ObservationIgnored private let observeBoardList: BoardObservation
@@ -137,6 +139,7 @@ public final class ShelfModel {
 
     public func didOpen() {
         isSearchFieldFocused = false
+        pendingRevealID = nil
         resetSearch()
         clearSelection()
         selectsFirstOnLoad = true
@@ -149,6 +152,7 @@ public final class ShelfModel {
         defaults.set(Self.encodeTab(list), forKey: Self.tabKey)
         listCards = []
         hasLoadedList = false
+        pendingRevealID = nil
         resetSearch()
         cards = []
         observationError = nil
@@ -204,6 +208,7 @@ public final class ShelfModel {
         selection = [id]
         anchorID = id
         cursorID = id
+        revealedID = nil
     }
 
     public func toggleSelection(of id: Int64) {
@@ -303,6 +308,15 @@ public final class ShelfModel {
     }
 
     private func selectFirstIfPending() {
+        if let id = pendingRevealID, hasLoadedList, !isSearching {
+            pendingRevealID = nil
+            if index(of: id) != nil {
+                selectsFirstOnLoad = false
+                select(id)
+                revealedID = id
+                return
+            }
+        }
         guard selectsFirstOnLoad, let first = cards.first else { return }
         selectsFirstOnLoad = false
         select(first.id)
@@ -312,6 +326,7 @@ public final class ShelfModel {
         selection = []
         anchorID = nil
         cursorID = nil
+        revealedID = nil
     }
 
     private func index(of id: Int64) -> Int? {
@@ -421,6 +436,19 @@ extension ShelfModel {
         isSearchFieldFocused = false
     }
 
+    func showInList(_ id: Int64) {
+        guard isSearching, let card = cards.first(where: { $0.id == id }) else { return }
+        let list = list(of: card)
+        if list == tab {
+            pendingRevealID = id
+            resetSearch()
+        } else {
+            showTab(list)
+            pendingRevealID = id
+        }
+        focusCards()
+    }
+
     func receiveResults(_ results: [SearchResult]) {
         searchResults = Dictionary(results.map { ($0.id, $0) }) { first, _ in first }
         hasLoadedResults = true
@@ -430,7 +458,10 @@ extension ShelfModel {
 
     private func searchTextDidChange() {
         selectsFirstOnLoad = true
-        guard !isSearching else { return }
+        guard !isSearching else {
+            pendingRevealID = nil
+            return
+        }
         searchResults = [:]
         hasLoadedResults = false
         show(listCards)

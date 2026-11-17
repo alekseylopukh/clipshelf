@@ -49,7 +49,11 @@ struct CardView: View {
         .simultaneousGesture(TapGesture().onEnded { click() })
         .contextMenu {
             let cards = isSelected ? model.selectedCards : [card]
-            CardContextMenu(cards: cards, list: model.removalList(for: cards.map(\.id)))
+            CardContextMenu(
+                cards: cards,
+                list: model.removalList(for: cards.map(\.id)),
+                isSearchResult: model.isSearching
+            )
         }
         .draggable(CardReference(cardID: card.id))
         .accessibilityElement(children: .ignore)
@@ -65,7 +69,11 @@ struct CardView: View {
         .accessibilityAddTraits(isSelected ? .isSelected : [])
         .accessibilityAction { model.select(card.id) }
         .accessibilityActions {
-            ForEach(CardCommand.menu(for: [card], in: model.list(of: card)).flatMap(\.self), id: \.self) { command in
+            ForEach(CardCommand.menu(
+                for: [card],
+                in: model.list(of: card),
+                isSearchResult: model.isSearching
+            ).flatMap(\.self), id: \.self) { command in
                 CardCommandButton(
                     command: command,
                     targetAppName: actions.targetAppName,

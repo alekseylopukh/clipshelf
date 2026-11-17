@@ -5,11 +5,12 @@ import SwiftUI
 struct CardContextMenu: View {
     let cards: [CardSummary]
     let list: CardList
+    let isSearchResult: Bool
 
     @Environment(CardActions.self) private var actions
 
     var body: some View {
-        ForEach(CardCommand.menu(for: cards, in: list), id: \.self) { section in
+        ForEach(CardCommand.menu(for: cards, in: list, isSearchResult: isSearchResult), id: \.self) { section in
             Section {
                 ForEach(section, id: \.self) { command in
                     CardCommandButton(
@@ -59,6 +60,9 @@ struct CardCommandButton: View {
         case .open:
             Button("Open", action: action)
                 .keyboardShortcut("o")
+        case .showInList:
+            Button("Show in List", action: action)
+                .keyboardShortcut("g")
         case .rename:
             Button("Rename…", action: action)
                 .keyboardShortcut("r")
