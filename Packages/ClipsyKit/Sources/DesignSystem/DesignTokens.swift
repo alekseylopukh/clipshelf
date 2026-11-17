@@ -9,6 +9,12 @@ public enum DesignTokens {
     public static let shelfPadding: CGFloat = 12
     public static let shelfCornerRadius: CGFloat = 26
     public static let cardCornerRadius: CGFloat = shelfCornerRadius - shelfPadding
+    public static let shelfMinimumHeight: CGFloat = 160
+    public static let shelfDefaultHeight: CGFloat = 300
+    public static let shelfMaximumHeightFraction: CGFloat = 0.4
+    public static let shelfResizeHandleHeight: CGFloat = 6
+    public static let shelfOpenOffset: CGFloat = 24
+    public static let shelfOpenScale: CGFloat = 0.98
 
     public static let cardSide: CGFloat = 220
     public static let compactCardHeightThreshold: CGFloat = 150

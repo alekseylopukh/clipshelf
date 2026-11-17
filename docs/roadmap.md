@@ -33,6 +33,7 @@ Not maintainer decisions. They are the doc's current text or the simplest choice
 | WD-19 | Update settings location | About pane |
 | WD-20 | Linking new modules into the app | One library product `ClipsyKit` lists every package target; the app links only it. If the app must import a third-party module directly and cannot, stop and ask the maintainer to link it in Xcode. |
 | WD-21 | Clipboard previous contents after paste | Not restored; no `currentHostOnly` |
+| WD-22 | Shelf size and Dock auto-hide ([design §2](design.md#placement-and-size)) | Minimum height 160 pt (one compact row), default 300 pt, maximum 40% of the visible height; placement uses the display's visible frame, so an auto-hidden Dock is not avoided |
 
 ## Rules for every task
 
@@ -198,10 +199,11 @@ What exists:
 - Module(s): ShelfUI
 - Depends on: T3.1
 - Spec: [product §4.13](product.md#413-shelf-window-behavior), [design §2](design.md#2-shelf), [design §11](design.md#11-component-mapping)
-- Deliverable: non-activating `NSPanel` subclass with glass container hosting SwiftUI; placement on the pointer's display, inset above a bottom Dock; joins active Space and full-screen Spaces; `sharingType = .none` by default; show/hide records the target app; closes on Esc, focus loss (except own sheets/menus); open/close motion with Reduce Motion fallback; top-edge resize between one row and 40% of the visible height, persisted (WD-13)
+- Deliverable: non-activating `NSPanel` subclass with glass container hosting SwiftUI; placement on the pointer's display, inset above a bottom Dock; joins active Space and full-screen Spaces; `sharingType = .none` by default; show/hide records the target app; closes on Esc, focus loss (except own sheets/menus); open/close motion with Reduce Motion fallback; top-edge resize between one row and 40% of the visible height, persisted (WD-13, WD-22)
 - Acceptance: tests `frameIsInsetAboveDock`, `heightIsClampedToRange` for a pure frame calculator
 - Human check: opens over a full-screen app without switching Spaces; TextEdit keeps its caret and stays frontmost; clicking elsewhere closes it; a screen recording does not show it; height survives relaunch
 - Size: M
+- Status: done
 
 ### T3.3 Global shelf shortcut
 - Module(s): App

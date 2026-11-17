@@ -50,12 +50,12 @@ Values marked "proposed" are starting points to tune on real hardware, not measu
 | Inset | Floats like the Dock: inset from the bottom and side edges of the visible frame (proposed 8–12 pt), with a soft system shadow. Never covers the menu bar. Respects the Dock: placed above it when the Dock is at the bottom and visible. |
 | Corners | Corner radius concentric with the display corners (proposed: match the system window radius for the inset used). Inner elements use concentric radii. |
 | Width | Full width of the visible frame minus the insets. |
-| Height | User-resizable by dragging the top edge; remembered per display size class. Proposed range: from one compact row to about 40% of the visible height. |
+| Height | User-resizable by dragging the top edge; one remembered height for all displays ([WD-13](roadmap.md#working-defaults-for-open-todos)). Range: from one compact row (160 pt) to 40% of the visible height; default 300 pt ([WD-22](roadmap.md#working-defaults-for-open-todos)). |
 | Compact mode | Below a height threshold (proposed: when a regular Card would be under ~150 pt tall) Cards switch to a condensed layout: header collapses to an icon and time, body fills the rest. |
 | Display | Opens on the display that holds the pointer. Moves with the user to the active Space and appears over full-screen apps. |
 
 > TODO: support left/right/top edges (vertical layout) as a later option, not in v1.
-> TODO: confirm the Dock-avoidance rule when the Dock is set to auto-hide.
+Placement uses the display's visible frame, so an auto-hidden Dock is not avoided ([WD-22](roadmap.md#working-defaults-for-open-todos)).
 
 ### Behavior as the user sees it
 

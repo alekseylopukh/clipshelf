@@ -319,8 +319,7 @@ The pasteboard keeps the pasted content afterwards; the previous clipboard is no
 - Closes on: Esc (when search is empty), a second press of the global shortcut, a successful paste or copy from the shelf, and focus loss.
 - **Focus loss:** clicking another app or window, or switching apps, closes the shelf. Closing is suspended while one of our own sheets, menus, popovers, the preview, the editor or the color panel is open.
   > TODO: option to keep the shelf open after paste (requested by users of comparable apps).
-- Height is resizable by dragging the top edge and is remembered.
-  > TODO: one height for all displays or per display.
+- Height is resizable by dragging the top edge and is remembered: one height for all displays ([WD-13](roadmap.md#working-defaults-for-open-todos)).
 - Excluded from screen sharing and screenshots unless "Show the Shelf in screenshots and screen sharing" is on.
 - The Sequence panel is a separate small floating panel that the user can move; its position is remembered. It follows the same Space and full-screen rules.
 
@@ -460,7 +459,7 @@ This is the item list; grouping and wording are in [design.md §7](design.md#7-m
 - > TODO: search scope: global or current tab (§4.9).
 - > TODO: undo scope beyond delete (§4.11).
 - > TODO: Delete on a board vs History (§4.11).
-- > TODO: keep-shelf-open option; per-display height (§4.13).
+- > TODO: keep-shelf-open option (§4.13).
 - > TODO: drag-out formats for several cards and for images (file vs image data).
 - > TODO: compact-size threshold (with design.md).
 - > TODO: URL scheme name and grammar (§3.7).
