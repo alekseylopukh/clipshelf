@@ -36,7 +36,7 @@ Values marked "proposed" are starting points to tune on real hardware, not measu
 | In-app promotional banners | None. Only system alerts where a permission is actually missing | No nudges, no upsell. |
 | Brand-tinted Sequence window | Plain glass panel with system rows | First-party look. |
 
-> TODO: optional faint tint (proposed 8–12% opacity) of the source app's icon color behind the Card header, off by default. Decide whether to ship it at all.
+An optional faint tint (8–12% opacity) of the source app's icon color behind the Card header is not part of v1; it is listed under Later in [roadmap.md](roadmap.md#later-not-scheduled).
 
 ---
 
@@ -54,7 +54,7 @@ Values marked "proposed" are starting points to tune on real hardware, not measu
 | Compact mode | When a regular Card would be under 150 pt tall ([WD-15](roadmap.md#working-defaults-for-open-todos)), Cards switch to a condensed layout: the header collapses to the app icon and time, the footer is hidden and the body fills the rest. |
 | Display | Opens on the display that holds the pointer. Moves with the user to the active Space and appears over full-screen apps. |
 
-> TODO: support left/right/top edges (vertical layout) as a later option, not in v1.
+Left, right and top edges (vertical layout) are not part of v1; they are listed under Later in [roadmap.md](roadmap.md#later-not-scheduled).
 Placement uses the display's visible frame, so an auto-hidden Dock is not avoided ([WD-22](roadmap.md#working-defaults-for-open-todos)).
 
 ### Behavior as the user sees it
@@ -146,7 +146,7 @@ While search is active, the Board switcher stays visible. Selecting a Board clea
 
 System colors only, so they adapt to light/dark and Increase Contrast: red, orange, yellow, green, blue, purple, gray (the Finder tag set). Pink is left out because it is hard to tell apart from red. The color picker in the New/Edit Board sheet is a row of these swatches, not a free color well.
 
-> TODO: decide whether "no color" is allowed for a Board.
+Working default [WD-9](roadmap.md#working-defaults-for-open-todos): every Board has a color; there is no "no color".
 
 ### Empty states
 
@@ -289,7 +289,7 @@ The recorder rejects combinations already used by the app, by a menu item or by 
 App icon, name, version and build, "Free and open-source under GPL-3.0", links: Source Code, Report an Issue, Acknowledgements (third-party licenses, shown in a sheet from `App/Credits.rtf`). An Updates section with an "Automatically check for updates" toggle (off by default) and a Check for Updates… button.
 
 Decided (T13.1, WD-19): update settings live in About.
-> TODO: an Advanced pane (capture polling, size limit) only if real need appears.
+There is no Advanced pane; capture polling and the size limit are fixed ([WD-1](roadmap.md#working-defaults-for-open-todos), [product §4.1](product.md#41-capture)).
 
 ---
 
@@ -357,27 +357,25 @@ Step 3 and the Privacy pane row read `NSPasteboard.general.accessBehavior` (chec
 | Edit sheet | `.sheet` with `Form`, `TextEditor`, `ColorPicker`, standard toolbar |
 | New/Edit Board | Sheet with `TextField` and a swatch row |
 | Sequence panel | Separate `NSPanel` (utility, non-activating) hosting SwiftUI; header in `GlassEffectContainer`; rows in `List` with `.onMove` and `.onDelete` |
-| Menu bar extra | `MenuBarExtra` with `.menuBarExtraStyle(.menu)`, or `NSStatusItem` when left-click-opens-Shelf is on |
+| Menu bar extra | `NSStatusItem` with an `NSMenu` ([WD-35](roadmap.md#working-defaults-for-open-todos)) |
 | Symbol effects | `.symbolEffect(.bounce)` on capture |
 | Settings | `Settings` scene, `TabView` with `.tabItem`, `Form` + `.formStyle(.grouped)` |
 | Shortcut recorder | `KeyboardShortcuts.Recorder` from KeyboardShortcuts ([architecture §2](architecture.md#2-stack)) |
 | Ignored apps list | `List` + `NSOpenPanel` limited to applications |
 | Onboarding | SwiftUI `Window` scene with a step container and standard buttons |
 | Alerts | `.alert` / `NSAlert` with `showsSuppressionButton` |
-| Toast/HUD (paused, copied) | Small glass capsule near the bottom center; > TODO: decide whether we need it at all or rely on the menu bar symbol |
+| Toast/HUD | None. The menu bar symbol shows the paused state ([§7](#7-menu-bar-extra)) and sounds confirm capture and paste ([WD-34](roadmap.md#working-defaults-for-open-todos)) |
 
-> TODO: verify exact SwiftUI glass API spellings (`.glass`, `.glassProminent`, `glassEffectID`, `glassEffectUnion`) and `NSGlassEffectView` properties against the macOS 26 SDK before implementation.
+Checked against the macOS 26 SDK: SwiftUI has `.glass`, `.glassProminent`, `glassEffectID(_:in:)` and `glassEffectUnion(id:namespace:)`; `NSGlassEffectView` has `contentView`, `cornerRadius`, `tintColor` and `style`.
 
 ---
 
 ## 12. Open questions
 
-> TODO: optional source-app tint on Card headers (§1) — ship or drop.
-> TODO: other Shelf edges (left/right/top) — later or never.
-> TODO: Quick Look as popover vs system `QLPreviewPanel`.
-> TODO: menu bar left-click default — menu (HIG) vs open Shelf. Current choice: menu, with opt-in.
-> TODO: compact-mode threshold and Card sizes — tune on 13" and 27"+ displays.
-> TODO: a Spotlight-like vertical list layout as an alternative to Cards.
-> TODO: Board "no color" option and maximum Board count in the switcher before it scrolls or collapses into a menu.
-> TODO: multi-display rule when the pointer and the key window are on different displays.
+These still need a test on real hardware or the task that settles them. Choices that follow a working default are in [roadmap.md](roadmap.md#working-defaults-for-open-todos); features left for later are in [roadmap.md](roadmap.md#later-not-scheduled).
+
+> TODO: Quick Look as popover vs system `QLPreviewPanel` (§5).
+> TODO: whether reading `changeCount` alone triggers the pasteboard prompt on macOS 26, and whether the `Privacy_Pasteboard` anchor opens the Paste from Other Apps list (§9).
+> TODO: compact-mode threshold and Card sizes: tune on 13" and 27"+ displays ([WD-15](roadmap.md#working-defaults-for-open-todos) until then).
+> TODO: maximum Board count in the switcher before it scrolls or collapses into a menu.
 > TODO: behavior and visuals on macOS releases after 26 (Liquid Glass changes not yet reviewed).

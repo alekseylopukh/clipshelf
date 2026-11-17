@@ -743,6 +743,7 @@ What exists:
 - Deliverable: README build-from-source and install sections; release checklist in CONTRIBUTING.md; remaining TODOs in docs/ reviewed and either resolved or listed in an Open questions section
 - Acceptance: every link in README and docs/ resolves
 - Size: S
+- Status: done
 
 ## Needs the maintainer
 

@@ -97,7 +97,7 @@ Local-only. No sync fields, no UUIDs, no tombstones: integer row IDs are enough.
   Backups/Damaged Store <date time>/           a damaged store moved aside at launch (§3.4)
 ```
 
-> TODO: confirm the directory name once the bundle ID is chosen.
+Working default [WD-18](roadmap.md#working-defaults-for-open-todos): the directory is `~/Library/Application Support/Clipsy/` (`AppDatabase.defaultDirectory`).
 
 ### 3.2 Schema
 
@@ -152,7 +152,7 @@ Rules:
 - **History vs. Board:** a Card is in History when `last_copied_at` is set, on a Board when `board_id` is set, or both. A Card with neither is deleted. A Card is on at most one Board; adding it to another Board moves it.
 - **Search index** is written by app code in the same transaction as the Card (the body comes from payloads, so SQL triggers cannot build it). OCR text updates the row later, and a link's page title replaces its body when the preview arrives ([WD-40](roadmap.md#working-defaults-for-open-todos)).
 - **Settings** (retention, ignore lists, toggles, shortcuts) live in `UserDefaults`, not in the database.
-- **Files** are stored by reference (`public.file-url` representation), not copied, per [product.md §4.1](product.md#41-capture) (including its open bookmark question).
+- **Files** are stored by reference (`public.file-url` representation), not copied, per [product.md §4.1](product.md#41-capture); no bookmark is kept ([WD-4](roadmap.md#working-defaults-for-open-todos)).
 
 > TODO: what happens when editing a Card's text produces a `content_hash` that already exists (merge into the existing Card vs. allow duplicates).
 
@@ -187,8 +187,8 @@ Rules:
 7. Enqueue background work: an image Card is inserted with `ocr_state` pending, and `Media`'s `TextRecognitionQueue` recognizes pending Cards, newest first, while "Recognize text in images" is on ([WD-38](roadmap.md#working-defaults-for-open-todos)); link metadata if enabled. Image thumbnails are made by `Media` when the Card is first shown ([WD-32](roadmap.md#working-defaults-for-open-todos)).
 8. Store the handled `changeCount` in `UserDefaults` (also for skipped changes, so resuming does not capture what was copied while paused) so a relaunch does not recapture the current clipboard. Each new card id is emitted on `capturedCardIDs` for the menu bar effect and the Sequence.
 
-> TODO: handling of `com.apple.is-remote-clipboard` (Universal Clipboard) and whether `org.nspasteboard.source` should override the frontmost app as the source.
-> TODO: whether a short debounce is needed for apps that write the pasteboard in several steps, and its value.
+Working default [WD-2](roadmap.md#working-defaults-for-open-todos): `com.apple.is-remote-clipboard` and `org.nspasteboard.source` are ignored; the source is always the frontmost app and remote copies are captured like local ones.
+Working default [WD-1](roadmap.md#working-defaults-for-open-todos): no separate debounce; a change is processed one poll tick (0.5 s) after it is first seen, so multi-step writes coalesce.
 
 ### 4.2 Paste
 
@@ -201,7 +201,7 @@ Rules:
 
 Multiple selected Cards (`PasteCoordinator`, `CombinedPayload`): text only (text, link and color Cards) → one plain string joined with `\n`; files → one write with every file URL, one item per URL; mixed kinds → one write with each Card's items in turn. Cards go oldest first by `last_copied_at`, falling back to `created_at` for a Board Card that has left History ([product.md §4.12](product.md#412-multi-select)).
 
-> TODO: whether to restore the user's previous clipboard after a paste, and whether to use `prepareForNewContents(with: .currentHostOnly)` ([doc](https://developer.apple.com/documentation/appkit/nspasteboard/prepareforcontents(with:))) to keep pastes out of Universal Clipboard.
+Working default [WD-21](roadmap.md#working-defaults-for-open-todos): the previous clipboard is not restored after a paste, and pastes do not use `prepareForNewContents(with: .currentHostOnly)` ([doc](https://developer.apple.com/documentation/appkit/nspasteboard/preparefornewcontents(with:))).
 
 ### 4.3 Quick paste
 
@@ -255,7 +255,6 @@ Runs at launch, hourly, and when the retention setting is lowered (after confirm
 > TODO: is pasteboard privacy enforced by default on macOS 26/27, and does reading `changeCount` or `types` (not contents) trigger the alert? Only third-party reports exist (see the [mjtsai summary](https://mjtsai.com/blog/2025/05/12/pasteboard-privacy-preview-in-macos-15-4)). Test on a clean user account.
 > TODO: verify that ScreenCaptureKit-based recorders honor `sharingType = .none` on macOS 26.
 > TODO: which TCC bucket `CGRequestPostEventAccess()` ([doc](https://developer.apple.com/documentation/coregraphics/cgrequestposteventaccess())) maps to; if it is narrower than Accessibility it could replace it for paste.
-> TODO: app-level encryption of the store: out of scope unless the maintainer wants it.
 
 ## 6. Project layout, testing, CI, releases
 
@@ -352,7 +351,7 @@ Scripts (T13.2) in `scripts/release/` run steps 2–6; they write to `.build/rel
 
 Signing configuration (T13.1): `Config/Info.plist` is merged into the generated Info.plist and sets `SUFeedURL` and `SUPublicEDKey` from the build settings `SPARKLE_FEED_URL` and `SPARKLE_PUBLIC_ED_KEY`, and `SUEnableAutomaticChecks = NO`. `SPARKLE_PUBLIC_ED_KEY` stays a placeholder in the project; a release sets it from the environment. The app has Hardened Runtime, no sandbox and no entitlements: Sparkle needs none outside the sandbox, and paste uses `CGEvent` (Accessibility), not Apple Events. Release builds do not inject `get-task-allow`. Hardened Runtime's library validation refuses an ad-hoc-signed `Sparkle.framework`, so a Release build only launches once it is signed with a Developer ID; local runs use Debug, which Xcode signs without Hardened Runtime.
 
-> TODO: Homebrew cask: not decided.
+A Homebrew cask is not part of v1; it is listed under Later in [roadmap.md](roadmap.md#later-not-scheduled).
 
 ## 7. Dependencies and references
 
@@ -388,13 +387,18 @@ Decided (T13.1): Sparkle 2.10.1's `LICENSE` is MIT, and the code it bundles is b
 | [vladimir-ikryanov/ClipBook](https://github.com/vladimir-ikryanov/ClipBook) | Custom restricted | — | **No** |
 | [appdev/ClipDock](https://github.com/appdev/ClipDock) | None | — | **No** |
 
-> TODO: check whether each GPL-3.0 project is "only" or "or later" before copying code, and match our LICENSE header accordingly.
+Before copying code from a GPL-3.0 project, check whether it is "only" or "or later" and match our license header accordingly.
 
 ## 8. Open questions
 
-> TODO: pasteboard-privacy enforcement on macOS 26/27 and whether polling `changeCount` triggers the alert (§5).
+These need a test on real hardware or a maintainer decision. The rest of this document is settled or follows a working default in [roadmap.md](roadmap.md#working-defaults-for-open-todos).
+
+> TODO: pasteboard-privacy enforcement on macOS 26/27 and whether polling `changeCount` or reading `types` triggers the alert (§5). Test on a clean user account.
 > TODO: Quick Look popover (`NSPopover` + `QLPreviewView`, [design.md §5](design.md#quick-look)) inside a non-activating panel; prototype early.
-> TODO: Shelf window level and `collectionBehavior` that work over full-screen apps on every Space without stealing focus.
-> TODO: Universal Clipboard: capture remote copies or not; keep our pastes local or not (§4.1, §4.2).
-> TODO: total storage cap (§3.3). The polling interval is open in [product.md §4.1](product.md#41-capture).
-> TODO: GRDB vs. SwiftData performance at 100k Cards was never measured; measure before the schema freezes.
+> TODO: Universal Clipboard: whether Handoff reads promised Sequence data eagerly (§4.4); remote copies are captured and our pastes are not kept local until then ([WD-2](roadmap.md#working-defaults-for-open-todos), [WD-21](roadmap.md#working-defaults-for-open-todos)).
+> TODO: total History size cap (§3.3).
+> TODO: editing a Card into a `content_hash` that already exists (§3.2); working default [WD-7](roadmap.md#working-defaults-for-open-todos) refuses the save.
+> TODO: verify that ScreenCaptureKit-based recorders honor `sharingType = .none` on macOS 26 (§5).
+> TODO: which TCC bucket `CGRequestPostEventAccess()` maps to, and whether it could replace Accessibility for paste (§5).
+> TODO: app-level encryption of the store: out of scope unless the maintainer wants it (§5).
+> TODO: performance budget for search latency and launch time, set from the §6.2 baseline.

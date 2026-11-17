@@ -141,7 +141,7 @@ Clipsy is a clipboard manager for macOS 26 and later. It keeps a history of ever
 ### 4.1 Capture
 
 1. A timer polls the general pasteboard's change count; macOS has no change notification. Proposed interval 0.5 s with timer tolerance, then a short coalescing delay so apps that write in several steps produce one card.
-   > TODO: tune interval (0.25–0.5 s) and coalescing delay against CPU use.
+   Working default [WD-1](roadmap.md#working-defaults-for-open-todos): 0.5 s with 0.1 s tolerance; a change is processed one tick after it is first seen, which is the coalescing delay.
 2. On a change, the capture is dropped if any of these hold, checked in this order:
    1. Capture is paused.
    2. It is an own write: the change count equals the one recorded after our last write, or the pasteboard carries our private marker type.
@@ -156,12 +156,12 @@ Clipsy is a clipboard manager for macOS 26 and later. It keeps a history of ever
    - volatile or junk types that carry no content (source markers, Microsoft OLE link types, our own marker);
    - any single representation larger than the size cap. If nothing usable is left, drop the capture.
 4. Files are stored by reference (file URL), not by content. The app is not sandboxed, so no security-scoped bookmark is needed.
-   > TODO: whether to also keep a bookmark or alias so a file that was moved can still be resolved.
+   Working default [WD-4](roadmap.md#working-defaults-for-open-todos): no bookmark or alias; a moved file is not resolved.
 5. Detect the type (§4.2), compute the checksum (§4.3), insert or re-copy, record source app and times, then queue thumbnails, text recognition and (if enabled) link preview in the background.
 6. Persist the last seen change count so a change made while Clipsy was not running is captured once at launch and not twice.
 
 **Source app.** The frontmost app at capture time. A copy made through another app's menu bar extra is attributed to the frontmost app.
-> TODO: whether `org.nspasteboard.source` (when present) wins over the frontmost app.
+Working default [WD-2](roadmap.md#working-defaults-for-open-todos): `org.nspasteboard.source` is ignored; the frontmost app is always the source.
 
 **Ignored Apps.** A user-editable list, preset with Apple Passwords (`com.apple.Passwords`, verified in the app's Info.plist on macOS 26). Checked only at capture time; adding an app does not remove its existing cards. Third-party password managers (1Password, Bitwarden, Dashlane, LastPass, Keeper, Enpass, RoboForm, NordPass, Keychain Access) are treated as confidential sources under rule 5 rather than listed.
 
@@ -180,7 +180,7 @@ Clipsy is a clipboard manager for macOS 26 and later. It keeps a history of ever
 Decided (2026-11-17): the per-representation cap is 50 MB.
 
 **Universal Clipboard.**
-> TODO: whether content from another device (`com.apple.is-remote-clipboard`) is captured, and how it is attributed.
+Working default [WD-2](roadmap.md#working-defaults-for-open-todos): content from another device (`com.apple.is-remote-clipboard`) is captured like a local copy and attributed to the frontmost app.
 
 **Pasteboard access.** At launch and after wake, read the app's pasteboard access behavior. If it is "ask" or "deny", show a one-time explanation with an "Open System Settings…" button: at most once per launch, with a "Don't ask again" checkbox, and not at the launch that shows onboarding. Use pattern detection, not data reads, where only the type is needed.
 > TODO: whether polling the change count alone triggers the system prompt on macOS 26.
@@ -216,7 +216,7 @@ Applied in order; the first match wins.
 - If the checksum exists, the existing card moves to the top of History (its "last copied" time is set to now; its creation time stays) and its source app is updated. No new card.
 - If the existing card is only on a board, it returns to History and stays on the board.
 - Editing a card recomputes its checksum.
-> TODO: whether pasting a card from the shelf also moves it to the top of History (own writes are not captured, so this needs an explicit rule).
+- Pasting a card from the shelf does not move it to the top of History (working default [WD-6](roadmap.md#working-defaults-for-open-todos)).
 > TODO: what happens when an edit makes a card identical to another one.
 
 ### 4.4 Retention
@@ -241,14 +241,14 @@ Applied in order; the first match wins.
 The pasteboard keeps the pasted content afterwards; the previous clipboard is not restored.
 
 **Plain text.** The plain-text modifier (default ⇧) turns any paste or copy into plain text: ⇧Return, ⇧-double-click, Quick Paste with ⇧. "Paste without formatting by default" makes it the default; there is no inverse modifier.
-> TODO: whether holding the modifier when "Paste without formatting by default" is on pastes rich text.
+Working default [WD-8](roadmap.md#working-defaults-for-open-todos): holding the modifier while "Paste without formatting by default" is on has no effect.
 
 ### 4.6 Quick Paste
 
 - While the shelf is open, holding the Quick Paste modifier (default ⌘) shows number badges 1–9 on the first nine visible cards of the current list or search result.
 - Modifier + digit pastes that card; adding the plain-text modifier pastes it as plain text.
 - Numbers follow what is visible after scrolling, not the absolute start of the list.
-> TODO: whether badges should also appear without holding the modifier (accessibility).
+Working default [WD-28](roadmap.md#working-defaults-for-open-todos): badges appear only while the modifier is held; VoiceOver reads them as part of the card label ([design §10](design.md#10-accessibility-and-appearance)).
 
 ### 4.7 Sequence
 
@@ -268,7 +268,7 @@ The pasteboard keeps the pasted content afterwards; the previous clipboard is no
 
 - A board has a name, a color and a position among the tabs. Default name "Untitled" if left empty, also when renamed to an empty name.
 - Colors come from the system palette (red, orange, yellow, green, blue, purple, gray).
-  > TODO: final palette size and order (see design.md).
+  Working default [WD-9](roadmap.md#working-defaults-for-open-todos): the palette and its order are in [design §4](design.md#board-colors); there is no "no color".
 - A card belongs to at most one board. Adding it to another board moves it.
 - Add to Board keeps the card in History. A board card survives retention and Erase History; after that it exists only on the board.
 - Remove from Board takes the card off the board. If it is no longer in History, it is deleted.
@@ -276,13 +276,13 @@ The pasteboard keeps the pasted content afterwards; the previous clipboard is no
 - Order inside a board is manual (drag). Newly added cards go to the front.
   > TODO: front or end for newly added cards.
 - The shelf reopens on the last selected tab.
-  > TODO: or always on History.
+  Working default [WD-9](roadmap.md#working-defaults-for-open-todos).
 
 ### 4.9 Search and filters
 
 - Typing while the shelf is focused starts a search; ⌘F focuses the search field. Results update live; one result is always selected; Return pastes it.
 - Scope: History and all boards together, regardless of the current tab. Results show which board a card is on. Choosing a tab clears the search (working default WD-44 in [roadmap.md](roadmap.md)).
-  > TODO: confirm global scope vs current tab.
+  Working default [WD-10](roadmap.md#working-defaults-for-open-todos).
 - Matched fields: title, text content, URL and page title, file names, source app name, recognized image text (v1).
 - Case- and diacritic-insensitive, word-prefix matching. Ordered newest first. Matches are highlighted.
 - Filters (v1): Type, App, Date (today, yesterday, last 7 days, last 30 days, custom range), Board. Typing a word that matches a type, app, date range or board name offers it as a filter token. Filters combine with AND. Pressing ⌘F again while the field is focused opens a browser of all filters (working default WD-46 in [roadmap.md](roadmap.md)).
@@ -304,7 +304,7 @@ The pasteboard keeps the pasted content afterwards; the previous clipboard is no
 
 - Delete (⌫) removes the selected cards. One card is deleted immediately; several ask for confirmation with the count.
 - ⌘Z undoes the last delete while the shelf is open.
-  > TODO: whether undo also covers Add to Board, Remove from Board, rename and edit.
+  Working default [WD-11](roadmap.md#working-defaults-for-open-todos): undo covers delete only.
 - Deleting in History removes the card from History; deleting on a board removes it from the board. A card is removed from the store when it is in neither.
   > TODO: confirm that Delete on a board should not also remove the card from History.
 
@@ -325,7 +325,7 @@ The pasteboard keeps the pasted content afterwards; the previous clipboard is no
 - Never activates Clipsy or steals frontmost status from the target app, but takes keyboard focus so the shortcuts work.
 - Closes on: Esc (when search is empty), a second press of the global shortcut, a successful paste or copy from the shelf, and focus loss.
 - **Focus loss:** clicking another app or window, or switching apps, closes the shelf. Closing is suspended while one of our own sheets, menus, popovers, the preview, the editor or the color panel is open.
-  > TODO: option to keep the shelf open after paste (requested by users of comparable apps).
+  Working default [WD-13](roadmap.md#working-defaults-for-open-todos): there is no option to keep the shelf open after paste.
 - Height is resizable by dragging the top edge and is remembered: one height for all displays ([WD-13](roadmap.md#working-defaults-for-open-todos)).
 - Excluded from screen sharing and screenshots unless "Show the Shelf in screenshots and screen sharing" is on.
 - The Sequence panel is a separate small floating panel that the user can move; its position is remembered. It follows the same Space and full-screen rules.
@@ -454,22 +454,14 @@ This is the item list; grouping and wording are in [design.md §7](design.md#7-m
 
 ## 7. Open questions
 
-- > TODO: polling interval and coalescing delay (§4.1).
-- > TODO: priority of `org.nspasteboard.source` over the frontmost app (§4.1).
-- > TODO: Universal Clipboard content: capture or skip, and attribution (§4.1).
-- > TODO: secret patterns: skip or mark, false-positive rate (§4.1).
-- > TODO: pasteboard privacy on macOS 26: what triggers the system prompt (§4.1).
-- > TODO: direct System Settings links for Accessibility and pasteboard access (§4.1).
-- > TODO: bookmark or alias for moved files (§4.1).
-- > TODO: URL schemes that count as Link; 8-digit hex (§4.2).
-- > TODO: does pasting from the shelf move the card to the top of History (§4.3).
+These still need a test on real hardware, data from vendors, or the task that settles them. Everything else in this document is settled or follows a working default in [roadmap.md](roadmap.md#working-defaults-for-open-todos).
+
+- > TODO: bundle IDs of the remaining password managers (§4.1).
+- > TODO: false-positive rate of the secret patterns on real code (§4.1).
+- > TODO: pasteboard privacy on macOS 26: whether polling the change count triggers the system prompt, and whether the `Privacy_Pasteboard` link opens the right list (§4.1).
 - > TODO: edit that makes a card identical to another (§4.3).
-- > TODO: plain-text modifier when "Paste without formatting by default" is on (§4.5).
-- > TODO: board palette; where newly added cards go; which tab the shelf reopens on (§4.8).
-- > TODO: search scope: global or current tab (§4.9).
-- > TODO: undo scope beyond delete (§4.11).
+- > TODO: front or end for cards newly added to a board (§4.8).
 - > TODO: Delete on a board vs History (§4.11).
-- > TODO: keep-shelf-open option (§4.13).
+- > TODO: whether file thumbnails need a toggle (§6).
 - > TODO: drag-out formats for several cards and for images (file vs image data).
-- > TODO: compact-size threshold (with design.md).
 - > TODO: URL scheme name and grammar (§3.7).
