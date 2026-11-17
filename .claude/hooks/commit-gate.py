@@ -9,7 +9,7 @@ import sys
 from typing import NoReturn
 
 SEPARATORS = {";", "&&", "||", "|", "&", "(", ")", "\n"}
-PREFIXES = {"env", "command", "exec", "nohup", "time", "sudo"}
+INDIRECT = {"bash", "sh", "zsh", "dash", "ksh", "csh", "tcsh", "fish", "eval", "source", "xargs"}
 GIT_OPTS_WITH_ARG = {"-C", "-c", "--git-dir", "--work-tree", "--namespace", "--exec-path", "--super-prefix", "--config-env"}
 COMMIT_OPTS_WITH_ARG = {
     "-m", "--message", "-F", "--file", "-C", "--reuse-message", "-c", "--reedit-message",
@@ -31,49 +31,66 @@ def long_match(name, options):
     return len(name) > 2 and any(opt.startswith(name) for opt in options)
 
 
+def strip_heredoc_bodies(command):
+    out, delimiter, skipped = [], None, 0
+    for line in command.split("\n"):
+        if delimiter is not None:
+            if line.strip() == delimiter:
+                delimiter = None
+                out.append(line)
+            else:
+                skipped += 1
+            continue
+        out.append(line)
+        match = re.search(r"<<-?\s*(['\"]?)([^\s'\"<>;&|()]+)\1", line)
+        if match:
+            delimiter = match.group(2)
+    if delimiter is not None and skipped:
+        raise ValueError("unterminated heredoc")
+    return "\n".join(out)
+
+
 def tokenize(command):
+    command = strip_heredoc_bodies(command)
     lexer = shlex.shlex(command.replace("\n", " ; "), posix=True, punctuation_chars=True)
     lexer.whitespace_split = True
     return list(lexer)
 
 
 def commit_invocations(tokens):
-    at_start = True
+    # any git token counts, wherever it sits (after env, sudo, timeout...)
     i = 0
     while i < len(tokens):
-        tok = tokens[i]
-        if tok in SEPARATORS:
-            at_start = True
+        if os.path.basename(tokens[i]) != "git":
             i += 1
             continue
-        if at_start and ("=" in tok and not tok.startswith("-") or tok in PREFIXES):
-            i += 1
+        git_dir_arg = None
+        j = i + 1
+        while j < len(tokens) and tokens[j].startswith("-"):
+            opt = tokens[j]
+            if opt.split("=", 1)[0] in {"--git-dir", "--work-tree"}:
+                block("'--git-dir' and '--work-tree' are not supported by the commit gate; run git from inside the repository.")
+            if opt in GIT_OPTS_WITH_ARG:
+                if opt == "-C" and j + 1 < len(tokens):
+                    git_dir_arg = tokens[j + 1]
+                j += 2
+            else:
+                j += 1
+        if j < len(tokens) and tokens[j] == "commit":
+            k = j + 1
+            args = []
+            while k < len(tokens) and tokens[k] not in SEPARATORS and not tokens[k].startswith(("<", ">")):
+                args.append(tokens[k])
+                k += 1
+            yield git_dir_arg, args
+            i = k
             continue
-        if at_start and os.path.basename(tok) == "git":
-            git_dir_arg = None
-            j = i + 1
-            while j < len(tokens) and tokens[j].startswith("-"):
-                opt = tokens[j]
-                if opt.split("=", 1)[0] in {"--git-dir", "--work-tree"}:
-                    block("'--git-dir' and '--work-tree' are not supported by the commit gate; run git from inside the repository.")
-                if opt in GIT_OPTS_WITH_ARG:
-                    if opt == "-C" and j + 1 < len(tokens):
-                        git_dir_arg = tokens[j + 1]
-                    j += 2
-                else:
-                    j += 1
-            if j < len(tokens) and tokens[j] == "commit":
-                k = j + 1
-                args = []
-                while k < len(tokens) and tokens[k] not in SEPARATORS and not tokens[k].startswith(("<", ">")):
-                    args.append(tokens[k])
-                    k += 1
-                yield git_dir_arg, args
-                i = k
-                at_start = False
-                continue
-        at_start = False
         i += 1
+
+
+def nested_commit(tokens):
+    # any shell, eval, xargs or here-string next to a commit could hide flags from this parser
+    return any(os.path.basename(t) in INDIRECT or t == "<<<" for t in tokens)
 
 
 def check_args(args):
@@ -113,12 +130,12 @@ def main():
     command = (payload.get("tool_input") or {}).get("command") or ""
     if not re.search(r"\bgit\b", command) or "commit" not in command:
         sys.exit(0)
-    if re.search(r"(\b(bash|sh|zsh)\s+-\w*c\b|\beval\b)", command):
-        block("run 'git commit' directly, not through 'bash -c', 'sh -c' or 'eval'.")
     try:
         tokens = tokenize(command)
     except ValueError:
         block("could not parse the command; run 'git commit' as a plain command.")
+    if nested_commit(tokens):
+        block("run 'git commit' as a plain command: no shells, eval, source, xargs or here-strings in the same command.")
 
     cwd = payload.get("cwd") or os.getcwd()
     for git_dir_arg, args in commit_invocations(tokens):
