@@ -258,7 +258,7 @@ The pasteboard keeps the pasted content afterwards; the previous clipboard is no
 - **Order.** Each new card goes either to the end of the queue or to its head, depending on "Reverse Order". The head is pasted next.
   Decided (2026-11-17): the default order is copy order (first copied, first pasted).
 - **Paste next.** The head card is kept on the pasteboard. When the user presses ⌘V in any app, that card is pasted, removed from the Sequence and the next one is put on the pasteboard. Dragging a card out also removes it. Pasting a card out of order (double-click, context menu) also removes it. When the last card is pasted, the panel closes.
-  > TODO: detection mechanism for ⌘V. Prototype a lazy pasteboard data provider (fires when the target app reads the data) first, with a global key monitor as fallback.
+  Detection: the head is promised lazily, and the target app reading its data counts as the paste, so no extra permission is needed and Edit > Paste works too ([architecture §4.4](architecture.md#44-sequence)).
 - **Paste all.** Pastes all remaining cards at once; text cards are joined with a newline. Clears the Sequence and closes the panel.
 - **Plain text.** A toggle in the panel; it persists across Sequences.
 - **Undo** restores the last pasted or removed card to its previous position. Close clears the Sequence.
@@ -461,7 +461,6 @@ This is the item list; grouping and wording are in [design.md §7](design.md#7-m
 - > TODO: does pasting from the shelf move the card to the top of History (§4.3).
 - > TODO: edit that makes a card identical to another (§4.3).
 - > TODO: plain-text modifier when "Paste without formatting by default" is on (§4.5).
-- > TODO: how to detect ⌘V for Sequence advance (§4.7).
 - > TODO: board palette; where newly added cards go; which tab the shelf reopens on (§4.8).
 - > TODO: search scope: global or current tab (§4.9).
 - > TODO: undo scope beyond delete (§4.11).

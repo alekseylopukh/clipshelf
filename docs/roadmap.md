@@ -577,6 +577,7 @@ What exists:
 - Acceptance: test `providerReadAdvancesOnce` on a private pasteboard
 - Human check: in Safari, Notes, Terminal and an Electron app, focusing or opening the Edit menu does not advance; ⌘V does
 - Size: M
+- Status: done
 
 ### T11.4 Sequence panel
 - Module(s): ShelfUI
@@ -591,7 +592,7 @@ What exists:
 - Module(s): App, Pasting, ShelfUI
 - Depends on: T11.4, T6.2
 - Spec: [product §4.7](product.md#47-sequence), [§5](product.md#global-customizable)
-- Deliverable: ⇧⌘C starts a Sequence (synthesized ⌘C in the frontmost app, needs Accessibility) or seeds from shelf selection; ⌃⌥⌘V pastes all; captures stream into the open Sequence; Add to Sequence in the context menu and menu bar; recorders in the Shortcuts pane
+- Deliverable: ⇧⌘C starts a Sequence (synthesized ⌘C in the frontmost app, needs Accessibility) or seeds from shelf selection; ⌃⌥⌘V pastes all; captures stream into the open Sequence; the app runs `SequencePasteDetector` (data provider), publishes each new head and advances on its reports; Add to Sequence in the context menu and menu bar; recorders in the Shortcuts pane
 - Acceptance: test `capturesJoinOpenSequence`
 - Human check: collect three lines in TextEdit, paste them in order in Notes with ⌘V
 - Size: M

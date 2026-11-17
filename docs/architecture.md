@@ -214,11 +214,18 @@ While the Shelf is key, Cmd+1…9 runs the paste flow on the Nth Card counted fr
 4. "Paste all": text Cards joined with `\n`, one paste.
 5. Sequence state (ordered Card IDs, direction, undo stack) lives in memory in `Pasting.PasteSequence`; the plain-text flag is kept in `UserDefaults` so it persists across Sequences. Cards stay in History. Details: WD-26 in [roadmap.md](roadmap.md).
 
-Paste detection, to be prototyped:
-- (a) lazy data provider: put the head on the pasteboard via `NSPasteboardItemDataProvider`; the callback fires when the target app reads it. No extra permission.
-- (b) fallback: global key-down monitor filtered to Cmd+V (works because Accessibility is already granted).
+Paste detection lives in `Pasting.SequencePasteDetector`. The caller publishes the head entry with its representations and the plain-text flag, calls `PasteSequence.didPaste` for each entry ID the detector reports, and then publishes the new head. Two mechanisms exist; the app uses (a).
+- (a) Lazy data provider (default, no permission). `PasteboardWriter.writeLazily` promises every type through `NSPasteboardItemDataProvider`; only our marker type is written eagerly, so Capture skips the write without reading data. The first data request for the published head counts as its paste. Requests for its other types, and requests after `stop()`, report nothing. Edit > Paste from the menu counts as well as ⌘V.
+- (b) Fallback: global key-down monitor (`PasteKeyMonitor`, needs Accessibility). The head is written eagerly; a key-down of the layout's ⌘V key (`KeyCodeResolver`) with ⌘ and without ⌃ counts as the paste (⇧ and ⌥ still paste, as in Paste and Match Style). It cannot see Edit > Paste clicks, and ⌘V in an app that ignores it still advances.
 
-> TODO: prototype (a); check that a target app reading the pasteboard on focus or on menu validation does not advance the Sequence early.
+After a paste is detected, the detector waits 250 ms before reporting it, so the target can read all its types before the next head replaces the pasteboard. A second ⌘V within that window pastes the same Card again.
+
+Findings:
+- The provider callback fires once per type: after it supplies the data, the pasteboard keeps it, so a repeated read does not call back.
+- Checking `types`, `availableType(from:)` or `canReadItem(withDataConformingToTypes:)`, as apps do for menu validation, does not call the provider. A read in the same process calls it synchronously. Both are covered by `SequencePasteDetectorTests`.
+- Anything that reads the data of every pasteboard change advances the Sequence early: another clipboard manager, or an app that reads data, not just types, when it gains focus. Use (b) if the human check finds such a case among common apps.
+
+> TODO: whether Universal Clipboard (Handoff) reads promised data eagerly; if it advances the Sequence early, write Sequence heads with `prepareForNewContents(with: .currentHostOnly)`.
 
 ### 4.5 Retention cleanup
 
@@ -353,7 +360,6 @@ Notices of every dependency and of any copied code go into an Acknowledgements s
 ## 8. Open questions
 
 > TODO: pasteboard-privacy enforcement on macOS 26/27 and whether polling `changeCount` triggers the alert (§5).
-> TODO: Sequence paste detection: prototype the lazy data provider (§4.4).
 > TODO: Quick Look popover (`NSPopover` + `QLPreviewView`, [design.md §5](design.md#quick-look)) inside a non-activating panel; prototype early.
 > TODO: Shelf window level and `collectionBehavior` that work over full-screen apps on every Space without stealing focus.
 > TODO: Universal Clipboard: capture remote copies or not; keep our pastes local or not (§4.1, §4.2).
