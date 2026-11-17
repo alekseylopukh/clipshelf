@@ -60,7 +60,7 @@ struct SnapshotFixtures {
                 preview: "Remember to pick up the framed print from the gallery on Thursday before six. "
                     + "The receipt is in the blue folder on the shelf by the door.",
                 metadata: #"{"characterCount":142,"lineCount":1,"wordCount":27}"#,
-                sourceApp: SourceApp(bundleID: "com.apple.TextEdit", name: "TextEdit"),
+                sourceApp: SourceApp(bundleID: "com.apple.iCal", name: "Calendar"),
                 createdAt: now.addingTimeInterval(-120)
             ),
             CardSummary(
@@ -87,7 +87,7 @@ struct SnapshotFixtures {
                 kind: .color,
                 preview: "#FF9F0A",
                 metadata: ##"{"color":"#FF9F0A"}"##,
-                sourceApp: SourceApp(bundleID: "com.apple.Preview", name: "Preview"),
+                sourceApp: SourceApp(bundleID: "com.apple.dt.Xcode", name: "Xcode"),
                 createdAt: now.addingTimeInterval(-3600),
                 boardID: 2
             ),
@@ -125,7 +125,7 @@ struct SnapshotFixtures {
                 kind: .file,
                 metadata: #"{"fileNames":["Meeting Notes.txt","Sketch.png","Quarterly Report.png"],"#
                     + #""totalFileSize":2400000}"#,
-                sourceApp: SourceApp(bundleID: "com.apple.finder", name: "Finder"),
+                sourceApp: SourceApp(bundleID: "com.apple.mail", name: "Mail"),
                 createdAt: now.addingTimeInterval(-259_200)
             )
         ]

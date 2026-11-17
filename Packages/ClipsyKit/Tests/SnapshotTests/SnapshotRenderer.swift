@@ -31,7 +31,12 @@ enum SnapshotRenderer {
     ) async throws {
         guard let directory = snapshotDirectory else { throw RenderError.noSnapshotDirectory }
         let hostingView = NSHostingView(rootView: view)
-        let window = NSWindow(contentRect: .zero, styleMask: [.borderless], backing: .buffered, defer: false)
+        let window = NSWindow(
+            contentRect: CGRect(origin: .zero, size: size ?? .zero),
+            styleMask: [.borderless],
+            backing: .buffered,
+            defer: false
+        )
         window.isReleasedWhenClosed = false
         window.appearance = NSAppearance(named: appearance.name)
         window.contentView = hostingView

@@ -788,5 +788,4 @@ Decided:
 - Image editing: rotate, remove background ([product §3.2](product.md#32-shelf-and-cards))
 - System Spotlight indexing of board cards ([product §3.7](product.md#37-integrations))
 - Other shelf edges and a vertical list layout ([design §12](design.md#12-open-questions))
-- Optional source-app tint on card headers ([design §1](design.md#visual-choices-we-made))
 - Homebrew cask ([architecture §6.4](architecture.md#64-release-pipeline))

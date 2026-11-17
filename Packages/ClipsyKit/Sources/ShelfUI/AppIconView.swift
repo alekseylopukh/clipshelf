@@ -7,6 +7,8 @@ struct AppIconView: View {
     let bundleID: String?
     let fallbackSymbol: String
     let size: CGFloat
+    var fallbackSize: CGFloat?
+    var fallbackColor: Color?
 
     @State private var icon: CGImage?
     @State private var isMissing = false
@@ -18,11 +20,17 @@ struct AppIconView: View {
                 Image(decorative: icon, scale: displayScale)
                     .resizable()
             } else if bundleID == nil || isMissing {
-                Image(systemName: fallbackSymbol)
+                let symbolSize = fallbackSize ?? size
+                let symbol = Image(systemName: fallbackSymbol)
                     .resizable()
                     .scaledToFit()
-                    .padding(size * DesignTokens.appIconSymbolInsetRatio)
-                    .foregroundStyle(.secondary)
+                    .padding(symbolSize * DesignTokens.appIconSymbolInsetRatio)
+                    .frame(width: symbolSize, height: symbolSize)
+                if let fallbackColor {
+                    symbol.foregroundStyle(fallbackColor)
+                } else {
+                    symbol.foregroundStyle(.secondary)
+                }
             }
         }
         .frame(width: size, height: size)
@@ -49,6 +57,22 @@ final class AppIconCache: Sendable {
     static let shared = AppIconCache()
 
     private let icons = Mutex<[String: CGImage]>([:])
+    private let tints = Mutex<[String: AppIconTint?]>([:])
+
+    func cachedTint(for bundleID: String) -> AppIconTint? {
+        tints.withLock { $0[bundleID] }.flatMap(\.self)
+    }
+
+    @concurrent
+    func tint(for bundleID: String) async -> AppIconTint? {
+        if let cached = tints.withLock({ $0[bundleID] }) {
+            return cached
+        }
+        let pixelSize = CGFloat(DesignTokens.appIconTintSampleSide)
+        let tint = await icon(for: bundleID, pixelSize: pixelSize).flatMap(AppIconTint.init(icon:))
+        tints.withLock { _ = $0.updateValue(tint, forKey: bundleID) }
+        return tint
+    }
 
     @concurrent
     func icon(for bundleID: String, pixelSize: CGFloat) async -> CGImage? {

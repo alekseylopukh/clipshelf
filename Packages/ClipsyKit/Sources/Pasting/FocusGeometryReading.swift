@@ -40,8 +40,8 @@ public struct SystemFocusGeometryReader: FocusGeometryReading {
         Self.limited(AXUIElementCreateApplication(pid))
     }
 
-    /// the timeout is per element; without it a read waits ~6 s while the target app is busy handling ⌘V
     private static func limited(_ element: AXUIElement) -> AXUIElement {
+        // the timeout is per element; without it a read waits ~6 s while the target app is busy handling ⌘V
         AXUIElementSetMessagingTimeout(element, messagingTimeout)
         return element
     }

@@ -18,10 +18,10 @@ Values marked "proposed" are starting points to tune on real hardware, not measu
 
 ## 1. Design principles
 
-1. **Looks like Apple shipped it.** System controls, SF Symbols, system text styles, semantic colors, the user's accent color. If AppKit or SwiftUI has a control for it, we use that control. No custom fonts, no brand colors, no illustrations.
+1. **Looks like Apple shipped it.** System controls, SF Symbols, system text styles (one exception: the Card header band title, see [Header band](#header-band)), semantic colors, the user's accent color. If AppKit or SwiftUI has a control for it, we use that control. No custom fonts, no brand colors, no illustrations.
 2. **Liquid Glass is for controls, not content.** The Shelf container, the top bar, floating badges and the Sequence header are glass. Cards are content: opaque, readable, and they never sit in glass of their own.
-3. **Content first.** A Card spends its area on the preview. Metadata is small, secondary and neutral.
-4. **Color means something or it isn't there.** The only colors in the UI are the accent color (selection, primary action), Board colors (identity of a Board) and the content itself (images, color swatches, link thumbnails).
+3. **Content first.** A Card spends its area on the preview. Metadata is small; the one exception to neutral metadata is the header band, which shows the source app's color so the app reads at a glance.
+4. **Color means something or it isn't there.** The only colors in the UI are the accent color (selection, primary action), Board colors (identity of a Board), the source app's system color on the Card header band (identity of the app) and the content itself (images, color swatches, link thumbnails).
 5. **Keyboard is a first-class input.** Every action reachable by pointer is reachable by keyboard, and focus is always visible.
 6. **Respect system settings.** Light/Dark, accent color, Reduce Motion, Reduce Transparency, Increase Contrast, Liquid Glass appearance, Dynamic Type where macOS supports it.
 
@@ -29,14 +29,12 @@ Values marked "proposed" are starting points to tune on real hardware, not measu
 
 | Rejected option | Clipsy | Why |
 |---|---|---|
-| Saturated colored header band per Card (tinted by source app or type) | Neutral header: app icon, type label, relative time in secondary label color | HIG asks for sparing color and monochrome chrome; a rainbow of headers competes with content and with Board colors. The source app stays identifiable through its real icon. |
+| Neutral header with a small app icon | Solid header band in the source app's system color, with the app icon nested in its corner | The source app reads at a glance by color as well as by icon. The band uses the system palette, so it adapts to light and dark like other system colors; the Card body stays neutral, so content keeps its contrast. |
 | Glass on Cards at every size | Glass only on the Shelf container and controls | HIG: no Liquid Glass in the content layer. Opaque Cards keep text contrast stable over any wallpaper. |
 | Colored Board tabs | Board name with a small colored dot | Same information, less chroma; reads like Finder tags. |
 | Custom animated menu bar icon | Template SF Symbol with a system symbol effect | Matches every other menu bar extra; adapts to the menu bar appearance. |
 | In-app promotional banners | None. Only system alerts where a permission is actually missing | No nudges, no upsell. |
 | Brand-tinted Sequence window | Plain glass panel with system rows | First-party look. |
-
-An optional faint tint (8–12% opacity) of the source app's icon color behind the Card header is not part of v1; it is listed under Later in [roadmap.md](roadmap.md#later-not-scheduled).
 
 ---
 
@@ -48,10 +46,10 @@ An optional faint tint (8–12% opacity) of the source app's icon color behind t
 |---|---|
 | Edge | Bottom of the screen, centered horizontally. Bottom only in v1. |
 | Inset | Floats like the Dock: inset 8 pt from the bottom and side edges of the visible frame, with a soft system shadow. Never covers the menu bar. Respects the Dock: placed above it when the Dock is at the bottom and visible. |
-| Corners | 36 pt, concentric with the Cards at the 16 pt inner padding. Inner elements use concentric radii; see [Metrics](#metrics). |
+| Corners | ≈37.31 pt, concentric with the Cards at the 16 pt inner padding. Inner elements use concentric radii; see [Metrics](#metrics). |
 | Width | Full width of the visible frame minus the insets. |
 | Height | User-resizable by dragging the top edge; one remembered height for all displays ([WD-13](roadmap.md#working-defaults-for-open-todos)). Range: from one compact row (160 pt) to 40% of the visible height; default 300 pt ([WD-22](roadmap.md#working-defaults-for-open-todos)). |
-| Compact mode | When a regular Card would be under 150 pt tall ([WD-15](roadmap.md#working-defaults-for-open-todos)), Cards switch to a condensed layout: the header collapses to a 20 pt app icon and the time, the footer is hidden and the body fills the rest. Compact Cards are 4:3 instead of square so the time fits next to the icon. |
+| Compact mode | When a regular Card would be under 150 pt tall ([WD-15](roadmap.md#working-defaults-for-open-todos)), Cards switch to a condensed layout: the header band shrinks to 32 pt with a 24 pt app icon and the time, the footer is hidden and the body fills the rest. Compact Cards are 4:3 instead of square so the time fits next to the icon. |
 | Display | Opens on the display that holds the pointer. Moves with the user to the active Space and appears over full-screen apps. |
 
 ### Metrics
@@ -64,14 +62,15 @@ One radius system and an 8 pt grid (12 pt is the one half step, inside Cards). E
 | Shadow margin | 32 pt | `shelfShadowMargin`: the Shelf window extends this far past the glass on every side and the margin stays transparent, so the glass shadow fades out instead of being clipped to the window rectangle |
 | Shelf padding | 16 pt | `shelfPadding`: top, sides and bottom; the gap between the top bar and the Cards is the same 16 pt |
 | Card gap | 16 pt | `cardSpacing` = `shelfPadding`, so gaps between Cards equal the outer insets |
-| Card radius | 20 pt | `cardCornerRadius` |
-| Shelf radius | 36 pt | `shelfCornerRadius` = Card radius + Shelf padding (concentric) |
+| Card radius | ≈21.31 pt | `cardCornerRadius` = header icon squircle radius (25.7% of its 44 pt visible size) + its 10 pt inset, so the icon nests concentrically in the top-trailing corner. Exact concentricity wins over the 8-pt grid here |
+| Shelf radius | ≈37.31 pt | `shelfCornerRadius` = Card radius + Shelf padding (concentric) |
 | Card content inset | 12 pt | `cardContentInset`, on all four sides |
-| Card inner radius | 8 pt | `cardInnerCornerRadius` = Card radius − content inset. Body previews (link image, color swatch, image) clip to `ConcentricRectangle` against the Card's `containerShape`, with this as the minimum |
+| Card inner radius | ≈9.31 pt | `cardInnerCornerRadius` = Card radius − content inset. Body previews (link image, color swatch, image) clip to `ConcentricRectangle` against the Card's `containerShape`, with this as the minimum |
 | Selection ring | 3 pt (4 pt with Increase Contrast), 2 pt gap | Radius = Card radius + gap + width, so the ring is concentric outside the Card |
-| Quick-paste badge | 20 pt, inset 10 pt | Inset = Card radius − badge radius, so the badge circle is concentric with the corner |
+| Quick-paste badge | 20 pt, bottom-trailing, inset ≈11.31 pt | Inset = Card radius − badge radius, so the badge circle is concentric with the corner |
 | Top bar controls | 28 pt tall | Large control size; icon-only buttons are 28 pt circles (16 pt glyph box), the search field is a 28 pt capsule |
-| Header icon | 32 pt regular, 20 pt compact | 32 pt is a native app icon size, recognizable at a glance; its squircle corner (~7 pt) matches the 8 pt inner radius |
+| Header band | 64 pt regular, 32 pt compact | Icon squircle + 2 × its inset |
+| Header icon | 44 pt regular, 24 pt compact, measured on the visible squircle | Icon images carry transparent padding (the squircle is 824 of 1024 px), so the image is requested at squircle ÷ 0.8047. Inset 10 pt (4 pt compact) above, below and to the trailing edge. The squircle's corner is 25.7% of its size (measured against SwiftUI's continuous corner), so the regular icon nests concentrically in the Card corner; the compact one does not, which would need a ~54 pt band |
 | Header/body/footer spacing | 8 pt regular, 4 pt compact | `spacingMedium` / `spacingSmall` |
 | Text fade | 16 pt | `cardFadeHeight` |
 
@@ -145,10 +144,18 @@ A Card is a rounded rectangle with an opaque fill (`controlBackgroundColor` or t
 
 | Part | Contents | Style |
 |---|---|---|
-| Header | Source app icon (32 pt, centered on the two text lines, like a two-line list row); title if the user renamed the Card, else the type label; relative time ("2 min ago") below it | Title or type label `.headline`, so every header has the same height; time `.caption` in secondary label color; digits monospaced |
+| Header | A solid band flush with the Card's top edge, in the source app's color; the app icon nested in the top-trailing corner ([Metrics](#metrics)); title if the user renamed the Card, else the type label; relative time ("2 min ago") below it | See [Header band](#header-band) |
 | Body | Type-specific preview (table below) | Clipped to the Card's inner radius |
 | Footer | Type-specific metadata | `.caption`, secondary label color (tertiary was too faint for 4.5:1), single line, truncated |
-| Board marker | When showing search results from all of History and Boards: the Board's colored dot next to the time | Board color, 6–8 pt dot (proposed) |
+| Board marker | When showing search results from all of History and Boards: the Board's colored dot next to the time on the header band | Board color, 8 pt dot with a 1 pt white ring, so a dot keeps its edge on a band of the same color |
+
+### Header band
+
+- **Color.** The dominant hue of the source app's icon snaps to the nearest system color: red, orange, yellow, green, teal, blue, indigo, purple, pink; dark orange hues become brown, and icons without a clear hue (Terminal) get gray. Cards without a source app are gray. When the app is unknown or no longer installed, the Card's type symbol takes the icon's place, white at 85%, sized to the 44 pt squircle.
+- **Text.** Always white: title 14 pt semibold, time `.subheadline` (11 pt) at 85% white with monospaced digits, both with a subtle shadow (black 22%, radius 1, y 0.5) so white stays crisp on light bands.
+- **Contrast.** A band keeps the system color unless white text would fall under its floor at mid-band; then it gets only as much darker as the floor needs. Floors: 3:1 for most colors, 2.5:1 for orange, green and teal, 2.2:1 for yellow, so light hues stay recognisable. With Increase Contrast every band darkens to 4.5:1 and the time is fully opaque.
+- **Sheen.** A white gradient from 12% at the top to clear at the bottom, like system fills; the contrast floors account for it.
+- **Quick-paste badges** sit at the bottom-trailing corner, concentric with it, so they never cover the icon.
 
 ### Per-type layouts
 
@@ -180,7 +187,7 @@ Details such as rich text scaling, the contrast threshold and the link body with
 
 ### Quick-paste badges
 
-- While the quick-paste modifier is held (see [product.md](product.md)), the first nine visible Cards show a small glass capsule with the number (1–9) at the top-trailing corner.
+- While the quick-paste modifier is held (see [product.md](product.md)), the first nine visible Cards show a small glass capsule with the number (1–9) at the bottom-trailing corner, clear of the header icon.
 - Badges appear and disappear with a short fade; with Reduce Motion, instantly.
 - Numbers count from the first visible Card, not the first Card in History.
 
@@ -392,11 +399,11 @@ Step 3 and the Privacy pane row read `NSPasteboard.general.accessBehavior` (chec
 | Keyboard only | Every action has a key or is in a menu reachable from the keyboard; Tab moves between search field, Board switcher and Card strip; focus ring always visible. Key map in [product.md](product.md). |
 | Reduce Motion | Crossfades replace springs, morphs and slides; no Card cascade and no paste flight (see §2 Motion). |
 | Reduce Transparency | Glass falls back to the system opaque material automatically; we add no custom blur that would ignore the setting. |
-| Increase Contrast | Card borders become stronger (system behavior of `separatorColor`); selection ring thickens (proposed +1 pt); Board dots gain an outline. |
+| Increase Contrast | Card borders become stronger (system behavior of `separatorColor`); selection ring thickens (proposed +1 pt); Board dots gain an outline (on the Card header band they always have one); header bands darken to 4.5:1 for their white text and the time turns opaque (see [Header band](#header-band)). |
 | Liquid Glass appearance | Test with the system Clear and Tinted glass options. |
 | Color independence | Board identity never relies on color alone: the name is always shown next to the dot. Selection uses a ring, not only a fill. |
-| Text size | System text styles only, so the macOS text size setting (where honored) applies. |
-| Light / Dark | Semantic colors only; no hard-coded colors anywhere. Image and color Cards show content as-is in both modes. |
+| Text size | System text styles, so the macOS text size setting (where honored) applies. Exception: the Card header band title is a fixed 14 pt semibold, chosen by the maintainer to sit between `.headline` and `.title3`; the time below it uses `.subheadline`. |
+| Light / Dark | Semantic colors only; no hard-coded colors anywhere, with one exception: the Card header band's text, Board dot ring and sheen are white and the text has a faint black shadow, because they sit on a system color that is kept dark enough for white in both modes (see [Header band](#header-band)). Image and color Cards show content as-is in both modes. |
 
 ---
 
