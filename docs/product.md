@@ -244,7 +244,7 @@ Applied in order; the first match wins.
 
 1. The target app is the app that was frontmost when the shelf opened. Its name appears in "Paste to <App>" menu items.
 2. Write the card to the general pasteboard: clear it, write every stored representation (for plain text: only the plain string), add our private marker type, record the resulting change count.
-3. Hide the shelf. The shelf never activates Clipsy, so the target app stays frontmost.
+3. Hide the shelf. The shelf never activates Clipsy, so the target app stays frontmost. When a single card is pasted into the target app, a snapshot of it flies to the text insertion point while the paste goes ahead; the paste never waits for it, and Reduce Motion turns it off ([design.md §2 Motion](design.md#motion)).
 4. If the paste setting is "Paste into the active app" and Accessibility is granted, post a synthesized ⌘V key down/up. Resolve the key code for "V" from the current keyboard layout, and handle layouts that switch to QWERTY while ⌘ is held.
 5. If Accessibility is not granted, the first direct paste asks whether to grant it or just copy, with a "don't ask again" option. After declining, Return copies only.
 6. If the paste setting is "Copy to the clipboard only", Return copies only and the shelf closes.

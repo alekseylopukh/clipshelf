@@ -108,14 +108,32 @@ Placement uses the display's visible frame, so an auto-hidden Dock is not avoide
 
 | Event | Default | Reduce Motion |
 |---|---|---|
-| Open | Spring rise from just below the bottom edge plus glass materializing (opacity and scale ~0.98→1) | Crossfade only |
-| Close | Reverse of open, faster | Crossfade only |
+| Open | The Shelf rises 24 pt from the bottom edge on a near-critically damped spring while its glass materializes (`glassEffectTransition(.materialize)` inside a `GlassEffectContainer`). The Cards visible at that moment cascade in from left to right: each rises 6 pt and fades in, 16 ms after its left neighbor. Cards that scroll into view later appear at once. | Crossfade only |
+| Close | The Shelf drops and dematerializes, faster than it opened. No cascade. A paste never waits for it: the Shelf leaves at once and the paste flight takes over. | Crossfade only |
+| Paste | The Shelf leaves at once and a snapshot of the Card flies along a gentle arc to the text insertion point of the target app, shrinking and fading as it lands. The paste is posted right away, so the text appears while the Card is in flight. Single-Card pastes into the target app only (Return, double-click, Quick Paste, Paste in the menu); copies and multi-Card pastes have no flight. | No flight; the paste happens alone |
 | Card inserted at front | Existing Cards slide right; new Card fades and scales in | Crossfade |
 | Card deleted | Neighbors close the gap | Instant reflow |
 | Board switch | Content crossfades; top-bar selection morphs between capsules (`glassEffectID`) | Crossfade, no morph |
 | Compact ↔ regular | Animated layout change | Instant |
 
-Durations: system spring defaults. We set no custom timing curves unless testing shows a need.
+Durations and springs live in `DesignTokens+Motion.swift`; change them there:
+
+| Token | Value | Used for |
+|---|---|---|
+| `shelfOpenAnimation` | `.spring(duration: 0.3, bounce: 0.04)` | Shelf rise and glass materialize |
+| `shelfOpenOffset` | 24 pt | Rise distance; it fits inside the 32 pt `shelfShadowMargin` below the glass, so the window never clips the rise |
+| `shelfCloseAnimation` | `.spring(duration: 0.2, bounce: 0)` | Shelf drop |
+| `shelfFadeAnimation` | `.easeInOut(duration: 0.2)` | Open and close with Reduce Motion |
+| `cardEntranceAnimation` | `.spring(duration: 0.22, bounce: 0)` | Each Card in the open cascade |
+| `cardEntranceStagger` | 16 ms | Delay between neighboring Cards, capped at the 9th Card (`cardEntranceMaximumIndex` 8) |
+| `cardEntranceOffset` | 6 pt | Card rise distance |
+| `cardEntranceWindow` | 350 ms | After this, Cards that appear no longer animate |
+| `pasteFlightDuration` | 0.3 s, ease in-out | Paste flight |
+| `pasteFlightEndScale` | 0.15 | Card scale on landing; opacity holds until 60% of the flight, then fades to 0 |
+| `pasteFlightArcFraction` | 0.85 | The arc's control point is 85% of the way up and 15% of the way across, so the Card lifts first and then turns toward the caret |
+| `pasteFadeDuration` | 0.18 s | Fade in place when no landing point is known |
+
+**Paste landing.** The landing point comes from Accessibility in the target app: the bounds of the focused element's selected text range (the caret), else the focused element's frame, else the focused window's frame; Accessibility's top-left coordinates are converted to AppKit's. With none of these, or when the landing point is on a different display than the Shelf, the snapshot fades where the Card was. The snapshot lives in a borderless, non-activating, click-through overlay panel above the Shelf that never takes focus, and it follows the "Show the Shelf in screenshots and screen sharing" setting. There is no setting to turn the flight off: it never delays the paste, and Reduce Motion removes it.
 
 ---
 
@@ -372,7 +390,7 @@ Step 3 and the Privacy pane row read `NSPasteboard.general.accessBehavior` (chec
 | VoiceOver: Shelf | The Card strip is a list with item count; Board switcher is a tab group; quick-paste badges are exposed as part of the Card label ("number 3") only while visible. |
 | Announcements | Announce capture paused/resumed, item deleted (with undo hint), Sequence item pasted. |
 | Keyboard only | Every action has a key or is in a menu reachable from the keyboard; Tab moves between search field, Board switcher and Card strip; focus ring always visible. Key map in [product.md](product.md). |
-| Reduce Motion | Crossfades replace springs, morphs and slides (see §2 Motion). |
+| Reduce Motion | Crossfades replace springs, morphs and slides; no Card cascade and no paste flight (see §2 Motion). |
 | Reduce Transparency | Glass falls back to the system opaque material automatically; we add no custom blur that would ignore the setting. |
 | Increase Contrast | Card borders become stronger (system behavior of `separatorColor`); selection ring thickens (proposed +1 pt); Board dots gain an outline. |
 | Liquid Glass appearance | Test with the system Clear and Tinted glass options. |

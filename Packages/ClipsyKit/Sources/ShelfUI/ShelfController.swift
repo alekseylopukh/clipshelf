@@ -26,12 +26,14 @@ public final class ShelfController {
     private static let cardMoveKeys: [Int: ShelfModel.Direction] = [kVK_LeftArrow: .previous, kVK_RightArrow: .next]
 
     let panel = ShelfPanel()
+    let flight = PasteFlightPanel()
+    let landingLocator = PasteLandingLocator()
     let dragSource = CardDragSource()
     var isDragging = false
     private let presentation = ShelfPresentation()
     private let calculator = ShelfFrameCalculator()
     let model: ShelfModel
-    private let paster: PasteCoordinator
+    let paster: PasteCoordinator
     private let deletion: CardDeletion
     let boardEditor: BoardEditor
     let representations: PasteCoordinator.RepresentationLoading
@@ -146,7 +148,7 @@ public final class ShelfController {
         model.didOpen()
         updateQuickPasteModifier(NSEvent.modifierFlags)
         panel.makeKeyAndOrderFront(nil)
-        withAnimation(reduceMotion ? .default : .spring) {
+        withAnimation(reduceMotion ? DesignTokens.shelfFadeAnimation : DesignTokens.shelfOpenAnimation) {
             presentation.isVisible = true
         }
     }
@@ -159,36 +161,11 @@ public final class ShelfController {
         preview.dismiss()
         boardEditor.cancel()
         deletion.discardUndo()
-        withAnimation(reduceMotion ? .default : .snappy) {
+        withAnimation(reduceMotion ? DesignTokens.shelfFadeAnimation : DesignTokens.shelfCloseAnimation) {
             presentation.isVisible = false
         } completion: { [weak self] in
             guard let self, !isShown else { return }
             panel.orderOut(nil)
-        }
-    }
-
-    func perform(_ action: PasteCoordinator.Action, cards: [CardSummary], plainModifier: Bool) async {
-        do {
-            try await paster.perform(
-                action,
-                cards: cards,
-                plainModifier: plainModifier,
-                target: targetApplication,
-                hideShelf: { [weak self] in self?.hideImmediately() }
-            )
-        } catch is CancellationError {
-            return
-        } catch {
-            Self.logger.error("paste failed: \(String(describing: type(of: error)), privacy: .public)")
-            hideImmediately()
-            let alert = NSAlert(error: error)
-            alert.messageText = String(
-                localized: "Clipsy can’t paste this card.",
-                comment: "Title of the alert shown when a card's contents cannot be read for pasting"
-            )
-            alert.informativeText = error.localizedDescription
-            NSApplication.shared.activate()
-            alert.runModal()
         }
     }
 
@@ -303,7 +280,7 @@ public final class ShelfController {
         model.setQuickPasteModifierHeld(QuickPasteModifiers(defaults: defaults).isQuickPasteHeld(in: modifierFlags))
     }
 
-    private var reduceMotion: Bool {
+    var reduceMotion: Bool {
         NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
     }
 
@@ -492,6 +469,9 @@ public extension ShelfController {
 
     var isShownInScreenCapture: Bool {
         get { panel.sharingType != .none }
-        set { panel.sharingType = newValue ? .readOnly : .none }
+        set {
+            panel.sharingType = newValue ? .readOnly : .none
+            flight.sharingType = panel.sharingType
+        }
     }
 }

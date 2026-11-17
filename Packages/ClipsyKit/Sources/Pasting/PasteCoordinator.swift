@@ -37,6 +37,14 @@ public final class PasteCoordinator {
         sounds = SoundEffects(player: sound, defaults: defaults)
     }
 
+    public func pastesIntoTarget(_ action: Action) -> Bool {
+        asksForDirectPaste(action) && trust.isTrusted
+    }
+
+    private func asksForDirectPaste(_ action: Action) -> Bool {
+        action == .paste && defaults.pasteBehavior == .pasteIntoActiveApp
+    }
+
     /// `hideShelf` must take the shelf off screen synchronously, so the keystroke reaches the target;
     /// several cards are pasted oldest first unless `keepsOrder`
     public func perform(
@@ -53,8 +61,8 @@ public final class PasteCoordinator {
         writer.write(representations, plainTextOnly: plainModifier || defaults.pastesPlainTextByDefault)
         hideShelf()
         sounds.play(.paste)
-        guard action == .paste, defaults.pasteBehavior == .pasteIntoActiveApp else { return }
-        guard trust.isTrusted else {
+        guard asksForDirectPaste(action) else { return }
+        guard pastesIntoTarget(action) else {
             await askForAccessibilityIfNeeded(target: target)
             return
         }
