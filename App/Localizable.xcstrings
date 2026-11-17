@@ -487,6 +487,84 @@
     },
     "Capture resumed" : {
       "comment" : "VoiceOver announcement when capture is resumed"
+    },
+    "Shortcuts" : {
+      "comment" : "Title of the Shortcuts settings pane"
+    },
+    "Previous Board" : {
+      "comment" : "Shortcut recorder label in the Shortcuts settings pane"
+    },
+    "Next Board" : {
+      "comment" : "Shortcut recorder label in the Shortcuts settings pane"
+    },
+    "Shelf" : {
+      "comment" : "Section header in the Shortcuts settings pane"
+    },
+    "Quick Paste modifier" : {
+      "comment" : "Pop-up label in the Shortcuts settings pane"
+    },
+    "Plain text modifier" : {
+      "comment" : "Pop-up label in the Shortcuts settings pane"
+    },
+    "⌘ Command" : {
+      "comment" : "Modifier key choice in the Shortcuts settings pane"
+    },
+    "⌃ Control" : {
+      "comment" : "Modifier key choice in the Shortcuts settings pane"
+    },
+    "⌥ Option" : {
+      "comment" : "Modifier key choice in the Shortcuts settings pane"
+    },
+    "⇧ Shift" : {
+      "comment" : "Modifier key choice in the Shortcuts settings pane"
+    },
+    "Restore Defaults…" : {
+      "comment" : "Button that asks to restore the default shortcuts"
+    },
+    "Restore the default shortcuts?" : {
+      "comment" : "Title of the confirmation shown before restoring the default shortcuts"
+    },
+    "Restore Defaults" : {
+      "comment" : "Button that confirms restoring the default shortcuts"
+    },
+    "All shortcuts and modifiers on this pane return to their default values." : {
+      "comment" : "Message of the confirmation shown before restoring the default shortcuts"
+    },
+    "%@ is already used by “%@”." : {
+      "comment" : "Shown below a shortcut recorder when the recorded shortcut is taken; the first value is the shortcut, the second the action that uses it"
+    },
+    "Shortcuts that use only ⌥ as a modifier may not work reliably." : {
+      "comment" : "Warning below a shortcut recorder"
+    },
+    "Quick Paste" : {
+      "comment" : "Name of the Quick Paste shortcuts in a conflict message"
+    },
+    "First Card" : {
+      "comment" : "Name of a shelf shortcut in a conflict message"
+    },
+    "Last Card" : {
+      "comment" : "Name of a shelf shortcut in a conflict message"
+    },
+    "Select All" : {
+      "comment" : "Name of a shelf shortcut in a conflict message"
+    },
+    "Search" : {
+      "comment" : "Name of a shelf shortcut in a conflict message"
+    },
+    "New Board" : {
+      "comment" : "Name of a shelf shortcut in a conflict message"
+    },
+    "New Text Card" : {
+      "comment" : "Name of a shelf shortcut in a conflict message"
+    },
+    "Rename" : {
+      "comment" : "Name of a shelf shortcut in a conflict message"
+    },
+    "Edit" : {
+      "comment" : "Name of a shelf shortcut in a conflict message"
+    },
+    "Show in List" : {
+      "comment" : "Name of a shelf shortcut in a conflict message"
     }
   },
   "version" : "1.0"

@@ -1,4 +1,5 @@
 import Capture
+import ShelfUI
 import Store
 import SwiftUI
 
@@ -10,6 +11,9 @@ struct SettingsView: View {
             Tab("General", systemImage: "gearshape", value: SettingsPane.general) {
                 GeneralSettingsView()
             }
+            Tab("Shortcuts", systemImage: "command", value: SettingsPane.shortcuts) {
+                ShortcutsSettingsView()
+            }
             Tab("Privacy", systemImage: "hand.raised", value: SettingsPane.privacy) {
                 PrivacySettingsView()
             }
@@ -20,6 +24,7 @@ struct SettingsView: View {
 
 enum SettingsPane: String {
     case general
+    case shortcuts
     case privacy
 }
 
@@ -29,5 +34,6 @@ enum SettingsPane: String {
             .environment(RetentionSettings(repository: CardRepository(database: database)))
             .environment(PrivacySettings())
             .environment(MenuBarSettings())
+            .environment(ShortcutSettings(store: KeyboardShortcutsStore()))
     }
 }

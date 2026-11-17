@@ -69,6 +69,7 @@ public final class ShelfController {
                 await self?.rename(id, to: title)
             }
         }
+        actions.pasteOnDoubleClick = { [weak self] ids in self?.pasteOnDoubleClick(ids) }
     }
 
     public var isShown: Bool {
@@ -93,6 +94,7 @@ public final class ShelfController {
         let frontmost = NSWorkspace.shared.frontmostApplication
         targetApplication = frontmost == NSRunningApplication.current ? nil : frontmost
         actions.targetAppName = targetApplication?.localizedName
+        actions.plainTextModifier = QuickPasteModifiers(defaults: defaults).plainText
         panel.setFrame(calculator.frame(height: storedHeight, in: screen.visibleFrame), display: false)
         model.didOpen()
         updateQuickPasteModifier(NSEvent.modifierFlags)
@@ -198,15 +200,19 @@ public final class ShelfController {
         if modifiers == .command, handleCommandKey(key, isRepeat: event.isARepeat) {
             return true
         }
-        guard let action = Self.pasteAction(keyCode: Int(event.keyCode), key: key, modifiers: modifiers) else {
-            return false
-        }
-        let cards = model.cards.filter { model.selection.contains($0.id) }
-        guard !event.isARepeat, !cards.isEmpty else { return true }
-        Task {
-            await perform(action, cards: cards, plainModifier: modifiers.contains(.shift))
+        guard let command = quickPaste.command(keyCode: event.keyCode, character: key, modifierFlags: modifiers)
+        else { return false }
+        if !event.isARepeat {
+            perform(command, on: model.selectedCards.map(\.id))
         }
         return true
+    }
+
+    private func pasteOnDoubleClick(_ ids: [Int64]) {
+        perform(
+            QuickPasteModifiers(defaults: defaults).doubleClickCommand(modifierFlags: NSEvent.modifierFlags),
+            on: ids
+        )
     }
 
     private func open(_ cardID: Int64) async {
@@ -344,20 +350,6 @@ private extension ShelfController {
             return false
         }
         return true
-    }
-
-    static func pasteAction(
-        keyCode: Int,
-        key: String?,
-        modifiers: NSEvent.ModifierFlags
-    ) -> PasteCoordinator.Action? {
-        if [kVK_Return, kVK_ANSI_KeypadEnter].contains(keyCode), modifiers.isSubset(of: .shift) {
-            return .paste
-        }
-        if key == "c", modifiers.subtracting(.shift) == .command {
-            return .copy
-        }
-        return nil
     }
 }
 

@@ -1,5 +1,6 @@
 import AppKit
 import Carbon.HIToolbox
+import SwiftUI
 
 public struct QuickPasteModifiers: Equatable, Sendable {
     public enum Key: String, Sendable, CaseIterable {
@@ -16,11 +17,21 @@ public struct QuickPasteModifiers: Equatable, Sendable {
             case .shift: .shift
             }
         }
+
+        var eventModifiers: SwiftUI.EventModifiers {
+            switch self {
+            case .command: .command
+            case .control: .control
+            case .option: .option
+            case .shift: .shift
+            }
+        }
     }
 
     public static let quickPasteKey = "QuickPasteModifier"
     public static let plainTextKey = "PlainTextModifier"
-    public static let quickPasteChoices: [Key] = [.command, .control, .option]
+    public static let quickPasteChoices: [Key] = [.command, .option, .control]
+    public static let plainTextChoices: [Key] = [.shift, .option, .control, .command]
 
     public let quickPaste: Key
     public let plainText: Key
@@ -40,6 +51,25 @@ public struct QuickPasteModifiers: Equatable, Sendable {
 
     func isQuickPasteHeld(in modifierFlags: NSEvent.ModifierFlags) -> Bool {
         modifierFlags.contains(quickPaste.flags)
+    }
+
+    func command(keyCode: UInt16, character: String?, modifierFlags: NSEvent.ModifierFlags) -> CardCommand? {
+        let modifiers = modifierFlags.intersection([.shift, .control, .option, .command])
+        if [kVK_Return, kVK_ANSI_KeypadEnter].contains(Int(keyCode)) {
+            if modifiers.isEmpty {
+                return .paste
+            }
+            return modifiers == plainText.flags ? .pasteAsPlainText : nil
+        }
+        guard character == "c" else { return nil }
+        if modifiers == .command {
+            return .copy
+        }
+        return modifiers == plainText.flags.union(.command) ? .copyAsPlainText : nil
+    }
+
+    func doubleClickCommand(modifierFlags: NSEvent.ModifierFlags) -> CardCommand {
+        modifierFlags.contains(plainText.flags) ? .pasteAsPlainText : .paste
     }
 
     func shortcut(keyCode: UInt16, modifierFlags: NSEvent.ModifierFlags) -> (number: Int, plainText: Bool)? {

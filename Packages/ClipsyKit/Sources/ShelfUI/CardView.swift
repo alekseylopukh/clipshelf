@@ -32,7 +32,7 @@ struct CardView: View {
             isHovered: isHovered
         )
         .onHover { isHovered = $0 }
-        .gesture(TapGesture(count: 2).onEnded { paste() })
+        .gesture(TapGesture(count: 2).onEnded { actions.pasteOnDoubleClick([card.id]) })
         .simultaneousGesture(TapGesture().onEnded { click() })
         .contextMenu {
             CardContextMenu(cards: isSelected ? model.selectedCards : [card], list: model.tab)
@@ -45,7 +45,11 @@ struct CardView: View {
         .accessibilityAction { model.select(card.id) }
         .accessibilityActions {
             ForEach(CardCommand.menu(for: [card], in: model.tab).flatMap(\.self), id: \.self) { command in
-                CardCommandButton(command: command, targetAppName: actions.targetAppName) {
+                CardCommandButton(
+                    command: command,
+                    targetAppName: actions.targetAppName,
+                    plainTextModifiers: actions.plainTextModifier.eventModifiers
+                ) {
                     actions.perform(command, [card.id])
                 }
             }
@@ -87,11 +91,6 @@ struct CardView: View {
         } else {
             model.select(card.id)
         }
-    }
-
-    private func paste() {
-        let command: CardCommand = NSEvent.modifierFlags.contains(.shift) ? .pasteAsPlainText : .paste
-        actions.perform(command, [card.id])
     }
 }
 

@@ -15,6 +15,7 @@ struct ClipsyApp: App {
     @State private var privacy: PrivacySettings
     @State private var menuBarSettings: MenuBarSettings
     @State private var statusItem: StatusItemController
+    @State private var shortcuts = ShortcutSettings(store: KeyboardShortcutsStore())
 
     init() {
         let repository = CardRepository(database: Self.openDatabase())
@@ -87,6 +88,7 @@ struct ClipsyApp: App {
                 .environment(retention)
                 .environment(privacy)
                 .environment(menuBarSettings)
+                .environment(shortcuts)
         }
     }
 

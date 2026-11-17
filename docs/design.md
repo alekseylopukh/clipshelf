@@ -270,7 +270,7 @@ SwiftUI `Settings` scene with a toolbar `TabView`. Each pane is a `Form` with `.
 | Plain text modifier | Pop-up: ⇧ / ⌥ / ⌃ / ⌘ |
 | Restore Defaults | Button with confirmation |
 
-The recorder rejects combinations already used by the app, by a menu item or by the system, and shows the conflict inline below the field.
+The recorder rejects combinations already used by the app, by a menu item or by the system. A conflict with another Clipsy shortcut is shown inline below the field; a menu item or system conflict is shown in the recorder's own sheet (WD-36 in the roadmap).
 
 ### Privacy
 
