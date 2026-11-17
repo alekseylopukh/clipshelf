@@ -11,7 +11,7 @@ The commit hook (`.claude/hooks/commit-gate.py`) blocks `git commit` until the s
 
 1. **Freeze the scope.** Stage exactly what will be committed with `git add <paths>`, then check it with `git diff --cached --stat`. If nothing is staged, stop.
 2. **Lint.** Run `scripts/lint.sh --staged`. Fix every finding, restage, and start again from step 1.
-3. **Build and test.** Do this once an Xcode project or `Package.swift` exists. Build, then run the tests of every module the change touches. Fix failures and start again from step 1. If the change touches UI, also follow the "Verify" section of the `macos-native-ui` skill.
+3. **Build and test.** Do this once an Xcode project or `Package.swift` exists. Build, then run the tests of every module the change touches. Fix failures and start again from step 1. If the change touches UI, also follow the "Verify" section of the `macos-native-ui` skill. If it touches `.claude/hooks/`, run `scripts/test-commit-gate.sh` and add a case for the bug being fixed.
 4. **Independent review.** Hand the staged diff to the `swift-reviewer` subagent (Agent tool, `subagent_type: swift-reviewer`). Pass along:
    - the task's goal in one or two sentences;
    - which checks from steps 2–3 ran and their results.

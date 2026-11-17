@@ -23,3 +23,5 @@ jobs:
         run: brew install swiftformat swiftlint
       - name: Lint
         run: scripts/lint.sh
+      - name: Commit gate tests
+        run: scripts/test-commit-gate.sh

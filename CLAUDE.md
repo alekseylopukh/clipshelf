@@ -76,7 +76,7 @@ Optional extras on the developer's own machine, not committed:
 
 Nothing gets committed without passing review.
 
-1. **Pre-commit review (Claude Code).** A `PreToolUse` hook (`.claude/hooks/commit-gate.py`) blocks `git commit` unless the `pre-commit-review` skill has approved the exact staged tree. The skill lints, builds, tests, and gets an independent verdict from the `swift-reviewer` subagent. Never bypass it: no `--no-verify`, no `git commit -a`, no hand-written approval markers, no edits to the hook.
+1. **Pre-commit review (Claude Code).** A `PreToolUse` hook (`.claude/hooks/commit-gate.py`) blocks `git commit` unless the `pre-commit-review` skill has approved the exact staged tree. The skill lints, builds, tests, and gets an independent verdict from the `swift-reviewer` subagent. Never bypass it: no `--no-verify`, no `git commit -a`, no hand-written approval markers. Change the hook only when the user asks for it; every change keeps `scripts/test-commit-gate.sh` green and adds a case for the bug it fixes.
 2. **Formatting.** A `PostToolUse` hook runs SwiftFormat on every Swift file you edit.
 3. **Git pre-commit hook (everyone).** `.githooks/pre-commit` runs `scripts/lint.sh --staged`. Enable it once per clone with `git config core.hooksPath .githooks`.
 4. **CI.** The `Lint` workflow runs on every pull request and must pass before merge.
