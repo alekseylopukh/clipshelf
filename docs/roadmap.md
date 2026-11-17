@@ -140,6 +140,7 @@ What exists:
 - Deliverable: `PasteboardReading` protocol (change count, items, types, data); `NSPasteboard` conformance; `PasteboardSnapshot` reader that drops junk types (source markers, OLE link types, own marker) and any representation over 50 MB, returning nil when nothing is left; marker type constant in Store
 - Acceptance: tests on a private named pasteboard: `readsAllItemsAndTypesInOrder`, `dropsJunkTypes`, `dropsOversizedRepresentation`, `emptyAfterFilteringIsNil`
 - Size: M
+- Status: done
 
 ### T2.2 Type classifier
 - Module(s): Capture
