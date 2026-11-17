@@ -45,5 +45,7 @@ jobs:
           swiftlint lint --strict --config .swiftlint.yml "$RUNNER_TEMP/Smoke.swift"
       - name: Lint
         run: scripts/lint.sh
+      - name: ShellCheck release scripts
+        run: shellcheck scripts/release/*.sh
       - name: Commit gate tests
         run: scripts/test-commit-gate.sh

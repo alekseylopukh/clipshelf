@@ -278,7 +278,7 @@ Packages/ClipsyKit/
     ShelfUI/                NSPanel, SwiftUI Shelf, Cards, search field, Quick Look
     Updates/                Sparkle wrapper: the updater starts only after opt-in or a manual check
   Tests/                    one test target per module
-scripts/release/            release helpers (DMG, appcast)
+scripts/release/            release scripts: archive, notarize, DMG and zip, appcast (§6.4)
 ```
 
 This is the module list; other docs link here instead of repeating it.
@@ -330,15 +330,26 @@ Triggered by a maintainer pushing tag `vX.Y.Z` on `main` (see [CONTRIBUTING.md](
 3. `xcodebuild archive`, then `-exportArchive` with the Developer ID method and Hardened Runtime.
 4. Notarize with `xcrun notarytool submit --wait` using an App Store Connect API key from secrets; `xcrun stapler staple` the app.
 5. Package: `ditto -c -k --keepParent` for the zip (Sparkle feed) and `hdiutil` for the DMG; sign, notarize and staple the DMG.
-6. Sign the zip with Sparkle's `sign_update` (EdDSA private key from secrets) and regenerate the appcast with `generate_appcast`.
-7. `gh release create vX.Y.Z --generate-notes` (grouped by [.github/release.yml](../.github/release.yml)), attach DMG and zip.
-8. Publish the appcast.
+6. Sparkle's `generate_appcast` signs the zip with the EdDSA private key from secrets and adds it to the appcast of the latest release, keeping the newest 3 versions.
+7. `gh release create vX.Y.Z --generate-notes` (grouped by [.github/release.yml](../.github/release.yml)), attach DMG, zip and `appcast.xml`.
+8. The appcast is published by step 7: the feed URL points at the latest release's `appcast.xml`.
 
-Secrets never enter the repository; only GitHub Actions secrets.
+Secrets never enter the repository; only GitHub Actions secrets or the maintainer's shell environment.
 
-Signing configuration (T13.1): `Config/Info.plist` is merged into the generated Info.plist and sets `SUFeedURL` and `SUPublicEDKey` from the build settings `SPARKLE_FEED_URL` and `SPARKLE_PUBLIC_ED_KEY`, and `SUEnableAutomaticChecks = NO`. Both build settings are placeholders until the maintainer supplies the appcast URL and the key. The app has Hardened Runtime, no sandbox and no entitlements: Sparkle needs none outside the sandbox, and paste uses `CGEvent` (Accessibility), not Apple Events. Release builds do not inject `get-task-allow`. Hardened Runtime's library validation refuses an ad-hoc-signed `Sparkle.framework`, so a Release build only launches once it is signed with a Developer ID; local runs use Debug, which Xcode signs without Hardened Runtime.
+Decided (2026-11-17): the appcast is a GitHub Release asset at `https://github.com/alekseylopukh/clipsy/releases/latest/download/appcast.xml` (the `SPARKLE_FEED_URL` build setting). Each item downloads its zip from `releases/download/vX.Y.Z/`, so older items stay valid. The signing identity, notarization key and Sparkle keys come from environment variables; the public key stays a placeholder build setting and a release overrides it.
 
-> TODO: where the appcast is hosted (the author's site vs. GitHub Pages) and its URL.
+Scripts (T13.2) in `scripts/release/` run steps 2–6; they write to `.build/release/` and stop with a list of the missing variables before doing any work. `release.sh [--dry-run] <version> <build-number>` runs them in order: `archive.sh` (steps 2–3), `notarize.sh` for the app and then the DMG (step 4), `package.sh` (step 5), `appcast.sh` (step 6). `--dry-run` keeps the ad-hoc signature, skips notarization, signs the appcast with a throwaway Sparkle key and needs no secrets.
+
+| Variable | Used by | Value |
+|---|---|---|
+| `DEVELOPER_ID_APPLICATION` | archive, package | Developer ID Application identity in the keychain, e.g. `Developer ID Application: Name (TEAMID)` |
+| `APPLE_TEAM_ID` | archive | Team ID of that certificate |
+| `NOTARY_KEY_PATH`, `NOTARY_KEY_ID`, `NOTARY_ISSUER_ID` | notarize | App Store Connect API key file (`.p8`), its key ID and issuer ID |
+| `SPARKLE_PUBLIC_ED_KEY` | archive | Sparkle EdDSA public key, overrides the placeholder build setting |
+| `SPARKLE_PRIVATE_ED_KEY` | appcast | Sparkle EdDSA private key (`generate_keys -x`), passed on standard input |
+
+Signing configuration (T13.1): `Config/Info.plist` is merged into the generated Info.plist and sets `SUFeedURL` and `SUPublicEDKey` from the build settings `SPARKLE_FEED_URL` and `SPARKLE_PUBLIC_ED_KEY`, and `SUEnableAutomaticChecks = NO`. `SPARKLE_PUBLIC_ED_KEY` stays a placeholder in the project; a release sets it from the environment. The app has Hardened Runtime, no sandbox and no entitlements: Sparkle needs none outside the sandbox, and paste uses `CGEvent` (Accessibility), not Apple Events. Release builds do not inject `get-task-allow`. Hardened Runtime's library validation refuses an ad-hoc-signed `Sparkle.framework`, so a Release build only launches once it is signed with a Developer ID; local runs use Debug, which Xcode signs without Hardened Runtime.
+
 > TODO: Homebrew cask: not decided.
 
 ## 7. Dependencies and references
@@ -385,4 +396,3 @@ Decided (T13.1): Sparkle 2.10.1's `LICENSE` is MIT, and the code it bundles is b
 > TODO: Universal Clipboard: capture remote copies or not; keep our pastes local or not (§4.1, §4.2).
 > TODO: total storage cap (§3.3). The polling interval is open in [product.md §4.1](product.md#41-capture).
 > TODO: GRDB vs. SwiftData performance at 100k Cards was never measured; measure before the schema freezes.
-> TODO: appcast URL.

@@ -709,7 +709,9 @@ What exists:
 - Spec: [architecture §6.4](architecture.md#64-release-pipeline)
 - Deliverable: scripts for archive and export, notarize and staple, zip and DMG, Sparkle signing and appcast; all secrets from environment variables
 - Acceptance: `shellcheck` clean; dry-run mode runs the archive and packaging steps with ad-hoc signing
+- Human check: maintainer supplies `DEVELOPER_ID_APPLICATION` and `APPLE_TEAM_ID` (Developer ID Application certificate), `NOTARY_KEY_PATH`, `NOTARY_KEY_ID` and `NOTARY_ISSUER_ID` (App Store Connect API key), and `SPARKLE_PUBLIC_ED_KEY` and `SPARKLE_PRIVATE_ED_KEY` (Sparkle `generate_keys`), then runs `scripts/release/release.sh` once with them to confirm export, notarization, stapling and a signed appcast
 - Size: M
+- Status: done
 
 ### T13.3 Release workflow
 - Module(s): CI
