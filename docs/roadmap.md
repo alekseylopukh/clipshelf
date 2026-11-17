@@ -69,6 +69,7 @@ What exists:
 - Deliverable: `Package.swift` adds the targets `Store`, `Media`, `Pasting`, `DesignSystem` and `ShelfUI`, each with a test target and the dependency directions of §6.1, all in the umbrella product `ClipsyKit`. `.github/workflows/build.yml` runs `scripts/build.sh` and `scripts/build.sh test` on a macOS runner, with ad-hoc signing and an SPM cache.
 - Acceptance: both commands pass locally; workflow YAML passes `actionlint` if installed; the runner label is the one GitHub documents for an Xcode with the macOS 26 SDK, or a `> TODO:` if it cannot be confirmed
 - Size: S
+- Status: done
 
 ### T1.3 Database bootstrap and initial schema
 - Module(s): Store

@@ -289,8 +289,7 @@ Decided (2026-11-17): a plain, committed `Clipsy.xcodeproj`. `App/` is a folder-
 
 - On pull request and push to `main`: macOS runner, select the Xcode version, `scripts/build.sh` and `scripts/build.sh test` (ad-hoc signed, no secrets). Lint runs separately on Linux (`.github/workflows/lint.yml`).
 - Cache SPM checkouts.
-
-> TODO: confirm a GitHub-hosted runner image with the Xcode that has the macOS 26 SDK, and its label.
+- Runner: `macos-26` (arm64) with Xcode 26.6 selected through `DEVELOPER_DIR`, as listed in [actions/runner-images](https://github.com/actions/runner-images). The workflow is `.github/workflows/build.yml`.
 
 Formatting and linting use SwiftFormat and SwiftLint, the pair most popular macOS apps use. The rules are in [.claude/rules/code-rules.md](../.claude/rules/code-rules.md).
 
