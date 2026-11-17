@@ -107,7 +107,7 @@ Placement uses the display's visible frame, so an auto-hidden Dock is not avoide
 
 | Event | Default | Reduce Motion |
 |---|---|---|
-| Open | The Shelf rises 24 pt from the bottom edge on a near-critically damped spring while its glass materializes (`glassEffectTransition(.materialize)` inside a `GlassEffectContainer`). The Cards visible at that moment cascade in from left to right: each rises 6 pt and fades in, 16 ms after its left neighbor. Cards that scroll into view later appear at once. | Crossfade only |
+| Open | The Shelf rises 24 pt from the bottom edge on a near-critically damped spring while its glass materializes (`glassEffectTransition(.materialize)` on the background glass layer inside a `GlassEffectContainer`) and its content rises with it and fades in. The Cards visible at that moment cascade in from left to right: each rises 6 pt and fades in, 16 ms after its left neighbor. Cards that scroll into view later appear at once. | Crossfade only |
 | Close | The Shelf drops and dematerializes, faster than it opened. No cascade. A paste never waits for it: the Shelf leaves at once and the paste flight takes over. | Crossfade only |
 | Paste | The Shelf leaves at once and a snapshot of the Card flies along a gentle arc to the text insertion point of the target app, shrinking and fading as it lands. The paste is posted right away, so the text appears while the Card is in flight. Single-Card pastes into the target app only (Return, double-click, Quick Paste, Paste in the menu); copies and multi-Card pastes have no flight. | No flight; the paste happens alone |
 | Card inserted at front | Existing Cards slide right; new Card fades and scales in | Crossfade |

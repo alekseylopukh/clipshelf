@@ -16,7 +16,15 @@ struct ShelfContainerView: View {
 
     var body: some View {
         @Bindable var boardEditor = boardEditor
-        GlassEffectContainer {
+        ZStack {
+            GlassEffectContainer {
+                if presentation.isVisible {
+                    Color.clear
+                        .glassEffect(.regular, in: .rect(cornerRadius: DesignTokens.shelfCornerRadius))
+                        .glassEffectTransition(reduceMotion ? .identity : .materialize)
+                        .transition(reduceMotion ? .opacity : .offset(y: DesignTokens.shelfOpenOffset))
+                }
+            }
             if presentation.isVisible {
                 VStack(spacing: 0) {
                     ShelfTopBar(model: model, commands: commands)
@@ -33,9 +41,7 @@ struct ShelfContainerView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .clipShape(.rect(cornerRadius: DesignTokens.shelfCornerRadius))
-                .glassEffect(.regular, in: .rect(cornerRadius: DesignTokens.shelfCornerRadius))
-                .glassEffectTransition(reduceMotion ? .identity : .materialize)
-                .transition(reduceMotion ? .opacity : .offset(y: DesignTokens.shelfOpenOffset))
+                .transition(reduceMotion ? .opacity : .offset(y: DesignTokens.shelfOpenOffset).combined(with: .opacity))
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
