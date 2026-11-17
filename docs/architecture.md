@@ -1,6 +1,6 @@
 # Architecture
 
-How Clipshelf is built: subsystems, stack, data model, key flows, permissions, project layout and release pipeline. Product behavior and the keyboard map live in [product.md](product.md); visual design lives in [design.md](design.md). Platform, license, sync and distribution decisions live in [CLAUDE.md](../CLAUDE.md#decisions) and are not repeated here.
+How Clipsy is built: subsystems, stack, data model, key flows, permissions, project layout and release pipeline. Product behavior and the keyboard map live in [product.md](product.md); visual design lives in [design.md](design.md). Platform, license, sync and distribution decisions live in [CLAUDE.md](../CLAUDE.md#decisions) and are not repeated here.
 
 Terms: a **Card** is one captured clipboard entry. **History** is the time-ordered list of captured Cards. A **Board** is a named, colored collection of Cards kept outside retention. A **Sequence** is a queue of Cards pasted one after another. The **Shelf** is the panel that shows Cards.
 
@@ -77,9 +77,9 @@ Concurrency (Swift 6 strict): the monitor and all UI are `@MainActor`. Reading p
 | Logging | `os.Logger` | System, no dependency; never interpolate clipboard content (§5) | swift-log: adds a dependency for nothing |
 | Tests | Swift Testing (`import Testing`) | Ships with Swift 6 toolchain | XCTest for UI tests only |
 
-> Decision needed: GRDB as the persistence layer (it is a third-party package, so [code-rules.md](../.claude/rules/code-rules.md#r1-architecture) requires approval). Recommendation: yes. Tradeoff: one MIT dependency in exchange for FTS5 and explicit migrations; SwiftData is the zero-dependency path with worse search.
+Decided (2026-11-17): GRDB with FTS5 is the persistence layer. The maintainer approved it.
 
-> Decision needed: KeyboardShortcuts vs. our own Carbon wrapper. Recommendation: KeyboardShortcuts; the recorder UI alone justifies it.
+Decided (2026-11-17): KeyboardShortcuts handles global hotkeys and the recorder UI.
 
 Sparkle is configured to match the network rule in [Decisions](../CLAUDE.md#decisions): automatic checks stay off until the user opts in.
 
@@ -90,8 +90,8 @@ Local-only. No sync fields, no UUIDs, no tombstones: integer row IDs are enough.
 ### 3.1 Files
 
 ```text
-~/Library/Application Support/Clipshelf/      (0700)
-  clipshelf.sqlite (+ -wal, -shm)
+~/Library/Application Support/Clipsy/      (0700)
+  clipsy.sqlite (+ -wal, -shm)
   Payloads/<aa>/<sha256>                       content-addressed representation data
   Thumbnails/<sha256>.png                      keyed by card content hash
 ```
@@ -159,7 +159,7 @@ Rules:
 - Representations of 4 KB or more go to `Payloads/`, named by SHA-256 of their bytes. Identical payloads across Cards share one file.
 - Write order: write to a temp file, rename into place, then insert rows. A crash leaves an orphan file (collected later), never a row that points to a missing file.
 - Garbage collection runs after retention cleanup: delete files in `Payloads/` and `Thumbnails/` with no referencing row.
-- Size cap: representations above the cap are dropped per type; if nothing is left, the capture is skipped. The cap value is a pending decision in [product.md §4.1](product.md#41-capture).
+- Size cap: representations above the cap are dropped per type; if nothing is left, the capture is skipped. The cap is set in [product.md §4.1](product.md#41-capture).
 
 > TODO: whether there is a total History size cap.
 
@@ -253,10 +253,10 @@ Runs at launch, hourly, and when the retention setting is lowered (after confirm
 A thin Xcode app target plus one local Swift package with feature modules. Xcode owns signing, entitlements, Info.plist, assets and the archive; the package owns code and is testable with `swift test`.
 
 ```text
-Clipshelf.xcodeproj
+Clipsy.xcodeproj
 App/                        app target: entry point, AppDelegate, menu bar item, Settings scene,
                             onboarding, hotkeys, launch at login, Sparkle wiring
-Packages/ClipshelfKit/
+Packages/ClipsyKit/
   Package.swift
   Sources/
     Store/                  GRDB schema, migrations, records, retention, payload files, search queries
@@ -273,7 +273,7 @@ This is the module list; other docs link here instead of repeating it.
 
 Dependency direction: `ShelfUI` → `DesignSystem`, `Pasting`, `Media`, `Store`; `Capture` → `Store`; the app target's Settings and onboarding use `DesignSystem`; `Store` and `DesignSystem` depend on nothing in the package.
 
-> Decision needed: plain Xcode project + local SPM package (recommended, no extra tools) vs. a generated project (XcodeGen/Tuist) to avoid `.pbxproj` merge conflicts.
+Decided (2026-11-17): a plain, committed `Clipsy.xcodeproj`. `App/` is a folder-synchronized group, so new files there need no project edits. The app links one umbrella product, `ClipsyKit`, so adding a module only changes `Package.swift`. Never hand-edit `project.pbxproj` unless a build setting has to change.
 
 ### 6.2 Testing
 
@@ -287,7 +287,7 @@ Dependency direction: `ShelfUI` → `DesignSystem`, `Pasting`, `Media`, `Store`;
 
 ### 6.3 CI (GitHub Actions)
 
-- On pull request and push to `main`: macOS runner, select the Xcode version, `xcodebuild build` and `xcodebuild test` (ad-hoc signed; no secrets), `scripts/lint.sh` (SwiftFormat + SwiftLint).
+- On pull request and push to `main`: macOS runner, select the Xcode version, `scripts/build.sh` and `scripts/build.sh test` (ad-hoc signed, no secrets). Lint runs separately on Linux (`.github/workflows/lint.yml`).
 - Cache SPM checkouts.
 
 > TODO: confirm a GitHub-hosted runner image with the Xcode that has the macOS 26 SDK, and its label.
@@ -316,7 +316,7 @@ Secrets never enter the repository; only GitHub Actions secrets.
 
 ### 7.1 Third-party dependencies
 
-All are added only with maintainer approval.
+They follow the dependency rule in [CLAUDE.md Decisions](../CLAUDE.md#decisions).
 
 | Package | Use | License | GPL-3.0 compatible |
 |---|---|---|---|
@@ -355,6 +355,6 @@ Notices of every dependency and of any copied code go into an Acknowledgements s
 > TODO: Quick Look popover (`NSPopover` + `QLPreviewView`, [design.md §5](design.md#quick-look)) inside a non-activating panel; prototype early.
 > TODO: Shelf window level and `collectionBehavior` that work over full-screen apps on every Space without stealing focus.
 > TODO: Universal Clipboard: capture remote copies or not; keep our pastes local or not (§4.1, §4.2).
-> TODO: total storage cap (§3.3). Size cap and polling interval are open in [product.md §4.1](product.md#41-capture).
+> TODO: total storage cap (§3.3). The polling interval is open in [product.md §4.1](product.md#41-capture).
 > TODO: GRDB vs. SwiftData performance at 100k Cards was never measured; measure before the schema freezes.
-> TODO: bundle ID, Application Support folder name, appcast URL.
+> TODO: appcast URL.

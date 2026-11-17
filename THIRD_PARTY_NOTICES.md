@@ -1,6 +1,6 @@
 # Third-party notices
 
-Clipshelf is licensed under [GPL-3.0](LICENSE). It includes the following third-party material under GPL-3.0-compatible licenses. Each vendored directory keeps its original `LICENSE` file.
+Clipsy is licensed under [GPL-3.0](LICENSE). It includes the following third-party material under GPL-3.0-compatible licenses. Each vendored directory keeps its original `LICENSE` file.
 
 ## Agent skills (`.claude/skills/`)
 

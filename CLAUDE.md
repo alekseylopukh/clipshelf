@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Clipshelf is an open-source, native macOS clipboard manager. It has the same features as Paste (pasteapp.io), but it looks like a first-party macOS component.
+Clipsy is an open-source, native macOS clipboard manager. It has the same features as Paste (pasteapp.io), but it looks like a first-party macOS component.
 
 ## Decisions
 - **Platform:** macOS 26 and later, Swift 6. Uses Liquid Glass and current SwiftUI/AppKit APIs with no fallbacks.
@@ -8,6 +8,9 @@ Clipshelf is an open-source, native macOS clipboard manager. It has the same fea
 - **Sync:** none for now. The data layer is local-only.
 - **License:** GPL-3.0. Code may be reused from MIT, BSD, Apache-2.0 or GPL-3.0 projects, keeping their notices. Never from AGPL or proprietary sources.
 - **Distribution:** GitHub Releases plus the author's site. Signed with Developer ID and notarized. Not sandboxed, because direct paste needs Accessibility. No Mac App Store build.
+- **Identity:** bundle id `app.gonar.clipsy`. It is an agent app (`LSUIElement`) with a menu bar item.
+- **Project:** a committed `Clipsy.xcodeproj`. `App/` is a synchronized folder, so files added there need no project edits. All other code lives in `Packages/ClipsyKit`, whose single umbrella product `ClipsyKit` is what the app links. A new module therefore touches only `Package.swift`. Never hand-edit `project.pbxproj` except to change a build setting.
+- **Dependencies:** pre-approved: GRDB, KeyboardShortcuts and Sparkle. Add another package only when it is clearly better than writing the code yourself and its license is GPL-compatible. Record every package in THIRD_PARTY_NOTICES.md.
 - **Privacy:** no telemetry. The only network calls are link previews and Sparkle update checks, and both are opt-in. "Check for Updates…" is always manual.
 
 ## Where things live
@@ -47,5 +50,7 @@ Each fact lives in exactly one place. To change it, edit it there and link to it
 ## Commands
 - Lint: `scripts/lint.sh`, or `scripts/lint.sh --staged` for staged files only.
 - Gate tests: `scripts/test-commit-gate.sh`
-- Build and test: TODO, add the `xcodebuild` commands once the Xcode project exists.
+- Build the app: `scripts/build.sh` (wraps `xcodebuild`; products go to `.build/DerivedData`)
+- Run the tests: `scripts/build.sh test` (`swift test` on ClipsyKit)
+- Run the app: `open .build/DerivedData/Build/Products/Debug/Clipsy.app`
 - First setup in each clone: `git config core.hooksPath .githooks`

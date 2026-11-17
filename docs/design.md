@@ -1,6 +1,6 @@
-# Clipshelf UI and visual design
+# Clipsy UI and visual design
 
-This is the source of truth for how Clipshelf looks. Behavior, features and the keyboard map live in [product.md](product.md); window plumbing, permissions and data live in [architecture.md](architecture.md). Product decisions (macOS 26+, no sync, no brand chrome) are in [CLAUDE.md](../CLAUDE.md#decisions).
+This is the source of truth for how Clipsy looks. Behavior, features and the keyboard map live in [product.md](product.md); window plumbing, permissions and data live in [architecture.md](architecture.md). Product decisions (macOS 26+, no sync, no brand chrome) are in [CLAUDE.md](../CLAUDE.md#decisions).
 
 Terms used here:
 
@@ -27,7 +27,7 @@ Values marked "proposed" are starting points to tune on real hardware, not measu
 
 ### Visual choices we made
 
-| Rejected option | Clipshelf | Why |
+| Rejected option | Clipsy | Why |
 |---|---|---|
 | Saturated colored header band per Card (tinted by source app or type) | Neutral header: app icon, type label, relative time in secondary label color | HIG asks for sparing color and monochrome chrome; a rainbow of headers competes with content and with Board colors. The source app stays identifiable through its real icon. |
 | Glass on Cards at every size | Glass only on the Shelf container and controls | HIG: no Liquid Glass in the content layer. Opaque Cards keep text contrast stable over any wallpaper. |
@@ -59,7 +59,7 @@ Values marked "proposed" are starting points to tune on real hardware, not measu
 
 ### Behavior as the user sees it
 
-- Opens with the global shortcut (see [product.md](product.md)) or from the menu bar extra. The frontmost app keeps its focus and text cursor; the Shelf takes keyboard input without activating Clipshelf's menu bar.
+- Opens with the global shortcut (see [product.md](product.md)) or from the menu bar extra. The frontmost app keeps its focus and text cursor; the Shelf takes keyboard input without activating Clipsy's menu bar.
 - Closes on Esc, on the shortcut again, after a paste, or when the user clicks outside it. It stays open while its own sheets, menus, Quick Look or editors are showing.
 - Hidden from screenshots and screen sharing by default (setting in Privacy).
 - One Card is always selected while the Shelf has items; on open, the newest Card in the current view is selected.
@@ -227,9 +227,9 @@ Menu contents: the items and pause durations are set in [product.md §6](product
 |---|---|
 | Main | Open Shelf (shows the shortcut), New Text Card, Start Sequence |
 | Capture | Pause Capture ▸ (For 15 Minutes, For 1 Hour, For 8 Hours, Until Tomorrow, Until Resumed) / Resume Capture; when paused, a disabled line with the resume time in the user's locale time format |
-| App | Settings… (⌘,), Check for Updates…, About Clipshelf |
-| Help | Clipshelf Help (opens the project docs), Report an Issue |
-| Quit | Quit Clipshelf (⌘Q) |
+| App | Settings… (⌘,), Check for Updates…, About Clipsy |
+| Help | Clipsy Help (opens the project docs), Report an Issue |
+| Quit | Quit Clipsy (⌘Q) |
 
 > TODO: pick the final symbol after checking which clipboard symbols ship in SF Symbols for macOS 26.
 
@@ -296,8 +296,8 @@ A single window shown on first launch (SwiftUI, standard window chrome, glass to
 | Step | Content | Controls |
 |---|---|---|
 | 1. Welcome | App icon; one line: "Everything you copy, one shortcut away." Shows the current Open Shelf shortcut with a recorder to change it. | Continue |
-| 2. Paste directly | Explains that pasting into other apps needs Accessibility permission, and that without it Clipshelf copies the item and the user presses ⌘V. Live status row that turns green when granted (polled while the step is visible). | Open System Settings…, Not Now |
-| 3. Clipboard access | On systems where macOS asks before an app reads the clipboard, explains why Clipshelf needs ongoing access and how to allow it. Live status row. Skipped when the system does not gate access. | Open System Settings…, Not Now |
+| 2. Paste directly | Explains that pasting into other apps needs Accessibility permission, and that without it Clipsy copies the item and the user presses ⌘V. Live status row that turns green when granted (polled while the step is visible). | Open System Settings…, Not Now |
+| 3. Clipboard access | On systems where macOS asks before an app reads the clipboard, explains why Clipsy needs ongoing access and how to allow it. Live status row. Skipped when the system does not gate access. | Open System Settings…, Not Now |
 | Finish | Two toggles: Open at login, Keep history for (pop-up). Hint: press the shortcut to try it. | Done |
 
 Rules:

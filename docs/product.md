@@ -1,6 +1,6 @@
-# Clipshelf product spec
+# Clipsy product spec
 
-This is the source of truth for what Clipshelf does: scope, features, behavior and the keyboard map. Visual design is in [design.md](design.md). Architecture, stack, data model and permissions are in [architecture.md](architecture.md). Project-level decisions (platform, license, distribution, privacy) are in [CLAUDE.md](../CLAUDE.md#decisions) and are not repeated here.
+This is the source of truth for what Clipsy does: scope, features, behavior and the keyboard map. Visual design is in [design.md](design.md). Architecture, stack, data model and permissions are in [architecture.md](architecture.md). Project-level decisions (platform, license, distribution, privacy) are in [CLAUDE.md](../CLAUDE.md#decisions) and are not repeated here.
 
 Conventions:
 - **MVP**: without it there is no product. **v1**: feature parity. **later**: expensive or niche, after v1.
@@ -8,7 +8,7 @@ Conventions:
 
 ## 1. Scope
 
-Clipshelf is a clipboard manager for macOS 26 and later. It keeps a history of everything the user copies, shows it in a panel at the bottom of the screen, lets the user organize items into boards, search them, edit them and paste them into any app.
+Clipsy is a clipboard manager for macOS 26 and later. It keeps a history of everything the user copies, shows it in a panel at the bottom of the screen, lets the user organize items into boards, search them, edit them and paste them into any app.
 
 ### Non-goals
 
@@ -33,7 +33,7 @@ Clipshelf is a clipboard manager for macOS 26 and later. It keeps a history of e
 | **Sequence** | A temporary ordered queue of cards that are pasted one after another with ⌘V in the target app. |
 | **Target app** | The app that was frontmost when the shelf opened; direct paste goes there. |
 | **Representation** | One pasteboard type and its data (plain text, RTF, HTML, PNG, file URL, …). A card keeps all of them. |
-| **Own write** | A pasteboard change made by Clipshelf itself (paste, copy, Sequence). Never captured as a new card. |
+| **Own write** | A pasteboard change made by Clipsy itself (paste, copy, Sequence). Never captured as a new card. |
 | **Quick Paste** | Pasting one of the first nine visible cards with modifier + digit. |
 
 ## 3. Features
@@ -158,7 +158,7 @@ Clipshelf is a clipboard manager for macOS 26 and later. It keeps a history of e
 4. Files are stored by reference (file URL), not by content. The app is not sandboxed, so no security-scoped bookmark is needed.
    > TODO: whether to also keep a bookmark or alias so a file that was moved can still be resolved.
 5. Detect the type (§4.2), compute the checksum (§4.3), insert or re-copy, record source app and times, then queue thumbnails, text recognition and (if enabled) link preview in the background.
-6. Persist the last seen change count so a change made while Clipshelf was not running is captured once at launch and not twice.
+6. Persist the last seen change count so a change made while Clipsy was not running is captured once at launch and not twice.
 
 **Source app.** The frontmost app at capture time. A copy made through another app's menu bar extra is attributed to the frontmost app.
 > TODO: whether `org.nspasteboard.source` (when present) wins over the frontmost app.
@@ -171,7 +171,7 @@ Clipshelf is a clipboard manager for macOS 26 and later. It keeps a history of e
 > TODO: confirm false-positive rate on real code snippets; decide whether a match skips the capture or stores the card marked sensitive.
 
 **Size cap.**
-> Decision needed: per-representation cap. Proposal: 50 MB. Higher keeps large images and long documents; lower keeps the store small and capture fast.
+Decided (2026-11-17): the per-representation cap is 50 MB.
 
 **Universal Clipboard.**
 > TODO: whether content from another device (`com.apple.is-remote-clipboard`) is captured, and how it is attributed.
@@ -225,7 +225,7 @@ Applied in order; the first match wins.
 
 1. The target app is the app that was frontmost when the shelf opened. Its name appears in "Paste to <App>" menu items.
 2. Write the card to the general pasteboard: clear it, write every stored representation (for plain text: only the plain string), add our private marker type, record the resulting change count.
-3. Hide the shelf. The shelf never activates Clipshelf, so the target app stays frontmost.
+3. Hide the shelf. The shelf never activates Clipsy, so the target app stays frontmost.
 4. If the paste setting is "Paste into the active app" and Accessibility is granted, post a synthesized ⌘V key down/up. Resolve the key code for "V" from the current keyboard layout, and handle layouts that switch to QWERTY while ⌘ is held.
 5. If Accessibility is not granted, the first direct paste asks whether to grant it or just copy, with a "don't ask again" option. After declining, Return copies only.
 6. If the paste setting is "Copy to the clipboard only", Return copies only and the shelf closes.
@@ -249,7 +249,7 @@ The pasteboard keeps the pasted content afterwards; the previous clipboard is no
 - **Start from the shelf.** With cards selected, the same shortcut or "Add to Sequence" in the context menu seeds the Sequence with them in shelf order.
 - **Collect.** While the panel is open, every captured copy is added. Cards can also be dragged in from other apps or from the shelf.
 - **Order.** Each new card goes either to the end of the queue or to its head, depending on "Reverse Order". The head is pasted next.
-  > Decision needed: default order. Proposal: copy order (first copied, first pasted), which matches the name and suits users who collect a list top to bottom. Alternative: newest first, which pastes the latest copy next but reverses a collected list.
+  Decided (2026-11-17): the default order is copy order (first copied, first pasted).
 - **Paste next.** The head card is kept on the pasteboard. When the user presses ⌘V in any app, that card is pasted, removed from the Sequence and the next one is put on the pasteboard. Dragging a card out also removes it. Pasting a card out of order (double-click, context menu) also removes it. When the last card is pasted, the panel closes.
   > TODO: detection mechanism for ⌘V. Prototype a lazy pasteboard data provider (fires when the target app reads the data) first, with a global key monitor as fallback.
 - **Paste all.** Pastes all remaining cards at once; text cards are joined with a newline. Clears the Sequence and closes the panel.
@@ -309,13 +309,13 @@ The pasteboard keeps the pasted content afterwards; the previous clipboard is no
   - all text: joined with a newline into one paste;
   - all files: one pasteboard write with all file URLs;
   - mixed: one pasteboard write with one item per card.
-  > Decision needed: order of a multi-paste. Proposal: oldest first (the order the user copied them). Alternative: selection order, which is more flexible but invisible in the UI.
+  Decided (2026-11-17): a multi-paste goes oldest first, in the order the user copied the cards.
 
 ### 4.13 Shelf window behavior
 
 - Opens on the display that contains the mouse pointer; it is not tied to a display.
 - Joins the active Space and appears above full-screen apps without switching Spaces.
-- Never activates Clipshelf or steals frontmost status from the target app, but takes keyboard focus so the shortcuts work.
+- Never activates Clipsy or steals frontmost status from the target app, but takes keyboard focus so the shortcuts work.
 - Closes on: Esc (when search is empty), a second press of the global shortcut, a successful paste or copy from the shelf, and focus loss.
 - **Focus loss:** clicking another app or window, or switching apps, closes the shelf. Closing is suspended while one of our own sheets, menus, popovers, the preview, the editor or the color panel is open.
   > TODO: option to keep the shelf open after paste (requested by users of comparable apps).
@@ -335,9 +335,9 @@ The pasteboard keeps the pasted content afterwards; the previous clipboard is no
 | Paste next Sequence card | ⌘V (the system shortcut; not registered by us) | v1 |
 | Paste all Sequence cards | ⌃⌥⌘V | v1 |
 
-> Decision needed: default shelf shortcut. Proposal: ⇧⌘V. It is what users of comparable apps expect and Spotlight's own clipboard view does not use it. Tradeoff: in Chrome, Slack, Google Docs and many other apps ⇧⌘V is "Paste and Match Style", and a global hotkey takes it away from them. Alternatives: ⌥⌘V (taken by Finder for "Move Item Here"), ⌃⌘V (rarely used, less memorable).
+Decided (2026-11-17): the default shelf shortcut is ⇧⌘V. It takes "Paste and Match Style" away from apps that use it, and users can rebind it in Settings.
 
-> Decision needed: default Sequence shortcut. Proposal: ⇧⌘C. Tradeoff: it shadows ⇧⌘C in Finder (Go to Computer), in browsers (inspect element) and in some editors.
+Decided (2026-11-17): the default Sequence shortcut is ⇧⌘C (rebindable). It shadows ⇧⌘C in Finder, in browser dev tools and in some editors.
 
 ### In the shelf
 
@@ -382,7 +382,7 @@ Note: first / last card use ⌘↑ / ⌘↓ because ⌘← / ⌘→ switch tabs.
 
 ### Shortcut recorder rules
 
-- Reject a combination already used by another Clipshelf shortcut, by a menu item, or by a system shortcut, and say which.
+- Reject a combination already used by another Clipsy shortcut, by a menu item, or by a system shortcut, and say which.
 - Warn that shortcuts using only ⌥ as a modifier may not work reliably.
 - A cleared shortcut stays cleared across restarts. If both the shelf shortcut and the menu bar item are off, the shelf can still be opened through the URL scheme or by launching the app again.
 - "Restore Defaults" asks for confirmation.
@@ -411,8 +411,8 @@ Content and defaults only; layout and exact label wording are in [design.md §8]
 
 | Setting | Default |
 |---|---|
-| Show / hide the shelf | ⇧⌘V (pending decision) |
-| Start Sequence | ⇧⌘C (pending decision) |
+| Show / hide the shelf | ⇧⌘V |
+| Start Sequence | ⇧⌘C |
 | Paste all Sequence cards | ⌃⌥⌘V |
 | Next board / Previous board | ⌘→ / ⌘← |
 | Quick Paste modifier | ⌘ (one of ⌘ ⌃ ⌥) |
@@ -438,9 +438,9 @@ This is the item list; grouping and wording are in [design.md §7](design.md#7-m
 
 - Open Shelf · New Text Card · Start Sequence
 - Pause Capture for 15 minutes, 1 hour, 8 hours, until tomorrow, or until resumed / Resume Capture; while paused, the time capture resumes
-- Settings… · Check for Updates… (always manual, see [CLAUDE.md](../CLAUDE.md#decisions)) · About Clipshelf
-- Clipshelf Help · Report an Issue
-- Quit Clipshelf
+- Settings… · Check for Updates… (always manual, see [CLAUDE.md](../CLAUDE.md#decisions)) · About Clipsy
+- Clipsy Help · Report an Issue
+- Quit Clipsy
 
 ## 7. Open questions
 

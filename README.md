@@ -1,8 +1,8 @@
-# Clipshelf
+# Clipsy
 
 A free, open-source clipboard manager for macOS that feels like part of the system.
 
-Clipshelf keeps everything you copy on a shelf at the bottom of the screen: text, links, images, files and colors. Search it, organize it into boards and paste anything back with a keystroke.
+Clipsy keeps everything you copy on a shelf at the bottom of the screen: text, links, images, files and colors. Search it, organize it into boards and paste anything back with a keystroke.
 
 > **Status:** early development. There is no release yet.
 
@@ -29,10 +29,15 @@ Signed and notarized builds will be published on [GitHub Releases](../../release
 
 ## Building from source
 
-Instructions will be added once the Xcode project lands.
+Requires Xcode 26 or later.
+
+```bash
+scripts/build.sh        # build the app
+scripts/build.sh test   # run the tests
+```
 
 ## License
 
 [GPL-3.0](LICENSE).
 
-Clipshelf is an independent project. It is not affiliated with or endorsed by Paste Team ApS, the makers of Paste.
+Clipsy is an independent project. It is not affiliated with or endorsed by Paste Team ApS, the makers of Paste.

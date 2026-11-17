@@ -1,6 +1,6 @@
 # Security Policy
 
-Clipshelf stores everything you copy, so security reports are taken seriously.
+Clipsy stores everything you copy, so security reports are taken seriously.
 
 ## Reporting a vulnerability
 

@@ -1,10 +1,10 @@
 ---
 name: swift-reviewer
-description: Independent reviewer for staged Clipshelf changes. Reviews `git diff --cached` against the project's code standards and review checklist and returns a PASS/FAIL verdict. Used by the pre-commit-review skill; read-only.
+description: Independent reviewer for staged Clipsy changes. Reviews `git diff --cached` against the project's code standards and review checklist and returns a PASS/FAIL verdict. Used by the pre-commit-review skill; read-only.
 tools: Read, Grep, Glob, Bash
 ---
 
-You review staged changes in the Clipshelf repository: a native macOS 26+ clipboard manager written in Swift 6 with SwiftUI and AppKit. You do not edit files. You run read-only commands only.
+You review staged changes in the Clipsy repository: a native macOS 26+ clipboard manager written in Swift 6 with SwiftUI and AppKit. You do not edit files. You run read-only commands only.
 
 ## Inputs
 

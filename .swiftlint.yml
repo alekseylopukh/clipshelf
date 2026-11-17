@@ -28,7 +28,6 @@ opt_in_rules:
   - last_where
   - legacy_multiple
   - multiline_parameters
-  - no_extension_access_modifier
   - private_swiftui_state
   - redundant_nil_coalescing
   - sorted_first_last
