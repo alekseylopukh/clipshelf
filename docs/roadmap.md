@@ -105,6 +105,7 @@ What exists:
 - Deliverable: `CardSummary` value (id, kind, title, preview, metadata, source app, times, board id); queries for History (newest first) and a board (by position); `AsyncSequence` observation of each via `ValueObservation`
 - Acceptance: tests `historyIsNewestFirst`, `boardIsByPosition`, `observationEmitsOnInsert`, `historyExcludesBoardOnlyCards`
 - Size: M
+- Status: done
 
 ### T1.7 Boards in the store
 - Module(s): Store
