@@ -431,7 +431,9 @@ What exists:
 - Spec: [product §3.1](product.md#31-capture-and-history), [design §8 General](design.md#general)
 - Deliverable: item count and on-disk size (database plus payloads), formatted with `FormatStyle`, refreshed after purge and erase
 - Acceptance: test `summaryCountsPayloadBytes`
+- Working default: the count covers every stored card (History and boards); the size is the allocated size of `clipsy.sqlite` with its `-wal` and `-shm` files, `Payloads/` and `Thumbnails/`, not `Backups/`. The row also refreshes whenever the Settings window becomes active.
 - Size: S
+- Status: done
 
 ### T7.3 Pause for a duration
 - Module(s): Capture, App

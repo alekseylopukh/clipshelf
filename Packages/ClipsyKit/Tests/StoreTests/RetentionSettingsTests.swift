@@ -70,6 +70,21 @@ final class RetentionSettingsTests {
         #expect(try await historyIDs() == [recent])
     }
 
+    @Test func `erase and purge refresh the storage summary`() async throws {
+        try await record(byte: 1, daysAgo: 0)
+        try await record(byte: 2, daysAgo: 40)
+
+        await settings.refreshStorageSummary()
+        #expect(settings.storageSummary?.cardCount == 2)
+
+        try await settings.select(.week)
+        try await settings.confirmPendingChange()
+        #expect(settings.storageSummary?.cardCount == 1)
+
+        try await settings.eraseHistory()
+        #expect(settings.storageSummary?.cardCount == 0)
+    }
+
     @Test func `stored limit is read at init`() {
         defaults.set(RetentionPeriod.year.rawValue, forKey: RetentionSettings.periodKey)
 

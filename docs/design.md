@@ -253,7 +253,7 @@ SwiftUI `Settings` scene with a toolbar `TabView`. Each pane is a `Form` with `.
 | Paste without formatting by default | Toggle |
 | Accessibility status | Status row (granted / not granted) with "Open System Settings…" button when missing |
 | Keep history for | Slider with tick marks: 1 Day, 1 Week, 1 Month, 1 Year, Forever |
-| Storage summary | Secondary text: item count and disk size |
+| Storage | Row with secondary value text: card count and disk size, for example "1,234 cards, 56.7 MB" |
 | Erase History… | Button, destructive confirmation alert; Board contents are kept |
 
 ### Shortcuts

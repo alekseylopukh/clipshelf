@@ -212,6 +212,12 @@
     "Keep history for" : {
       "comment" : "Label of the retention slider in Settings"
     },
+    "Storage" : {
+      "comment" : "Label of the storage summary row in Settings"
+    },
+    "^[%lld cards](inflect: true), %@" : {
+      "comment" : "Storage summary in Settings: the number of stored cards and their size on disk"
+    },
     "1 Day" : {
       "comment" : "Retention slider tick"
     },

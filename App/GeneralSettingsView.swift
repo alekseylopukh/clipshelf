@@ -52,6 +52,9 @@ struct GeneralSettingsView: View {
                     tick: { SliderTick(RetentionPeriod(sliderValue: $0).title, $0) },
                     onEditingChanged: retentionEditingChanged
                 )
+                if let summary = retention.storageSummary {
+                    StorageSummaryRow(summary: summary)
+                }
                 LabeledContent {
                     Button("Erase History…", role: .destructive) {
                         isConfirmingErase = true
@@ -64,9 +67,10 @@ struct GeneralSettingsView: View {
         }
         .formStyle(.grouped)
         .fixedSize(horizontal: false, vertical: true)
-        .onChange(of: appearsActive) { _, isActive in
-            if isActive {
+        .task(id: appearsActive) {
+            if appearsActive {
                 refreshSystemStatus()
+                await retention.refreshStorageSummary()
             }
         }
         .alert(
@@ -204,6 +208,18 @@ private struct AccessibilityStatusRow: View {
             } else {
                 Text("Not allowed. Clipsy copies cards to the clipboard instead of pasting them.")
             }
+        }
+    }
+}
+
+private struct StorageSummaryRow: View {
+    let summary: StorageSummary
+
+    var body: some View {
+        LabeledContent("Storage") {
+            Text(
+                "^[\(summary.cardCount) cards](inflect: true), \(summary.byteCount, format: .byteCount(style: .file))"
+            )
         }
     }
 }

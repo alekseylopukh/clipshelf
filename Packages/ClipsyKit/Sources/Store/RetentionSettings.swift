@@ -11,6 +11,8 @@ public final class RetentionSettings {
     public private(set) var period: RetentionPeriod
     /// a lower limit that waits for the user to confirm, because it would remove older cards
     public private(set) var pendingPeriod: RetentionPeriod?
+    /// nil until the first refresh, or after a refresh failed
+    public private(set) var storageSummary: StorageSummary?
 
     @ObservationIgnored private let repository: CardRepository
     @ObservationIgnored private let defaults: UserDefaults
@@ -52,6 +54,18 @@ public final class RetentionSettings {
 
     public func eraseHistory() async throws {
         try await repository.eraseHistory()
+        await refreshStorageSummary()
+    }
+
+    public func refreshStorageSummary() async {
+        do {
+            storageSummary = try await repository.storageSummary()
+        } catch is CancellationError {
+            return
+        } catch {
+            logger.error("storage summary failed: \(String(describing: type(of: error)), privacy: .public)")
+            storageSummary = nil
+        }
     }
 
     /// purges now and then every hour until the calling task is cancelled
@@ -80,5 +94,6 @@ public final class RetentionSettings {
     private func purgeExpiredCards() async throws {
         guard let cutoff = period.cutoff(before: .now) else { return }
         try await repository.purge(olderThan: cutoff)
+        await refreshStorageSummary()
     }
 }

@@ -56,6 +56,10 @@ public struct PayloadStore: Sendable {
         }
     }
 
+    func allFiles() throws -> [URL] {
+        try files(in: payloadsDirectory, recursive: true) + files(in: thumbnailsDirectory, recursive: false)
+    }
+
     func fileURL(for hash: String) -> URL {
         payloadsDirectory
             .appending(path: String(hash.prefix(2)), directoryHint: .isDirectory)
