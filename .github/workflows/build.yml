@@ -1,9 +1,8 @@
 name: Build
 
+# macOS runners are slow to start; run this by hand when a build on GitHub is needed
 on:
-  pull_request:
-  push:
-    branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read

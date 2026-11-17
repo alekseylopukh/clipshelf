@@ -1,6 +1,6 @@
 # Roadmap
 
-The ordered task list for building Clipsy. The `build-clipsy` workflow (`.claude/workflows/build-clipsy.js`) implements it one task at a time, top to bottom; each task ends in exactly one reviewed commit (Conventional Commit title, through the `pre-commit-review` gate). Behavior lives in [product.md](product.md), UI in [design.md](design.md), structure in [architecture.md](architecture.md), code rules in [.claude/rules/code-rules.md](../.claude/rules/code-rules.md). This file only orders the work; when it disagrees with those docs, the docs win.
+The ordered task list for building Clipsy. The `build-clipsy` workflow (`.claude/workflows/build-clipsy.js`) builds it in dependency order, running independent tasks in parallel (see the CLAUDE.md Commands entry); each task ends in one reviewed commit (Conventional Commit title, through the `pre-commit-review` gate), plus a reviewed `fix: integrate T…` commit when combining it with earlier work needs a fix. Behavior lives in [product.md](product.md), UI in [design.md](design.md), structure in [architecture.md](architecture.md), code rules in [.claude/rules/code-rules.md](../.claude/rules/code-rules.md). This file only orders the work; when it disagrees with those docs, the docs win.
 
 ## Settled decisions
 

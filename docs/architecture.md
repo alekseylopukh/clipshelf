@@ -316,7 +316,8 @@ Search and history load return every match, so their time grows with the result 
 
 ### 6.3 CI (GitHub Actions)
 
-- On pull request and push to `main`: macOS runner, select the Xcode version, `scripts/build.sh` and `scripts/build.sh test` (ad-hoc signed, no secrets). Lint runs separately on Linux (`.github/workflows/lint.yml`).
+- Per pull request: lint only, on Linux (`.github/workflows/lint.yml`); it is the required check.
+- By hand (`workflow_dispatch`): macOS runner, select the Xcode version, `scripts/build.sh` and `scripts/build.sh test` (ad-hoc signed, no secrets). macOS runners are slow to start, so builds and tests normally run locally.
 - Cache SPM checkouts.
 - Runner: `macos-26` (arm64) with Xcode 26.6 selected through `DEVELOPER_DIR`, as listed in [actions/runner-images](https://github.com/actions/runner-images). The workflow is `.github/workflows/build.yml`.
 
