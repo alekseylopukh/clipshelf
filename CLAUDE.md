@@ -53,4 +53,5 @@ Each fact lives in exactly one place. To change it, edit it there and link to it
 - Build the app: `scripts/build.sh` (wraps `xcodebuild`; products go to `.build/DerivedData`)
 - Run the tests: `scripts/build.sh test` (`swift test` on ClipsyKit)
 - Run the app: `open .build/DerivedData/Build/Products/Debug/Clipsy.app`
+- Autonomous build: ask Claude Code to "run the build-clipsy workflow". It takes optional args `from`, `to`, `maxTasks`, `branch`, `maxReviewRounds` and `openPR`. It works through docs/roadmap.md on `build/roadmap`. Each task is implemented, marked `- Status: done`, reviewed by `swift-reviewer` until PASS, and committed through the gate. One PR collects the whole branch with its human checks. The run stops at the first task that needs a maintainer decision, fails review, or cannot commit.
 - First setup in each clone: `git config core.hooksPath .githooks`

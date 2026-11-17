@@ -1,6 +1,6 @@
 # Roadmap
 
-The ordered task list for building Clipsy. An automated workflow implements it one task at a time, top to bottom; each task ends in exactly one reviewed commit (Conventional Commit title, through the `pre-commit-review` gate). Behavior lives in [product.md](product.md), UI in [design.md](design.md), structure in [architecture.md](architecture.md), code rules in [.claude/rules/code-rules.md](../.claude/rules/code-rules.md). This file only orders the work; when it disagrees with those docs, the docs win.
+The ordered task list for building Clipsy. The `build-clipsy` workflow (`.claude/workflows/build-clipsy.js`) implements it one task at a time, top to bottom; each task ends in exactly one reviewed commit (Conventional Commit title, through the `pre-commit-review` gate). Behavior lives in [product.md](product.md), UI in [design.md](design.md), structure in [architecture.md](architecture.md), code rules in [.claude/rules/code-rules.md](../.claude/rules/code-rules.md). This file only orders the work; when it disagrees with those docs, the docs win.
 
 ## Settled decisions
 
@@ -39,6 +39,7 @@ Not maintainer decisions. They are the doc's current text or the simplest choice
 - Acceptance always also includes: `scripts/build.sh` builds with no new warnings, `scripts/build.sh test` passes, and `scripts/lint.sh` is clean.
 - Tests use Swift Testing, fakes at IO boundaries, private named pasteboards and synthetic fixtures ([code-rules R8](../.claude/rules/code-rules.md#r8-tests)).
 - A task that settles a TODO or deviates from a doc updates that doc in the same commit.
+- A finished task adds `- Status: done` as the last field of its section, in the same commit.
 - `- Human check:` marks steps an agent cannot verify (TCC prompts, real paste into other apps, visual review). The workflow records them in the PR description and the maintainer signs off; the task still commits.
 - UI tasks load the `macos-native-ui` skill first and run its Verify steps.
 
