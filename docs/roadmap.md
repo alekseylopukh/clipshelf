@@ -93,9 +93,10 @@ What exists:
 - Module(s): Store
 - Depends on: T1.4
 - Spec: [product §4.3](product.md#43-dedupe-and-re-copy), [architecture §4.1](architecture.md#41-capture) steps 5–6
-- Deliverable: `NewCard` input (kind, ordered representations, content hash, preview text, metadata JSON, source app); `CardRepository.record(_:)` that upserts `source_app`, inserts card + representations + search row in one transaction, or on an existing hash sets `last_copied_at` and source app; `representations(of:)` reading payloads back in original order
+- Deliverable: `NewCard` input (kind, ordered representations, content hash, preview text, metadata JSON, source app, search body/URL/file names for `card_search`); `CardRepository.record(_:)` that upserts `source_app`, inserts card + representations + search row in one transaction, or on an existing hash sets `last_copied_at` and source app; `representations(of:)` reading payloads back in original order
 - Acceptance: tests `newCardIsInsertedWithSearchRow`, `sameHashMovesCardToTop` (created_at unchanged), `boardOnlyCardReturnsToHistory`, `representationsRoundTripInOrder`
 - Size: M
+- Status: done
 
 ### T1.6 History and board queries with observation
 - Module(s): Store
