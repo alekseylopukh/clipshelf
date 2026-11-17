@@ -1,9 +1,9 @@
 ---
 name: macos-native-ui
-description: How to build Clipshelf UI that looks and behaves like a first-party macOS 26/27 component, and how to verify it. Covers Liquid Glass, materials, the shelf panel, windows, menus, the Settings scene, the menu bar extra, SF Symbols, keyboard and accessibility. Use before writing or changing any SwiftUI or AppKit UI.
+description: How to build Clipsy UI that looks and behaves like a first-party macOS 26/27 component, and how to verify it. Covers Liquid Glass, materials, the shelf panel, windows, menus, the Settings scene, the menu bar extra, SF Symbols, keyboard and accessibility. Use before writing or changing any SwiftUI or AppKit UI.
 ---
 
-# Native macOS UI for Clipshelf
+# Native macOS UI for Clipsy
 
 The goal is for a user to believe Apple shipped the shelf. When unsure, copy what a system app does (Spotlight, Finder, Mail, System Settings) instead of inventing something.
 
@@ -11,7 +11,7 @@ The binding rules are R5 in `.claude/rules/code-rules.md`, and reviews cite thos
 
 ## Read first
 
-1. [docs/design.md](../../../docs/design.md) is the source of truth for every Clipshelf screen. If what you are about to build contradicts it, stop and ask.
+1. [docs/design.md](../../../docs/design.md) is the source of truth for every Clipsy screen. If what you are about to build contradicts it, stop and ask.
 2. Apple's agent guides, bundled with Xcode on the developer's machine. Read the one that matches the API you are about to use:
    - `/Applications/Xcode.app/Contents/PlugIns/IDEIntelligenceChat.framework/Versions/A/Resources/AdditionalDocumentation/SwiftUI-Implementing-Liquid-Glass-Design.md`
    - `.../AdditionalDocumentation/AppKit-Implementing-Liquid-Glass-Design.md`

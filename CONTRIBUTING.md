@@ -1,11 +1,11 @@
-# Contributing to Clipshelf
+# Contributing to Clipsy
 
 Thanks for helping. This file covers how work moves from an idea to a release.
 
 ## Before you start
 
 - Bugs and feature ideas start as an [issue](../../issues/new/choose). For anything bigger than a small fix, wait for a maintainer to agree on the approach before writing code.
-- Clipshelf is an independent project. Do not contribute code, images, sounds or text copied from Paste or any other proprietary app. See the IP rules in [CLAUDE.md](CLAUDE.md#ip-rules).
+- Clipsy is an independent project. Do not contribute code, images, sounds or text copied from Paste or any other proprietary app. See the IP rules in [CLAUDE.md](CLAUDE.md#ip-rules).
 - Contributions are licensed under [GPL-3.0](LICENSE). Code taken from other projects must come from GPL-3.0-compatible licenses (MIT, BSD, Apache-2.0, GPL-3.0) and keep its copyright notice.
 
 ## AI-assisted contributions

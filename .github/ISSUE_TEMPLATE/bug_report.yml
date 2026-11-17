@@ -22,7 +22,7 @@ body:
   - type: input
     id: version
     attributes:
-      label: Clipshelf version
+      label: Clipsy version
       placeholder: v0.1.0
     validations:
       required: true

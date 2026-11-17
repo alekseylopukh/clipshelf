@@ -24,7 +24,7 @@ The details live in the vendored skills: `swiftui-pro` and `swiftui-expert-skill
 - **R1.2 [B]** Views render state and forward actions. Logic lives in `@Observable` models and services injected through `@Environment`. Add a dedicated model only when a screen's logic needs tests. Delete pass-through view models. No TCA, VIPER, coordinators or service locators.
 - **R1.3 [B]** Each piece of state has exactly one owner. Derived state is computed. A mirror is reset wherever its owner resets.
 - **R1.4 [N]** Put protocols only at IO and system boundaries (pasteboard, storage, clock, hotkeys, Accessibility, login items), so tests can use fakes.
-- **R1.5 [B]** Add no third-party package without the maintainer's approval. Its license must be GPL-3.0-compatible, and it needs an entry in THIRD_PARTY_NOTICES.md.
+- **R1.5 [B]** Add a third-party package only if it is pre-approved in CLAUDE.md Decisions or clearly better than writing the code. Its license must be GPL-3.0-compatible, and it needs an entry in THIRD_PARTY_NOTICES.md.
 - **R1.6 [N]** Keep one primary type per file, and name the file after the type.
 
 ## R2. Concurrency
