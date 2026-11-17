@@ -276,13 +276,14 @@ Packages/ClipsyKit/
     Pasting/                paste service, key codes, Sequence state machine
     DesignSystem/           design tokens (spacing, radii, sizes from design.md), shared SwiftUI components
     ShelfUI/                NSPanel, SwiftUI Shelf, Cards, search field, Quick Look
+    Updates/                Sparkle wrapper: the updater starts only after opt-in or a manual check
   Tests/                    one test target per module
 scripts/release/            release helpers (DMG, appcast)
 ```
 
 This is the module list; other docs link here instead of repeating it.
 
-Dependency direction: `ShelfUI` → `DesignSystem`, `Pasting`, `Media`, `Store`, KeyboardShortcuts; `Pasting` → `Store`; `Capture` → `Store`; `Media` → `Store`; the app target's Settings and onboarding use `DesignSystem`; `Store` and `DesignSystem` depend on nothing in the package.
+Dependency direction: `ShelfUI` → `DesignSystem`, `Pasting`, `Media`, `Store`, KeyboardShortcuts; `Pasting` → `Store`; `Capture` → `Store`; `Media` → `Store`; `Updates` → Sparkle; the app target's Settings and onboarding use `DesignSystem`; `Store` and `DesignSystem` depend on nothing in the package.
 
 Decided (2026-11-17): a plain, committed `Clipsy.xcodeproj`. `App/` is a folder-synchronized group, so new files there need no project edits. The app links one umbrella product, `ClipsyKit`, so adding a module only changes `Package.swift`. Never hand-edit `project.pbxproj` unless a build setting has to change.
 
@@ -335,6 +336,8 @@ Triggered by a maintainer pushing tag `vX.Y.Z` on `main` (see [CONTRIBUTING.md](
 
 Secrets never enter the repository; only GitHub Actions secrets.
 
+Signing configuration (T13.1): `Config/Info.plist` is merged into the generated Info.plist and sets `SUFeedURL` and `SUPublicEDKey` from the build settings `SPARKLE_FEED_URL` and `SPARKLE_PUBLIC_ED_KEY`, and `SUEnableAutomaticChecks = NO`. Both build settings are placeholders until the maintainer supplies the appcast URL and the key. The app has Hardened Runtime, no sandbox and no entitlements: Sparkle needs none outside the sandbox, and paste uses `CGEvent` (Accessibility), not Apple Events. Release builds do not inject `get-task-allow`. Hardened Runtime's library validation refuses an ad-hoc-signed `Sparkle.framework`, so a Release build only launches once it is signed with a Developer ID; local runs use Debug, which Xcode signs without Hardened Runtime.
+
 > TODO: where the appcast is hosted (the author's site vs. GitHub Pages) and its URL.
 > TODO: Homebrew cask: not decided.
 
@@ -348,13 +351,13 @@ They follow the dependency rule in [CLAUDE.md Decisions](../CLAUDE.md#decisions)
 |---|---|---|---|
 | [groue/GRDB.swift](https://github.com/groue/GRDB.swift) | SQLite, FTS5, migrations | MIT | Yes |
 | [sindresorhus/KeyboardShortcuts](https://github.com/sindresorhus/KeyboardShortcuts) | Global hotkeys, recorder | MIT | Yes |
-| [sparkle-project/Sparkle](https://github.com/sparkle-project/Sparkle) | Updates | MIT-style (GitHub reports NOASSERTION) | Expected yes |
+| [sparkle-project/Sparkle](https://github.com/sparkle-project/Sparkle) | Updates | MIT; bundled code under BSD-2-Clause, MIT and zlib | Yes |
 
 Optional, only if our own code proves insufficient: [Clipy/Sauce](https://github.com/Clipy/Sauce) (MIT, layout-aware key codes).
 
 Notices of every dependency and of any copied code go into an Acknowledgements screen in About and into the source file headers of copied code.
 
-> TODO: read Sparkle's `LICENSE` file, including licenses of bundled third-party code, and confirm compatibility.
+Decided (T13.1): Sparkle 2.10.1's `LICENSE` is MIT, and the code it bundles is bsdiff (BSD-2-Clause), sais-lite (MIT), ed25519 (zlib) and SUSignatureVerifier (BSD-2-Clause). All are GPL-3.0-compatible; the notices are in [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md) and `App/Credits.rtf`.
 
 ### 7.2 Projects to learn from
 

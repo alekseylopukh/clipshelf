@@ -21,6 +21,7 @@ Every package added later gets a row here.
 |---|---|---|---|
 | [groue/GRDB.swift](https://github.com/groue/GRDB.swift) | 7.12.0 | SQLite, FTS5, migrations (`Store`) | MIT, © Gwendal Roué |
 | [sindresorhus/KeyboardShortcuts](https://github.com/sindresorhus/KeyboardShortcuts) | 2.4.0 | Global hotkeys, recorder (`ShelfUI`, re-exported to the app) | MIT, © Sindre Sorhus |
+| [sparkle-project/Sparkle](https://github.com/sparkle-project/Sparkle) | 2.10.1 | Updates (`Updates`; the framework is embedded in the app) | MIT, © 2006-2017 Andy Matuschak and others; bundles bsdiff 4.3 (BSD-2-Clause, © Colin Percival), sais-lite (MIT, © Yuta Mori), ed25519 (zlib, © Orson Peters) and SUSignatureVerifier (BSD-2-Clause, © Mark Hamlin) |
 
 `App/Credits.rtf` repeats the notices of the packages and adapted code that ship in the app, for the About panel. Update it with this file.
 

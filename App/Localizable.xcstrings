@@ -782,6 +782,36 @@
     },
     "Clipsy can’t add the dropped content." : {
       "comment" : "Title of the alert shown when content dropped on the Sequence panel cannot be saved"
+    },
+    "About" : {
+      "comment" : "Settings tab with the app version, links and update settings"
+    },
+    "Version %@ (%@)" : {
+      "comment" : "Version and build number in the About pane"
+    },
+    "Free and open-source under GPL-3.0" : {
+      "comment" : "License line in the About pane"
+    },
+    "Source Code" : {
+      "comment" : "About pane link that opens the project repository"
+    },
+    "Acknowledgements" : {
+      "comment" : "About pane button that shows third-party licenses"
+    },
+    "Updates" : {
+      "comment" : "About pane section header for update settings"
+    },
+    "Automatically check for updates" : {
+      "comment" : "About pane toggle that turns on scheduled update checks"
+    },
+    "Check for Updates…" : {
+      "comment" : "Button and menu bar menu item that checks for a new version now"
+    },
+    "Clipsy looks for a new version on GitHub only when you check or turn on automatic checks." : {
+      "comment" : "Footnote under the update settings in the About pane"
+    },
+    "Clipsy can’t check for updates." : {
+      "comment" : "Title of the alert shown when the updater cannot start"
     }
   },
   "version" : "1.0"

@@ -48,6 +48,9 @@ public enum DesignTokens {
 
     public static let settingsListHeight: CGFloat = 120
     public static let settingsListIconSize: CGFloat = 16
+    public static let aboutIconSize: CGFloat = 64
+    public static let acknowledgementsWidth: CGFloat = 460
+    public static let acknowledgementsHeight: CGFloat = 420
 
     public static let onboardingWidth: CGFloat = 480
     public static let onboardingMinimumHeight: CGFloat = 380

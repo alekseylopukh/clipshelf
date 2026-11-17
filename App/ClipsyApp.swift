@@ -7,6 +7,7 @@ import Pasting
 import ShelfUI
 import Store
 import SwiftUI
+import Updates
 
 @main
 struct ClipsyApp: App {
@@ -16,6 +17,7 @@ struct ClipsyApp: App {
     @State private var privacy: PrivacySettings
     @State private var menuBarSettings: MenuBarSettings
     @State private var statusItem: StatusItemController
+    @State private var updater: AppUpdater
     @State private var shortcuts = ShortcutSettings(store: KeyboardShortcutsStore())
     @State private var onboarding = Self.startOnboarding()
 
@@ -61,11 +63,14 @@ struct ClipsyApp: App {
             shelf.toggle()
         }
 
+        let updater = Self.startUpdater()
+        _updater = State(initialValue: updater)
         let menuBarSettings = MenuBarSettings()
         _menuBarSettings = State(initialValue: menuBarSettings)
         let statusItem = StatusItemController(
             pause: pause,
             settings: menuBarSettings,
+            updater: updater,
             openShelf: { shelf.show() },
             startSequence: { sequence.start(shelfSelection: shelf.selectedCardIDs) }
         )
@@ -89,6 +94,7 @@ struct ClipsyApp: App {
                 .environment(menuBarSettings)
                 .environment(shortcuts)
                 .environment(onboarding.access)
+                .environment(updater)
         }
         Window("Welcome to Clipsy", id: OnboardingView.windowID) {
             OnboardingView()
@@ -115,6 +121,17 @@ struct ClipsyApp: App {
             }
         }
         return onboarding
+    }
+
+    private static func startUpdater() -> AppUpdater {
+        let updater = AppUpdater(driver: SparkleUpdaterDriver())
+        do {
+            try updater.startIfAutomatic()
+        } catch {
+            Logger(subsystem: "app.gonar.clipsy", category: "Updates")
+                .error("the updater failed to start: \(String(describing: type(of: error)), privacy: .public)")
+        }
+        return updater
     }
 
     private static func apply(

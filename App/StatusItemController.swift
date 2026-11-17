@@ -1,6 +1,7 @@
 import AppKit
 import Capture
 import ShelfUI
+import Updates
 
 final class StatusItemController: NSObject, NSMenuDelegate {
     private static let helpURL = url("https://github.com/alekseylopukh/clipsy")
@@ -11,6 +12,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     private let menu = NSMenu()
     private let pause: CapturePause
     private let settings: MenuBarSettings
+    private let updater: AppUpdater
     private let openShelf: () -> Void
     private let startSequence: () -> Void
     private var isShowingPaused: Bool
@@ -18,11 +20,13 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     init(
         pause: CapturePause,
         settings: MenuBarSettings,
+        updater: AppUpdater,
         openShelf: @escaping () -> Void,
         startSequence: @escaping () -> Void
     ) {
         self.pause = pause
         self.settings = settings
+        self.updater = updater
         self.openShelf = openShelf
         self.startSequence = startSequence
         isShowingPaused = pause.isPaused
@@ -77,6 +81,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
             : item(String(localized: "Pause Capture"), action: #selector(togglePause)))
         menu.addItem(.separator())
         menu.addItem(item(String(localized: "Settings…"), action: #selector(openSettings), key: ","))
+        menu.addItem(item(String(localized: "Check for Updates…"), action: #selector(checkForUpdates)))
         menu.addItem(item(String(localized: "About Clipsy"), action: #selector(showAbout)))
         menu.addItem(.separator())
         menu.addItem(item(String(localized: "Clipsy Help"), action: #selector(openHelp)))
@@ -149,6 +154,18 @@ final class StatusItemController: NSObject, NSMenuDelegate {
 
     @objc private func openSettings() {
         SettingsWindow.open()
+    }
+
+    @objc private func checkForUpdates() {
+        do {
+            try updater.checkForUpdates()
+        } catch {
+            let alert = NSAlert(error: error)
+            alert.messageText = String(localized: "Clipsy can’t check for updates.")
+            alert.informativeText = error.localizedDescription
+            NSApplication.shared.activate()
+            alert.runModal()
+        }
     }
 
     @objc private func showAbout() {

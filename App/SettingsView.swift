@@ -2,6 +2,7 @@ import Capture
 import ShelfUI
 import Store
 import SwiftUI
+import Updates
 
 struct SettingsView: View {
     @AppStorage("SettingsPane") private var pane = SettingsPane.general
@@ -17,6 +18,9 @@ struct SettingsView: View {
             Tab("Privacy", systemImage: "hand.raised", value: SettingsPane.privacy) {
                 PrivacySettingsView()
             }
+            Tab("About", systemImage: "info.circle", value: SettingsPane.about) {
+                AboutSettingsView()
+            }
         }
         .frame(width: 500)
     }
@@ -26,6 +30,7 @@ enum SettingsPane: String {
     case general
     case shortcuts
     case privacy
+    case about
 }
 
 #Preview {
@@ -36,5 +41,6 @@ enum SettingsPane: String {
             .environment(PasteboardAccess(pasteboard: NSPasteboard.withUniqueName()))
             .environment(MenuBarSettings())
             .environment(ShortcutSettings(store: KeyboardShortcutsStore()))
+            .environment(AppUpdater(driver: SparkleUpdaterDriver()))
     }
 }

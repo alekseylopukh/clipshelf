@@ -152,12 +152,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_INJECT_BASE_ENTITLEMENTS = NO;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Config/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Clipsy;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_LSUIElement = YES;
@@ -170,6 +172,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = app.gonar.clipsy;
 				PRODUCT_NAME = Clipsy;
 				SDKROOT = macosx;
+				SPARKLE_FEED_URL = "https://github.com/alekseylopukh/clipsy/releases/latest/download/appcast.xml";
+				SPARKLE_PUBLIC_ED_KEY = SPARKLE_PUBLIC_ED_KEY_PLACEHOLDER;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 			};
@@ -315,6 +319,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Config/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Clipsy;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_LSUIElement = YES;
@@ -327,6 +332,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = app.gonar.clipsy;
 				PRODUCT_NAME = Clipsy;
 				SDKROOT = macosx;
+				SPARKLE_FEED_URL = "https://github.com/alekseylopukh/clipsy/releases/latest/download/appcast.xml";
+				SPARKLE_PUBLIC_ED_KEY = SPARKLE_PUBLIC_ED_KEY_PLACEHOLDER;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 			};
