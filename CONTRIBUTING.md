@@ -5,8 +5,17 @@ Thanks for helping. This file covers how work moves from an idea to a release.
 ## Before you start
 
 - Bugs and feature ideas start as an [issue](../../issues/new/choose). For anything bigger than a small fix, wait for a maintainer to agree on the approach before writing code.
-- Clipshelf is an independent project. Do not contribute code, images, sounds or text copied from Paste or any other proprietary app. See the IP rules in [CLAUDE.md](CLAUDE.md).
+- Clipshelf is an independent project. Do not contribute code, images, sounds or text copied from Paste or any other proprietary app. See the IP rules in [AGENTS.md](AGENTS.md#ip-rules).
 - Contributions are licensed under [GPL-3.0](LICENSE). Code taken from other projects must come from GPL-3.0-compatible licenses (MIT, BSD, Apache-2.0, GPL-3.0) and keep its copyright notice.
+
+## AI-assisted contributions
+
+AI tools are welcome. You stay responsible for what you submit.
+
+- Say in the pull request description which AI tools you used and for what, for example "Claude Code wrote the first draft of the search parser". Pull requests that hide AI use may be closed.
+- You must understand every line you submit and be able to explain it in review. You must have built and tested it yourself.
+- Do not submit large generated changes nobody asked for. Open an issue first.
+- Instructions for AI coding agents live in [AGENTS.md](AGENTS.md).
 
 ## Workflow: GitHub Flow
 
