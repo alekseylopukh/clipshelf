@@ -60,6 +60,7 @@ What exists:
 - Deliverable: the dependency line in [architecture §6.1](architecture.md#61-layout) gains `Pasting` → `Store` and `Capture` → `Store`. The recorder row in [design §11](design.md#11-component-mapping) names KeyboardShortcuts.
 - Acceptance: both lines read as described.
 - Size: S
+- Status: done
 
 ### T1.2 Build and test in CI, umbrella product
 - Module(s): package manifest, CI, CLAUDE.md

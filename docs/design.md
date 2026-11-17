@@ -354,7 +354,7 @@ Rules:
 | Menu bar extra | `MenuBarExtra` with `.menuBarExtraStyle(.menu)`, or `NSStatusItem` when left-click-opens-Shelf is on |
 | Symbol effects | `.symbolEffect(.bounce)` on capture |
 | Settings | `Settings` scene, `TabView` with `.tabItem`, `Form` + `.formStyle(.grouped)` |
-| Shortcut recorder | > TODO: Apple has no public recorder control; choose between our own control and an MIT/BSD-licensed package (needs maintainer approval) |
+| Shortcut recorder | `KeyboardShortcuts.Recorder` from KeyboardShortcuts ([architecture §2](architecture.md#2-stack)) |
 | Ignored apps list | `List` + `NSOpenPanel` limited to applications |
 | Onboarding | SwiftUI `Window` scene with a step container and standard buttons |
 | Alerts | `.alert` / `NSAlert` with `showsSuppressionButton` |

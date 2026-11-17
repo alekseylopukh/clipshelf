@@ -271,7 +271,7 @@ scripts/release/            release helpers (DMG, appcast)
 
 This is the module list; other docs link here instead of repeating it.
 
-Dependency direction: `ShelfUI` → `DesignSystem`, `Pasting`, `Media`, `Store`; `Capture` → `Store`; the app target's Settings and onboarding use `DesignSystem`; `Store` and `DesignSystem` depend on nothing in the package.
+Dependency direction: `ShelfUI` → `DesignSystem`, `Pasting`, `Media`, `Store`; `Pasting` → `Store`; `Capture` → `Store`; the app target's Settings and onboarding use `DesignSystem`; `Store` and `DesignSystem` depend on nothing in the package.
 
 Decided (2026-11-17): a plain, committed `Clipsy.xcodeproj`. `App/` is a folder-synchronized group, so new files there need no project edits. The app links one umbrella product, `ClipsyKit`, so adding a module only changes `Package.swift`. Never hand-edit `project.pbxproj` unless a build setting has to change.
 
