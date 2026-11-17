@@ -42,15 +42,15 @@ public struct PayloadStore: Sendable {
         }
     }
 
-    /// referenced must hold both payload hashes and card content hashes (hex), or thumbnails are deleted
-    public func collectGarbage(referenced: Set<String>) throws {
+    /// thumbnails are named by card content hash (hex)
+    public func collectGarbage(payloads: Set<String>, thumbnails: Set<String>) throws {
         for file in try files(in: payloadsDirectory, recursive: true)
-            where referenced.contains(file.lastPathComponent) == false
+            where payloads.contains(file.lastPathComponent) == false
         {
             try FileManager.default.removeItem(at: file)
         }
         for file in try files(in: thumbnailsDirectory, recursive: false)
-            where referenced.contains(file.deletingPathExtension().lastPathComponent) == false
+            where thumbnails.contains(file.deletingPathExtension().lastPathComponent) == false
         {
             try FileManager.default.removeItem(at: file)
         }

@@ -62,7 +62,7 @@ struct PayloadStoreTests {
             try Data([0]).write(to: store.thumbnailsDirectory.appending(path: "\(name).png"))
         }
 
-        try store.collectGarbage(referenced: [kept, thumbnailKept])
+        try store.collectGarbage(payloads: [kept], thumbnails: [thumbnailKept])
 
         #expect(fileExists(kept))
         #expect(fileExists(dropped) == false)
@@ -83,7 +83,7 @@ struct PayloadStoreTests {
         #expect(referenced.isEmpty)
         #expect(fileExists(hash))
 
-        try store.collectGarbage(referenced: referenced)
+        try store.collectGarbage(payloads: referenced, thumbnails: [])
         #expect(fileExists(hash) == false)
     }
 }

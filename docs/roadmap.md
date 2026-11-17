@@ -125,6 +125,8 @@ What exists:
 - Deliverable: `RetentionPeriod` enum (default 1 Month); `purge(olderThan:)`, `eraseHistory()`, both followed by garbage collection; `delete(cards:in:)` with History/board semantics returning a snapshot that `restore(_:)` puts back (for undo)
 - Acceptance: tests `purgeKeepsBoardCardsAndClearsTheirHistory`, `purgeDeletesExpiredHistoryCards`, `eraseHistoryKeepsBoards`, `deleteOnBoardKeepsHistory`, `restoreUndoesDelete`, `purgeCollectsOrphanPayloads`
 - Size: M
+- Working default: `RetentionPeriod.cutoff` subtracts one calendar day, week, month or year; a card copied exactly at the cutoff is kept. `delete` does not collect garbage, so `restore` can reuse the payload files; a card whose payload file was collected since is not restored. When a card with the same content exists again at restore time (copied again), restore puts the deleted membership back on that card instead of inserting a second one; a card whose id was reused meanwhile comes back under a new id
+- Status: done
 
 ### T1.9 Full-text search query
 - Module(s): Store

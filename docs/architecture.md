@@ -158,7 +158,8 @@ Rules:
 
 - Representations of 4 KB or more go to `Payloads/`, named by SHA-256 of their bytes. Identical payloads across Cards share one file.
 - Write order: write to a temp file, rename into place, then insert rows. A crash leaves an orphan file (collected later), never a row that points to a missing file.
-- Garbage collection runs after retention cleanup: delete files in `Payloads/` and `Thumbnails/` with no referencing row.
+- Garbage collection runs after retention cleanup: delete files in `Payloads/` and `Thumbnails/` with no referencing row. Payload files are matched against `representation.payload_hash`, thumbnails against the hex `content_hash` of every Card.
+- Decided (2026-11-17): garbage collection never races with capture. It runs on the database writer, which also runs the insert that stores a capture's payload files, so a file written before its row is inserted is never collected.
 - Size cap: representations above the cap are dropped per type; if nothing is left, the capture is skipped. The cap is set in [product.md §4.1](product.md#41-capture).
 
 > TODO: whether there is a total History size cap.
