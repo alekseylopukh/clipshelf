@@ -177,6 +177,8 @@ Native `NSMenu` with SF Symbols on items and section separators. Items that do n
 
 With several Cards selected, the menu shows only actions that work on many: Paste, Paste as Plain Text, Copy, Add to Board, Add to Sequence, Share, Delete.
 
+Inside a Board, Delete is hidden and Remove from Board takes its place, because Delete on a Board only removes the Card from it ([WD-12](roadmap.md#working-defaults-for-open-todos)).
+
 ### Quick Look
 
 - Space toggles a preview anchored to the selected Card, as an `NSPopover` with a glass background.

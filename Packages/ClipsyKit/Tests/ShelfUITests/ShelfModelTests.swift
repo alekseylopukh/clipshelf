@@ -171,4 +171,21 @@ final class ShelfModelTests {
 
         #expect(model.observationError is Failure)
     }
+
+    @Test func `neighbor after removal is next card, else previous`() {
+        let model = makeModel(cards: [5, 4, 3, 2])
+
+        #expect(model.neighbor(afterRemoving: [4, 3]) == 2)
+        #expect(model.neighbor(afterRemoving: [3, 2]) == 4)
+        #expect(model.neighbor(afterRemoving: [5, 4, 3, 2]) == nil)
+        #expect(model.neighbor(afterRemoving: [9]) == nil)
+    }
+
+    @Test func `selected cards keep list order`() {
+        let model = makeModel(cards: [5, 4, 3])
+        model.select(3)
+        model.toggleSelection(of: 5)
+
+        #expect(model.selectedCards.map(\.id) == [5, 3])
+    }
 }

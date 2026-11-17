@@ -140,6 +140,18 @@ public final class ShelfModel {
         selection = Set(cards.map(\.id))
     }
 
+    var selectedCards: [CardSummary] {
+        cards.filter { selection.contains($0.id) }
+    }
+
+    func neighbor(afterRemoving ids: Set<Int64>) -> Int64? {
+        guard let last = cards.lastIndex(where: { ids.contains($0.id) }) else { return nil }
+        if let next = cards[(last + 1)...].first(where: { !ids.contains($0.id) }) {
+            return next.id
+        }
+        return cards[..<last].last { !ids.contains($0.id) }?.id
+    }
+
     func receive(_ newCards: [CardSummary]) {
         cards = newCards
         observationError = nil

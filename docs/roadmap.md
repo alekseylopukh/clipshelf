@@ -321,7 +321,12 @@ What exists:
 - Deliverable: context menu with MVP items (Paste to App, Paste as Plain Text, Copy, Copy as Plain Text, Open, Add to Board, Remove from Board, Delete), hidden when not applicable; ⌘O opens links and files; ⌫ deletes (confirmation with count for several); ⌘Z restores while the shelf is open
 - Acceptance: tests `deleteSeveralNeedsConfirmation`, `undoRestoresDeletedCards`, `multiSelectionMenuHasOnlyBatchItems`
 - Human check: menu matches design.md order and symbols
+- Human check: with three cards selected, ⌫ shows the count in a sheet on the shelf; Delete removes them, ⌘Z brings them back, and after closing and reopening the shelf ⌘Z does nothing
+- Human check: ⌘O on a link card opens the browser; on a file card it opens the file in its default app
 - Size: M
+- Working default: Add to Board moves to T5.3, which already delivers the submenu and needs the board list that arrives with T3.7. Inside a board, Delete is hidden and Remove from Board takes its place, because under WD-12 they do the same thing; ⌫ there removes from the board with the same confirmation and undo. Paste as Plain Text and Copy as Plain Text are hidden for image and file cards. Several selected cards offer Paste, Paste as Plain Text, Copy and Delete or Remove from Board, which act on all of them. ⌘Z undoes deletes one at a time, newest first, and the undo history is dropped when the shelf closes. After a delete the next card is selected, else the previous one
+- Note: the card view (T3.5) attaches `CardContextMenu(cards:list:)` with `.contextMenu`, passing the selected cards when the clicked card is selected and otherwise selecting the clicked card first; `CardActions` reaches it through the environment set by `ShelfController`
+- Status: done
 
 ### T5.2 Board management UI
 - Module(s): ShelfUI

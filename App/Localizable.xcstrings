@@ -4,14 +4,26 @@
     "Allow Clipsy to paste into other apps?" : {
       "comment" : "Title of the alert shown on the first paste without Accessibility permission"
     },
+    "Cancel" : {
+      "comment" : "Button that dismisses a confirmation"
+    },
     "Clipsy" : {
 
+    },
+    "Clipsy can’t delete these cards." : {
+      "comment" : "Title of the alert shown when deleting cards fails"
     },
     "Clipsy can’t open its clipboard history." : {
       "comment" : "Title of the alert shown when the database fails to open at launch"
     },
+    "Clipsy can’t open this card." : {
+      "comment" : "Title of the alert shown when a card's link or file cannot be opened"
+    },
     "Clipsy can’t paste this card." : {
       "comment" : "Title of the alert shown when a card's contents cannot be read for pasting"
+    },
+    "Clipsy can’t restore the deleted cards." : {
+      "comment" : "Title of the alert shown when undoing a delete fails"
     },
     "Clipsy moved it to “%@” and started a new, empty history." : {
       "comment" : "Informative text of the alert shown after a damaged database was moved aside at launch; the argument is the backup folder path"
@@ -19,8 +31,20 @@
     "Clipsy’s clipboard history was damaged." : {
       "comment" : "Title of the alert shown after a damaged database was moved aside at launch"
     },
+    "Copy" : {
+      "comment" : "Context menu item that copies the card to the clipboard"
+    },
     "Copy Only" : {
       "comment" : "Alert button that keeps the card on the clipboard without pasting"
+    },
+    "Copy as Plain Text" : {
+      "comment" : "Context menu item that copies the card without formatting"
+    },
+    "Delete" : {
+      "comment" : "Context menu item and confirmation button that delete the selected cards"
+    },
+    "Delete %lld cards?" : {
+      "comment" : "Title of the confirmation shown before deleting several cards from History"
     },
     "Don’t ask again" : {
       "comment" : "Checkbox in the Accessibility alert that stops it from appearing"
@@ -31,14 +55,35 @@
     "OK" : {
 
     },
+    "Open" : {
+      "comment" : "Context menu item that opens a link or file card"
+    },
     "Open Shelf" : {
 
     },
     "Open System Settings…" : {
       "comment" : "Alert button that asks macOS for Accessibility permission"
     },
+    "Paste" : {
+      "comment" : "Context menu item that pastes the card when no target app is known"
+    },
+    "Paste as Plain Text" : {
+      "comment" : "Context menu item that pastes the card without formatting"
+    },
+    "Paste to %@" : {
+      "comment" : "Context menu item that pastes the card into the app the shelf was opened from; the argument is that app's name"
+    },
     "Quit Clipsy" : {
 
+    },
+    "Remove" : {
+      "comment" : "Button that confirms removing cards from a board"
+    },
+    "Remove %lld cards from this board?" : {
+      "comment" : "Title of the confirmation shown before removing several cards from a board"
+    },
+    "Remove from Board" : {
+      "comment" : "Context menu item that removes the selected cards from the current board"
     },
     "Settings…" : {
 
@@ -55,6 +100,9 @@
     },
     "Version" : {
 
+    },
+    "You can undo this until the shelf closes." : {
+      "comment" : "Informative text of the confirmation shown before deleting several cards"
     }
   },
   "version" : "1.0"
