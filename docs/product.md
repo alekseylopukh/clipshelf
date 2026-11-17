@@ -450,7 +450,7 @@ Content and defaults only; layout and exact label wording are in [design.md §8]
 This is the item list; grouping and wording are in [design.md §7](design.md#7-menu-bar-extra).
 
 - Open Shelf · New Text Card · Start Sequence
-- Pause Capture for 15 minutes, 1 hour, 8 hours, until tomorrow, or until resumed / Resume Capture; while paused, the time capture resumes
+- Pause Capture for 15 minutes, 1 hour, 8 hours, until tomorrow, or until resumed / Resume Capture; while paused, the time capture resumes. "Until tomorrow" ends at the next midnight. A pause survives relaunch; ⌘T pauses until resumed.
 - Settings… · Check for Updates… (always manual, see [CLAUDE.md](../CLAUDE.md#decisions)) · About Clipsy
 - Clipsy Help · Report an Issue
 - Quit Clipsy

@@ -76,9 +76,18 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         startSequenceItem.setShortcut(for: .startSequence)
         menu.addItem(startSequenceItem)
         menu.addItem(.separator())
-        menu.addItem(pause.isPaused
-            ? item(String(localized: "Resume Capture"), action: #selector(togglePause))
-            : item(String(localized: "Pause Capture"), action: #selector(togglePause)))
+        if pause.isPaused {
+            if let resumeDate = pause.resumeDate {
+                let line = NSMenuItem(title: Self.pausedUntil(resumeDate), action: nil, keyEquivalent: "")
+                line.isEnabled = false
+                menu.addItem(line)
+            }
+            menu.addItem(item(String(localized: "Resume Capture"), action: #selector(resumeCapture)))
+        } else {
+            let pauseItem = NSMenuItem(title: String(localized: "Pause Capture"), action: nil, keyEquivalent: "")
+            pauseItem.submenu = pauseMenu()
+            menu.addItem(pauseItem)
+        }
         menu.addItem(.separator())
         menu.addItem(item(String(localized: "Settings…"), action: #selector(openSettings), key: ","))
         menu.addItem(item(String(localized: "Check for Updates…"), action: #selector(checkForUpdates)))
@@ -88,6 +97,33 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         menu.addItem(item(String(localized: "Report an Issue"), action: #selector(reportIssue)))
         menu.addItem(.separator())
         menu.addItem(item(String(localized: "Quit Clipsy"), action: #selector(quit), key: "q"))
+    }
+
+    private func pauseMenu() -> NSMenu {
+        let submenu = NSMenu()
+        for duration in PauseDuration.allCases {
+            let durationItem = item(Self.title(of: duration), action: #selector(pauseChosen))
+            durationItem.representedObject = duration
+            submenu.addItem(durationItem)
+        }
+        return submenu
+    }
+
+    private static func title(of duration: PauseDuration) -> String {
+        switch duration {
+        case .fifteenMinutes: String(localized: "For 15 Minutes")
+        case .oneHour: String(localized: "For 1 Hour")
+        case .eightHours: String(localized: "For 8 Hours")
+        case .untilTomorrow: String(localized: "Until Tomorrow")
+        case .untilResumed: String(localized: "Until Resumed")
+        }
+    }
+
+    private static func pausedUntil(_ date: Date) -> String {
+        let time = Calendar.autoupdatingCurrent.isDateInToday(date)
+            ? date.formatted(date: .omitted, time: .shortened)
+            : date.formatted(.dateTime.weekday(.abbreviated).hour().minute())
+        return String(localized: "Paused until \(time)")
     }
 
     private func item(_ title: String, action: Selector, key: String = "") -> NSMenuItem {
@@ -148,8 +184,15 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         startSequence()
     }
 
-    @objc private func togglePause() {
-        pause.isPaused.toggle()
+    @objc private func pauseChosen(_ sender: NSMenuItem) {
+        guard let duration = sender.representedObject as? PauseDuration else {
+            fatalError("every Pause Capture item carries its PauseDuration")
+        }
+        pause.pause(duration)
+    }
+
+    @objc private func resumeCapture() {
+        pause.resume()
     }
 
     @objc private func openSettings() {

@@ -237,6 +237,8 @@ Menu contents: the items and pause durations are set in [product.md §6](product
 
 Decided (T6.4): `clipboard` normally and `pause.circle` while paused, swapped with the `.replace` content transition. SF Symbols on macOS 26 has no clipboard pause badge.
 
+Decided (T7.3): the disabled line reads "Paused until 15:45", in the locale's short time format, with the abbreviated weekday when the resume time is not today. Until Resumed shows no line.
+
 ---
 
 ## 8. Settings window

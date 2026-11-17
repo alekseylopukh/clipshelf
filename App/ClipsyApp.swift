@@ -47,7 +47,7 @@ struct ClipsyApp: App {
         let sequence = Self.runSequence(writer: writer, paster: paster, repository: repository)
         let shelf = Self.makeShelf(repository: repository, paster: paster, sequence: sequence)
         shelf.commands.isCapturePaused = { pause.isPaused }
-        shelf.commands.setCapturePaused = { pause.isPaused = $0 }
+        shelf.commands.setCapturePaused = { $0 ? pause.pause(.untilResumed) : pause.resume() }
         shelf.commands.openSettings = { SettingsWindow.open() }
         shelf.commands.startSequence = { sequence.start(shelfSelection: shelf.selectedCardIDs) }
         _shelf = State(initialValue: shelf)

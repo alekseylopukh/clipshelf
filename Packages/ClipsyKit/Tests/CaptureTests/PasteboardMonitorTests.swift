@@ -121,20 +121,24 @@ struct PasteboardMonitorTests {
     }
 
     @Test func `pause stops capture and resume restarts`() async throws {
-        defer { pasteboard.releaseGlobally() }
-        let pause = CapturePause()
+        let suiteName = "PasteboardMonitorTests-\(UUID().uuidString)"
+        defer {
+            pasteboard.releaseGlobally()
+            UserDefaults.standard.removePersistentDomain(forName: suiteName)
+        }
+        let pause = try CapturePause(defaults: #require(UserDefaults(suiteName: suiteName)))
         let monitor = makeMonitor(policy: { CapturePolicy(isPaused: pause.isPaused) })
         copy("before pause")
         await monitor.poll()
         await monitor.poll()
 
-        pause.isPaused = true
+        pause.pause(.untilResumed)
         copy("while paused")
         await monitor.poll()
         await monitor.poll()
         #expect(try await history().map(\.preview) == ["before pause"])
 
-        pause.isPaused = false
+        pause.resume()
         await monitor.poll()
         await monitor.poll()
         #expect(try await history().map(\.preview) == ["before pause"])

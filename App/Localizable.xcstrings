@@ -680,10 +680,28 @@
       "comment" : "Settings toggle that makes a left click on the menu bar item open the shelf"
     },
     "Pause Capture" : {
-      "comment" : "Menu bar menu item that stops adding copies to History"
+      "comment" : "Menu bar submenu that stops adding copies to History for a chosen time"
     },
     "Resume Capture" : {
       "comment" : "Menu bar menu item that starts adding copies to History again"
+    },
+    "For 15 Minutes" : {
+      "comment" : "Pause Capture submenu item; capture resumes after 15 minutes"
+    },
+    "For 1 Hour" : {
+      "comment" : "Pause Capture submenu item; capture resumes after one hour"
+    },
+    "For 8 Hours" : {
+      "comment" : "Pause Capture submenu item; capture resumes after eight hours"
+    },
+    "Until Tomorrow" : {
+      "comment" : "Pause Capture submenu item; capture resumes at midnight"
+    },
+    "Until Resumed" : {
+      "comment" : "Pause Capture submenu item; capture stays paused until the user resumes it"
+    },
+    "Paused until %@" : {
+      "comment" : "Disabled menu bar menu line while capture is paused; the placeholder is the time capture resumes"
     },
     "About Clipsy" : {
       "comment" : "Menu bar menu item that shows the About panel"
