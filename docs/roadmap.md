@@ -532,6 +532,8 @@ What exists:
 - Deliverable: filters Type, App, Date (today, yesterday, 7 days, 30 days, custom), Board, combined with AND and with text
 - Acceptance: parameterized test `filtersCombineWithAnd`; test `dateRangesUseCalendar`
 - Size: S
+- Working default: at most one value per filter (Type, App, Date, Board); a card's date is `last_copied_at`, or `created_at` for a board-only card; date ranges are whole days in the user's calendar and time zone, "last 7/30 days" include today, a custom range includes both end days; a blank query with a filter lists every matching card, newest first
+- Status: done
 
 ### T10.2 Filter tokens and browser
 - Module(s): ShelfUI
