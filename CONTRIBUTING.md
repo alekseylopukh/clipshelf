@@ -24,7 +24,7 @@ brew install swiftformat swiftlint
 git config core.hooksPath .githooks
 ```
 
-The git pre-commit hook lints staged Swift files. CI runs the same checks on every pull request.
+The git pre-commit hook lints staged Swift files. CI runs the same checks on every pull request. CI pins the tool versions in [.github/workflows/lint.yml](.github/workflows/lint.yml); if your local result differs, CI is the reference.
 
 ## Code quality
 
