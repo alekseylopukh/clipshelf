@@ -524,6 +524,7 @@ What exists:
 - Human check: with "Show the Shelf in screenshots and screen sharing" off, open the preview of a text card and take a screenshot (⇧⌘3): neither the Shelf nor the preview is captured; with it on, both are
 - Human check: right-click a card that is not selected and choose Quick Look (`eye`, shown with Space): the card is selected and its preview opens; VoiceOver's actions rotor on a card lists Quick Look
 - Human check: open the preview, scroll the strip with the trackpad until the selected card is far off screen, then press Space once; note whether the preview reopens on the first press or needs two (the lazy strip unloads the anchor and leaves the preview requested)
+- Human check: on a large display the preview is 880 × 680 pt; on a 13" MacBook Air with a 300 pt Shelf it shrinks to fit above the Shelf with the same proportions and never reaches the menu bar; a tall screenshot gets a narrow popover and a wide image a short one, with no gray bars beside the image
 - Working default: WD-49. The Shelf now closes on focus loss unless the panel or one of its child windows (a popover) is key, checked on the next run loop pass; before, any open child window kept it open
 - Status: done
 

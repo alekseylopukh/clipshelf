@@ -85,7 +85,7 @@ All suites live in the `SnapshotTests` target:
 | Suite | Renders |
 |---|---|
 | `ShelfSnapshotTests` | `shelf-{regular,compact}`: the Shelf, 1920 pt wide |
-| `PopoverSnapshotTests` | `sequence`, `sequence-empty`, `rename`, `preview-<card id>`, `edit-{text,link,color,board}`, `filters` |
+| `PopoverSnapshotTests` | `sequence`, `sequence-empty`, `rename`, `preview-<card id>`, `preview-<card id>-small` (clamped to 1438 × 524 pt, a 13" MacBook Air above a 300 pt Shelf), `edit-{text,link,color,board}`, `filters` |
 | `AppSnapshotTests` | `settings-{general,shortcuts,privacy,about}`, `onboarding-{welcome,paste-directly,clipboard-access,finish}` |
 
 - Fixture: eight made-up Cards (`SnapshotFixtures`: text, rich text, link with preview image, color, code, image, file, three files) and three Boards. Images and files are generated into a temporary folder; app icons come from system apps. No clipboard data is read. Settings and onboarding use a private defaults suite, a temporary database, a fake updater and a fake pasteboard access status (`.ask`, so the clipboard step shows).
@@ -450,7 +450,7 @@ Metrics of everything other than the Shelf. Every value lives in `DesignTokens`.
 | About | 64 pt app icon; Acknowledgements sheet 460 × 420 pt |
 | Onboarding | 480 pt wide, at least 380 pt tall, 20 pt padding, 64 pt step icon |
 | Sequence panel | 280 pt wide, 18 pt radius, glass as a background layer (like the Shelf, so rows keep label colors); 44 pt rows, up to 6 before it scrolls, 8 pt list inset with a 10 pt concentric radius |
-| Quick Look popover | 520 × 400 pt |
+| Quick Look popover | 880 × 680 pt (`previewWidth` × `previewHeight`), scaled down with its aspect ratio kept to fit the space above the Shelf on the Shelf's screen (visible frame above the Shelf's glass, minus a 16 pt margin, `previewScreenMargin`) and the screen width minus 16 pt on each side. Image Cards fit the popover to the image's aspect ratio inside that box, at least 240 pt on each side (`previewMinimumSide`) but never larger than the box. Computed by `PreviewSizeCalculator` |
 | Rename popover | 220 pt text field, system padding |
 | Filters popover | 260 × 380 pt |
 | Edit sheets | 20 pt padding (`sheetPadding`) on every sheet. Link and color sheets are 420 pt and the Board sheet 400 pt wide grouped forms; text editor 480 × 320 pt, never taller than the Shelf, 6 pt text-area radius |

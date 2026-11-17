@@ -74,8 +74,10 @@ public enum DesignTokens {
     public static let fileStackOffset: CGFloat = 16
     public static let menuIconSize: CGFloat = 16
 
-    public static let previewWidth: CGFloat = 520
-    public static let previewHeight: CGFloat = 400
+    public static let previewWidth: CGFloat = 880
+    public static let previewHeight: CGFloat = 680
+    public static let previewMinimumSide: CGFloat = 240
+    public static let previewScreenMargin: CGFloat = 16
     public static let previewImageMaxPixelSize = 2048
     public static let previewTextMaximumLength = 20000
     public static let previewSwatchHeight: CGFloat = 200

@@ -116,6 +116,7 @@ public final class ShelfController {
         preview.onResignKey = { [weak self] in self?.closeOnFocusLoss() }
         preview.onKeyDown = { [weak self] event in self?.handlePreviewKeyDown(event) ?? false }
         preview.sharingType = { [weak self] in self?.panel.sharingType ?? .none }
+        preview.availableSize = { [weak self] in self?.previewAvailableSize ?? PreviewSizeCalculator().defaultSize }
     }
 
     public var isShown: Bool {
@@ -288,6 +289,12 @@ public final class ShelfController {
         defaults.object(forKey: Self.heightKey) == nil
             ? DesignTokens.shelfDefaultHeight
             : defaults.double(forKey: Self.heightKey)
+    }
+
+    private var previewAvailableSize: CGSize? {
+        guard let screen = panel.screen else { return nil }
+        let glassFrame = panel.frame.insetBy(dx: calculator.shadowMargin, dy: calculator.shadowMargin)
+        return PreviewSizeCalculator().availableSize(in: screen.visibleFrame, above: glassFrame)
     }
 
     private func resize() {

@@ -67,14 +67,22 @@ final class PopoverSnapshotTests {
     func `render the preview popover`(appearance: SnapshotRenderer.Appearance, cardID: Int64) async throws {
         let card = try #require(fixtures.cards.first { $0.id == cardID })
         let representations = fixtures.representations
-        let root = CardPreviewView(card: card)
-            .environment(\.richTextLoader, RichTextLoader(representations: representations))
-            .environment(\.cardMediaLoader, CardMediaLoader(
-                representations: representations,
-                thumbnails: ThumbnailCache(directory: fixtures.thumbnails)
-            ))
-            .background(.windowBackground)
-        try await SnapshotRenderer.render(root, named: "preview-\(cardID)", appearance: appearance, settle: .seconds(2))
+        let sizes = [("", PreviewSizeCalculator().defaultSize), ("-small", CGSize(width: 1438, height: 524))]
+        for (suffix, available) in sizes {
+            let root = CardPreviewView(card: card, available: available)
+                .environment(\.richTextLoader, RichTextLoader(representations: representations))
+                .environment(\.cardMediaLoader, CardMediaLoader(
+                    representations: representations,
+                    thumbnails: ThumbnailCache(directory: fixtures.thumbnails)
+                ))
+                .background(.windowBackground)
+            try await SnapshotRenderer.render(
+                root,
+                named: "preview-\(cardID)\(suffix)",
+                appearance: appearance,
+                settle: .seconds(2)
+            )
+        }
     }
 
     @Test(arguments: SnapshotRenderer.Appearance.allCases)
