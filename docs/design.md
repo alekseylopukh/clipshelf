@@ -1,0 +1,377 @@
+# Clipshelf UI and visual design
+
+This is the source of truth for how Clipshelf looks. Behavior, features and the keyboard map live in [product.md](product.md); window plumbing, permissions and data live in [architecture.md](architecture.md). Product decisions (macOS 26+, no sync, no brand chrome) are in [CLAUDE.md](../CLAUDE.md#decisions).
+
+Terms used here:
+
+| Term | Meaning |
+|---|---|
+| Shelf | The floating panel that shows clipboard items |
+| Card | One item on the Shelf |
+| History | The default, time-ordered stream of everything copied |
+| Board | A named, colored collection of Cards |
+| Sequence | A queue of Cards pasted one after another |
+
+Values marked "proposed" are starting points to tune on real hardware, not measured facts.
+
+---
+
+## 1. Design principles
+
+1. **Looks like Apple shipped it.** System controls, SF Symbols, system text styles, semantic colors, the user's accent color. If AppKit or SwiftUI has a control for it, we use that control. No custom fonts, no brand colors, no illustrations.
+2. **Liquid Glass is for controls, not content.** The Shelf container, the top bar, floating badges and the Sequence header are glass. Cards are content: opaque, readable, and they never sit in glass of their own.
+3. **Content first.** A Card spends its area on the preview. Metadata is small, secondary and neutral.
+4. **Color means something or it isn't there.** The only colors in the UI are the accent color (selection, primary action), Board colors (identity of a Board) and the content itself (images, color swatches, link thumbnails).
+5. **Keyboard is a first-class input.** Every action reachable by pointer is reachable by keyboard, and focus is always visible.
+6. **Respect system settings.** Light/Dark, accent color, Reduce Motion, Reduce Transparency, Increase Contrast, Liquid Glass appearance, Dynamic Type where macOS supports it.
+
+### Visual choices we made
+
+| Rejected option | Clipshelf | Why |
+|---|---|---|
+| Saturated colored header band per Card (tinted by source app or type) | Neutral header: app icon, type label, relative time in secondary label color | HIG asks for sparing color and monochrome chrome; a rainbow of headers competes with content and with Board colors. The source app stays identifiable through its real icon. |
+| Glass on Cards at every size | Glass only on the Shelf container and controls | HIG: no Liquid Glass in the content layer. Opaque Cards keep text contrast stable over any wallpaper. |
+| Colored Board tabs | Board name with a small colored dot | Same information, less chroma; reads like Finder tags. |
+| Custom animated menu bar icon | Template SF Symbol with a system symbol effect | Matches every other menu bar extra; adapts to the menu bar appearance. |
+| In-app promotional banners | None. Only system alerts where a permission is actually missing | No nudges, no upsell. |
+| Brand-tinted Sequence window | Plain glass panel with system rows | First-party look. |
+
+> TODO: optional faint tint (proposed 8–12% opacity) of the source app's icon color behind the Card header, off by default. Decide whether to ship it at all.
+
+---
+
+## 2. Shelf
+
+### Placement and size
+
+| Aspect | Design |
+|---|---|
+| Edge | Bottom of the screen, centered horizontally. Bottom only in v1. |
+| Inset | Floats like the Dock: inset from the bottom and side edges of the visible frame (proposed 8–12 pt), with a soft system shadow. Never covers the menu bar. Respects the Dock: placed above it when the Dock is at the bottom and visible. |
+| Corners | Corner radius concentric with the display corners (proposed: match the system window radius for the inset used). Inner elements use concentric radii. |
+| Width | Full width of the visible frame minus the insets. |
+| Height | User-resizable by dragging the top edge; remembered per display size class. Proposed range: from one compact row to about 40% of the visible height. |
+| Compact mode | Below a height threshold (proposed: when a regular Card would be under ~150 pt tall) Cards switch to a condensed layout: header collapses to an icon and time, body fills the rest. |
+| Display | Opens on the display that holds the pointer. Moves with the user to the active Space and appears over full-screen apps. |
+
+> TODO: support left/right/top edges (vertical layout) as a later option, not in v1.
+> TODO: confirm the Dock-avoidance rule when the Dock is set to auto-hide.
+
+### Behavior as the user sees it
+
+- Opens with the global shortcut (see [product.md](product.md)) or from the menu bar extra. The frontmost app keeps its focus and text cursor; the Shelf takes keyboard input without activating Clipshelf's menu bar.
+- Closes on Esc, on the shortcut again, after a paste, or when the user clicks outside it. It stays open while its own sheets, menus, Quick Look or editors are showing.
+- Hidden from screenshots and screen sharing by default (setting in Privacy).
+- One Card is always selected while the Shelf has items; on open, the newest Card in the current view is selected.
+
+### Motion
+
+| Event | Default | Reduce Motion |
+|---|---|---|
+| Open | Spring rise from just below the bottom edge plus glass materializing (opacity and scale ~0.98→1) | Crossfade only |
+| Close | Reverse of open, faster | Crossfade only |
+| Card inserted at front | Existing Cards slide right; new Card fades and scales in | Crossfade |
+| Card deleted | Neighbors close the gap | Instant reflow |
+| Board switch | Content crossfades; top-bar selection morphs between capsules (`glassEffectID`) | Crossfade, no morph |
+| Compact ↔ regular | Animated layout change | Instant |
+
+Durations: system spring defaults. We set no custom timing curves unless testing shows a need.
+
+---
+
+## 3. Cards
+
+### Anatomy
+
+A Card is a rounded rectangle with an opaque fill (`controlBackgroundColor` or the SwiftUI secondary background), a hairline `separatorColor` border, and the system Card shadow when lifted. Proposed aspect ratio: square in regular mode.
+
+| Part | Contents | Style |
+|---|---|---|
+| Header | Source app icon (proposed 16–20 pt); title if the user renamed the Card, else the type label; relative time ("2 min ago") | Title `.headline`; type and time `.caption` in secondary label color; digits monospaced |
+| Body | Type-specific preview (table below) | Clipped to the Card's inner radius |
+| Footer | Type-specific metadata | `.caption`, tertiary label color, single line, truncated |
+| Board marker | When showing search results from all of History and Boards: the Board's colored dot next to the time | Board color, 6–8 pt dot (proposed) |
+
+### Per-type layouts
+
+| Type | Body | Footer |
+|---|---|---|
+| Plain text | Text from top-left, `.body`, as many lines as fit, tail-truncated with a fade | Character count |
+| Rich text | Rendered with its own fonts and colors, scaled to the system body size; colors that fail contrast on the Card fill fall back to label color | Character count |
+| Code-like text | Plain text heuristically detected as code gets SF Mono (`.monospaced()`); no syntax colors. Not a separate type | Line count |
+| Link | Link preview image (when previews are on) filling the top of the body; page title below in `.callout` semibold. Without a preview: large site favicon or `link` symbol, centered | Host name, head-truncated URL |
+| Image | Image aspect-fit on a neutral fill; checkerboard behind transparency | Pixel dimensions |
+| File | Quick Look thumbnail or file icon, centered | File name, middle-truncated |
+| Multiple files | Up to three stacked thumbnails, slightly fanned | "N files" and total size |
+| Color | Swatch filling the body, with the value overlaid on a small glass capsule for legibility | Value in the copied format (hex, rgb) |
+| Unknown | Generic `questionmark.square.dashed` symbol, short note that the item can still be pasted | Type identifier, if useful |
+
+### States
+
+| State | Look |
+|---|---|
+| Rest | Opaque fill, hairline border |
+| Hover | Slight lift (shadow strengthens); no color change |
+| Selected | Accent-colored ring at a concentric radius outside the Card (proposed 3 pt), slight lift (scale ~1.02) |
+| Multi-selected | Each selected Card gets the ring; a count ("3 selected") appears in the top bar |
+| Keyboard focus without selection change | Same as Selected; there is only one focus indicator |
+| Being dragged | System drag image; the source Card dims |
+| Pasted (Sequence) | Not shown on the Shelf; see §6 |
+
+### Quick-paste badges
+
+- While the quick-paste modifier is held (see [product.md](product.md)), the first nine visible Cards show a small glass capsule with the number (1–9) at the top-trailing corner.
+- Badges appear and disappear with a short fade; with Reduce Motion, instantly.
+- Numbers count from the first visible Card, not the first Card in History.
+
+---
+
+## 4. Top bar
+
+A single row at the top of the Shelf, inside one `GlassEffectContainer` so its capsules merge and morph.
+
+Order, leading to trailing:
+
+1. **Search field.** Capsule search field with a magnifying-glass symbol and placeholder "Search". Typing anywhere on the Shelf starts a search. Active filters show as tokens inside the field.
+2. **Filters button** (`line.3.horizontal.decrease`). Opens a popover with sections Type, App, Date, Board. Choosing a value adds a token. Pressing the search shortcut a second time also opens it.
+3. **Board switcher.** Horizontally scrolling row of capsules: "History" first (symbol `clock`), then each Board (colored dot + name). The selected one uses the prominent glass style tinted with the accent color. Boards reorder by drag; dropping a Card on a capsule adds it to that Board.
+4. **New Board button** (`plus`).
+5. **More menu** (`ellipsis`): New Text Card, Start Sequence, Pause/Resume capture, Settings…
+
+While search is active, the Board switcher stays visible. Whether selecting a Board then narrows the results depends on the open search-scope TODO in [product.md §4.9](product.md#49-search-and-filters).
+
+### Board colors
+
+System colors only, so they adapt to light/dark and Increase Contrast: red, orange, yellow, green, blue, purple, gray (the Finder tag set). Pink is left out because it is hard to tell apart from red. The color picker in the New/Edit Board sheet is a row of these swatches, not a free color well.
+
+> TODO: decide whether "no color" is allowed for a Board.
+
+### Empty states
+
+Use `ContentUnavailableView` centered in the Card area. Our own wording (proposed):
+
+| Situation | Symbol | Title | Description |
+|---|---|---|---|
+| History empty | `clipboard` | No Clipboard History | Copy something and it shows up here. |
+| Board empty | `square.stack` | This Board Is Empty | Drag Cards here or use "Add to Board". |
+| No search results | `magnifyingglass` | No Results | Try a different search or remove a filter. |
+| Capture paused | `pause.circle` | Capture Paused | A Resume button. |
+
+---
+
+## 5. Context menu, Quick Look, editing
+
+### Card context menu
+
+Native `NSMenu` with SF Symbols on items and section separators. Items that do not apply to the selection are hidden, not disabled. Order:
+
+| Section | Items |
+|---|---|
+| Paste | Paste to *App* (`arrow.down.doc`), Paste as Plain Text (`textformat`) |
+| Copy | Copy (`doc.on.doc`), Copy as Plain Text |
+| Open | Open (links, files), Open With ▸ (files), Show in Finder (files) |
+| Organize | Add to Board ▸ (list of Boards + New Board…), Remove from Board (inside a Board), Add to Sequence |
+| Item | Quick Look (`eye`), Show in List (search results only), Edit… (`pencil`), Rename… , Duplicate |
+| Share | Share ▸ (system share menu) |
+| Destructive | Delete (`trash`, destructive role) |
+
+With several Cards selected, the menu shows only actions that work on many: Paste, Paste as Plain Text, Copy, Add to Board, Add to Sequence, Share, Delete.
+
+### Quick Look
+
+- Space toggles a preview anchored to the selected Card, as an `NSPopover` with a glass background.
+- Files and images use `QLPreviewView`. Text, rich text, links and colors use our own read-only SwiftUI views (selectable text, link metadata with the full URL, large swatch with all color formats).
+- Arrow keys move the selection and the preview follows.
+
+> TODO: compare against `QLPreviewPanel` (the Finder-style floating panel) in practice; the popover is chosen because it works inside a non-activating panel, but the system panel may feel more native.
+
+### Edit sheet
+
+- Opens as a sheet attached to the Shelf (or a standalone window if the Shelf is too short; proposed threshold: Shelf height < sheet min height).
+- Toolbar per type, using system controls:
+  - Text: Bold, Italic, Underline, Strikethrough as a segmented control; character/word/line counts in the bottom bar.
+  - Link: URL field and optional title field.
+  - Color: `ColorPicker` / system color panel plus a format picker.
+  - Image (later): rotate left/right.
+- Buttons: Cancel (Esc) and Save (Return with ⌘ in text editors), standard placement.
+- Rename uses a small popover with a single text field; empty name clears the title.
+
+---
+
+## 6. Sequence
+
+A separate floating panel, independent of the Shelf, so the user can keep working in the target app.
+
+| Aspect | Design |
+|---|---|
+| Window | Small non-activating utility panel, glass background; proposed width ~280 pt, height grows with rows up to a limit, then scrolls. Draggable; position remembered. |
+| Header | Title "Sequence" with `list.number` symbol; trailing buttons: Undo (`arrow.uturn.backward`), More (`ellipsis`), Close (`xmark`). |
+| More menu | Reverse Order, Paste All, Paste as Plain Text (checkmark toggle), Clear |
+| Rows | Opaque content rows, one per item: one or two lines of preview, trailing app icon or type symbol. The next row to paste carries a small accent-colored marker. |
+| Reorder / remove | Drag to reorder; hover shows a remove button; Delete key removes the selected row. |
+| Paste feedback | The pasted row slides out; the next row gets the marker. With Reduce Motion, it disappears instantly. |
+| Empty state | Short line in secondary color telling the user to copy items or drag Cards here (own wording). |
+| End | After the last item is pasted, the panel fades out. |
+
+---
+
+## 7. Menu bar extra
+
+- Template SF Symbol: `clipboard` normally, `pause.circle` style variant (or `clipboard` with a slash) while paused. A brief `.bounce` symbol effect on each capture; none with Reduce Motion.
+- Shown by default; hidden with a Settings toggle. If hidden, the global shortcut still works and launching the app again opens Settings.
+- Click shows a menu (per HIG). An opt-in setting makes a left click open the Shelf instead, with the menu on right-click / Control-click.
+
+Menu contents: the items and pause durations are set in [product.md §6](product.md#menu-bar-menu); this table sets grouping and wording.
+
+| Group | Items |
+|---|---|
+| Main | Open Shelf (shows the shortcut), New Text Card, Start Sequence |
+| Capture | Pause Capture ▸ (For 15 Minutes, For 1 Hour, For 8 Hours, Until Tomorrow, Until Resumed) / Resume Capture; when paused, a disabled line with the resume time in the user's locale time format |
+| App | Settings… (⌘,), Check for Updates…, About Clipshelf |
+| Help | Clipshelf Help (opens the project docs), Report an Issue |
+| Quit | Quit Clipshelf (⌘Q) |
+
+> TODO: pick the final symbol after checking which clipboard symbols ship in SF Symbols for macOS 26.
+
+---
+
+## 8. Settings window
+
+SwiftUI `Settings` scene with a toolbar `TabView`. Each pane is a `Form` with `.formStyle(.grouped)`. Window title equals the pane name; the last pane is restored; minimize and zoom disabled. Opens with ⌘, from the Shelf or the menu bar menu. No Sync pane.
+
+### General
+
+| Control | Type |
+|---|---|
+| Open at login | Toggle (`SMAppService`) |
+| Show in menu bar | Toggle |
+| Click on menu bar icon opens the Shelf | Toggle (disabled when the icon is hidden) |
+| Sound effects | Toggle |
+| Paste behavior | Radio group: "Paste into the active app" / "Copy to the clipboard only" |
+| Paste without formatting by default | Toggle |
+| Accessibility status | Status row (granted / not granted) with "Open System Settings…" button when missing |
+| Keep history for | Slider with tick marks: 1 Day, 1 Week, 1 Month, 1 Year, Forever |
+| Storage summary | Secondary text: item count and disk size |
+| Erase History… | Button, destructive confirmation alert; Board contents are kept |
+
+### Shortcuts
+
+| Control | Type |
+|---|---|
+| Open Shelf | Shortcut recorder |
+| Start Sequence | Shortcut recorder |
+| Paste All Sequence Cards | Shortcut recorder |
+| Next Board / Previous Board | Shortcut recorders |
+| Quick paste modifier | Pop-up: ⌘ / ⌥ / ⌃ |
+| Plain text modifier | Pop-up: ⇧ / ⌥ / ⌃ / ⌘ |
+| Restore Defaults | Button with confirmation |
+
+The recorder rejects combinations already used by the app, by a menu item or by the system, and shows the conflict inline below the field.
+
+### Privacy
+
+| Control | Type |
+|---|---|
+| Ignore passwords and other concealed content | Toggle, on by default |
+| Ignore temporary content from other apps | Toggle, on by default |
+| Ignored apps | `List` with +/− buttons below (system app picker); Passwords is pre-added |
+| Fetch link previews | Toggle with a footnote that it makes a network request per link and may trigger one-time links; off by default (network use: [CLAUDE.md](../CLAUDE.md#decisions)) |
+| Recognize text in images | Toggle (on-device; makes images searchable) |
+| Show the Shelf in screenshots and screen sharing | Toggle, off by default |
+| Clipboard access status | Status row for the system pasteboard permission (see §9) |
+
+### About
+
+App icon, name, version and build, "Free and open-source under GPL-3.0", links: Source Code, Report an Issue, Acknowledgements (third-party licenses). Check for Updates button and an "Automatically check for updates" toggle.
+
+> TODO: decide whether update settings live in About or General.
+> TODO: an Advanced pane (capture polling, size limit) only if real need appears.
+
+---
+
+## 9. Onboarding and permissions
+
+A single window shown on first launch (SwiftUI, standard window chrome, glass toolbar). Three short steps, all skippable. Text below is our own and still a draft.
+
+| Step | Content | Controls |
+|---|---|---|
+| 1. Welcome | App icon; one line: "Everything you copy, one shortcut away." Shows the current Open Shelf shortcut with a recorder to change it. | Continue |
+| 2. Paste directly | Explains that pasting into other apps needs Accessibility permission, and that without it Clipshelf copies the item and the user presses ⌘V. Live status row that turns green when granted (polled while the step is visible). | Open System Settings…, Not Now |
+| 3. Clipboard access | On systems where macOS asks before an app reads the clipboard, explains why Clipshelf needs ongoing access and how to allow it. Live status row. Skipped when the system does not gate access. | Open System Settings…, Not Now |
+| Finish | Two toggles: Open at login, Keep history for (pop-up). Hint: press the shortcut to try it. | Done |
+
+Rules:
+- Never block the app on a missing permission. The Shelf works in copy-only mode without Accessibility.
+- When a paste fails for lack of permission, show one standard alert offering "Open System Settings…" and "Copy Only", with a "Don't ask again" checkbox (suppression button).
+- Permission status is re-checked when the app becomes active; Settings rows update live.
+- No seeded Boards or sample Cards.
+
+> TODO: verify the macOS 15.4+ pasteboard privacy model on macOS 26: the exact `NSPasteboard` access-behavior API names, whether reading `changeCount` alone triggers a prompt, and the name of the System Settings pane, before writing step 3 copy.
+> TODO: verify the System Settings deep-link URLs for Accessibility and pasteboard access on macOS 26.
+
+---
+
+## 10. Accessibility and appearance
+
+| Area | Requirement |
+|---|---|
+| VoiceOver: Card | Label "*Type* from *App*, *relative time*", e.g. "Image from Preview, 2 minutes ago"; value = first line of text, link title, file name or color value; custom actions for Paste, Paste as Plain Text, Copy, Quick Look, Add to Board, Delete. |
+| VoiceOver: Shelf | The Card strip is a list with item count; Board switcher is a tab group; quick-paste badges are exposed as part of the Card label ("number 3") only while visible. |
+| Announcements | Announce capture paused/resumed, item deleted (with undo hint), Sequence item pasted. |
+| Keyboard only | Every action has a key or is in a menu reachable from the keyboard; Tab moves between search field, Board switcher and Card strip; focus ring always visible. Key map in [product.md](product.md). |
+| Reduce Motion | Crossfades replace springs, morphs and slides (see §2 Motion). |
+| Reduce Transparency | Glass falls back to the system opaque material automatically; we add no custom blur that would ignore the setting. |
+| Increase Contrast | Card borders become stronger (system behavior of `separatorColor`); selection ring thickens (proposed +1 pt); Board dots gain an outline. |
+| Liquid Glass appearance | Test with the system Clear and Tinted glass options. |
+| Color independence | Board identity never relies on color alone: the name is always shown next to the dot. Selection uses a ring, not only a fill. |
+| Text size | System text styles only, so the macOS text size setting (where honored) applies. |
+| Light / Dark | Semantic colors only; no hard-coded colors anywhere. Image and color Cards show content as-is in both modes. |
+
+---
+
+## 11. Component mapping
+
+| Element | Component |
+|---|---|
+| Shelf window | `NSPanel` subclass, non-activating, full-size content view, resizable from the top edge, floating level, joins the active Space and full-screen Spaces; `sharingType = .none` unless the privacy toggle is on. Details in [architecture.md](architecture.md). |
+| Shelf background | `NSGlassEffectView` as the panel's content view (or SwiftUI `.glassEffect(.regular, in: .rect(cornerRadius:))` on the root view), concentric corner radius |
+| Shelf content | SwiftUI hosted in `NSHostingView` |
+| Card strip | Horizontal `ScrollView` + `LazyHStack` (or `NSCollectionView` if performance needs it) |
+| Card | SwiftUI view with opaque `background(.background.secondary)` fill and `separatorColor` stroke; no glass |
+| Selection ring | Custom stroke in `Color.accentColor`, `.focusEffectDisabled()` on the Card |
+| Quick-paste badge | `Text` with `.glassEffect(in: .capsule)` |
+| Top bar | `GlassEffectContainer` with `.glassEffectID` per capsule for morphing |
+| Search field | SwiftUI search field with tokens (`.searchable(text:tokens:)` style API) or `NSSearchField` with token attachments if the SwiftUI variant does not work inside the panel |
+| Filters | Button with `.buttonStyle(.glass)` opening a `.popover` |
+| Board capsules | `Button` with `.buttonStyle(.glass)`; selected uses `.glassProminent` |
+| Board color dot | `Circle().fill(Color(nsColor: .systemBlue))` etc. |
+| Empty states | `ContentUnavailableView` |
+| Context menu | `NSMenu` / SwiftUI `.contextMenu` with `Label` items (SF Symbols), `Divider` between sections, destructive role on Delete |
+| Quick Look | `NSPopover` containing `QLPreviewView` (files, images) or SwiftUI previews |
+| Edit sheet | `.sheet` with `Form`, `TextEditor`, `ColorPicker`, standard toolbar |
+| New/Edit Board | Sheet with `TextField` and a swatch row |
+| Sequence panel | Separate `NSPanel` (utility, non-activating) hosting SwiftUI; header in `GlassEffectContainer`; rows in `List` with `.onMove` and `.onDelete` |
+| Menu bar extra | `MenuBarExtra` with `.menuBarExtraStyle(.menu)`, or `NSStatusItem` when left-click-opens-Shelf is on |
+| Symbol effects | `.symbolEffect(.bounce)` on capture |
+| Settings | `Settings` scene, `TabView` with `.tabItem`, `Form` + `.formStyle(.grouped)` |
+| Shortcut recorder | > TODO: Apple has no public recorder control; choose between our own control and an MIT/BSD-licensed package (needs maintainer approval) |
+| Ignored apps list | `List` + `NSOpenPanel` limited to applications |
+| Onboarding | SwiftUI `Window` scene with a step container and standard buttons |
+| Alerts | `.alert` / `NSAlert` with `showsSuppressionButton` |
+| Toast/HUD (paused, copied) | Small glass capsule near the bottom center; > TODO: decide whether we need it at all or rely on the menu bar symbol |
+
+> TODO: verify exact SwiftUI glass API spellings (`.glass`, `.glassProminent`, `glassEffectID`, `glassEffectUnion`) and `NSGlassEffectView` properties against the macOS 26 SDK before implementation.
+
+---
+
+## 12. Open questions
+
+> TODO: optional source-app tint on Card headers (§1) — ship or drop.
+> TODO: other Shelf edges (left/right/top) — later or never.
+> TODO: Quick Look as popover vs system `QLPreviewPanel`.
+> TODO: menu bar left-click default — menu (HIG) vs open Shelf. Current choice: menu, with opt-in.
+> TODO: compact-mode threshold and Card sizes — tune on 13" and 27"+ displays.
+> TODO: a Spotlight-like vertical list layout as an alternative to Cards.
+> TODO: Board "no color" option and maximum Board count in the switcher before it scrolls or collapses into a menu.
+> TODO: multi-display rule when the pointer and the key window are on different displays.
+> TODO: behavior and visuals on macOS releases after 26 (Liquid Glass changes not yet reviewed).

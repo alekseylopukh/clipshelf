@@ -1,0 +1,360 @@
+# Architecture
+
+How Clipshelf is built: subsystems, stack, data model, key flows, permissions, project layout and release pipeline. Product behavior and the keyboard map live in [product.md](product.md); visual design lives in [design.md](design.md). Platform, license, sync and distribution decisions live in [CLAUDE.md](../CLAUDE.md#decisions) and are not repeated here.
+
+Terms: a **Card** is one captured clipboard entry. **History** is the time-ordered list of captured Cards. A **Board** is a named, colored collection of Cards kept outside retention. A **Sequence** is a queue of Cards pasted one after another. The **Shelf** is the panel that shows Cards.
+
+Lines marked `> Decision needed:` wait on the maintainer. Lines marked `> TODO:` are unverified or open.
+
+## 1. Overview
+
+```mermaid
+flowchart LR
+  subgraph System
+    PB[(NSPasteboard.general)]
+    FG[Frontmost app]
+  end
+
+  Mon[Pasteboard monitor<br/>changeCount poll] --> Cap
+  PB -. read .-> Mon
+  subgraph Cap[Capture pipeline]
+    direction TB
+    IG[Ignore rules<br/>apps, types, pause] --> RD[Read + size cap] --> CL[Classify] --> DD[Dedupe by hash]
+  end
+  Cap --> Store[(Store<br/>SQLite + payload files)]
+  Store --> Idx[Search index<br/>FTS5]
+  Store --> Media[Media workers<br/>thumbnails, OCR, link metadata]
+  Media --> Store
+  Media -. OCR text .-> Idx
+
+  Hot[Global hotkeys] --> Shelf[Shelf UI<br/>NSPanel + SwiftUI]
+  Shelf <--> Store
+  Shelf <--> Idx
+  Shelf --> Paste[Paste service<br/>write, Cmd+V, focus]
+  Seq[Sequence] --> Paste
+  Paste -. write .-> PB
+  Paste -. CGEvent .-> FG
+  Paste -. own changeCount .-> Mon
+
+  Settings[Settings<br/>UserDefaults] --> Cap
+  Settings --> Shelf
+  Login[Launch at login<br/>SMAppService] ~~~ Upd[Updater<br/>Sparkle]
+```
+
+| Subsystem | Responsibility | Apple API |
+|---|---|---|
+| Pasteboard monitor | Detect clipboard changes; there is no change notification, so poll `changeCount` | `NSPasteboard.changeCount` ([doc](https://developer.apple.com/documentation/appkit/nspasteboard/changecount)) |
+| Capture pipeline | Apply ignore rules, read all representations, enforce size cap, classify, dedupe | `NSPasteboard` ([doc](https://developer.apple.com/documentation/appkit/nspasteboard)), `NSWorkspace.frontmostApplication` |
+| Store | Card metadata in SQLite, payloads as content-addressed files, retention | GRDB (see §2) |
+| Search index | Full-text search over text, titles, URLs, file names, app names, OCR text | SQLite FTS5 |
+| Thumbnails / preview | Card thumbnails; Space-bar Quick Look | `QLThumbnailGenerator` ([doc](https://developer.apple.com/documentation/quicklookthumbnailing/qlthumbnailgenerator)), ImageIO `CGImageSourceCreateThumbnailAtIndex` ([doc](https://developer.apple.com/documentation/imageio/cgimagesourcecreatethumbnailatindex(_:_:_:))), `NSPopover` + `QLPreviewView` ([doc](https://developer.apple.com/documentation/quicklookui/qlpreviewview)) per [design.md §5](design.md#quick-look) |
+| OCR (optional) | Extract text from image Cards for search, on device | Vision `RecognizeTextRequest` ([doc](https://developer.apple.com/documentation/vision/recognizetextrequest)) |
+| Link metadata (opt-in) | Page title and icon for link Cards; one of the two opt-in network calls in [Decisions](../CLAUDE.md#decisions) | `LPMetadataProvider` ([doc](https://developer.apple.com/documentation/linkpresentation/lpmetadataprovider)) |
+| Shelf UI | Non-activating panel over all Spaces and full-screen apps, SwiftUI content | `NSPanel` ([doc](https://developer.apple.com/documentation/appkit/nspanel)), `.nonactivatingPanel` ([doc](https://developer.apple.com/documentation/appkit/nswindow/stylemask-swift.struct/nonactivatingpanel)), `.fullScreenAuxiliary` ([doc](https://developer.apple.com/documentation/appkit/nswindow/collectionbehavior-swift.struct/fullscreenauxiliary)), `glassEffect` ([doc](https://developer.apple.com/documentation/swiftui/view/glasseffect(_:in:))), `GlassEffectContainer` ([doc](https://developer.apple.com/documentation/swiftui/glasseffectcontainer)), `NSGlassEffectView` ([doc](https://developer.apple.com/documentation/appkit/nsglasseffectview)) |
+| Paste service | Write a Card to the pasteboard, synthesize Cmd+V into the target app | `AXIsProcessTrustedWithOptions` ([doc](https://developer.apple.com/documentation/applicationservices/1459186-axisprocesstrustedwithoptions)), `CGEvent` |
+| Global hotkeys | Open Shelf, start Sequence, other user-bound shortcuts | Carbon `RegisterEventHotKey` (still the only public API) |
+| Settings | Preferences in `UserDefaults`; SwiftUI `Settings` scene | — |
+| Launch at login | Register the main app as a login item | `SMAppService.mainApp` ([doc](https://developer.apple.com/documentation/servicemanagement/smappservice)) |
+| Updater | Signed appcast, in-place update; the other opt-in network call in [Decisions](../CLAUDE.md#decisions) | Sparkle 2 |
+
+Process model: one agent app (`LSUIElement = YES`), not sandboxed, Hardened Runtime on (required for notarization). No helper processes, XPC services or login-item helper.
+
+Concurrency (Swift 6 strict): the monitor and all UI are `@MainActor`. Reading pasteboard data happens on the main actor (AppKit requirement), then hashing, classification and DB writes move off the main actor. GRDB `DatabasePool` (WAL) gives concurrent reads and serialized writes, so no extra locking layer is needed.
+
+## 2. Stack
+
+| Area | Choice | Why | Alternatives considered |
+|---|---|---|---|
+| Language | Swift 6, strict concurrency | Current toolchain; data-race checks matter for a background capture pipeline | Swift 5 mode: no reason on a new codebase |
+| Min OS | macOS 26 | Fixed in [Decisions](../CLAUDE.md#decisions); Liquid Glass without fallbacks | — |
+| UI | AppKit `NSPanel` shell + `NSHostingView` with SwiftUI content; SwiftUI for Settings and onboarding | Pure SwiftUI `Window` cannot cleanly be non-activating and `fullScreenAuxiliary`; non-activating is what keeps the target app frontmost for paste | All-AppKit: more code, no benefit for card grids |
+| Persistence | **GRDB.swift + SQLite FTS5**, payloads as files | Append-heavy history with tens of thousands of rows, prefix full-text search with diacritic folding, explicit versioned migrations, cheap bulk deletes for retention, observation for live UI | **SwiftData:** its main advantage was CloudKit sync, which we dropped. What remains is less code and `@Query`, against no FTS (search would be `LIKE`/in-memory fuzzy), weaker control over migrations and bulk deletes, unmeasured performance at 100k rows. **Core Data:** mature, but more boilerplate and still no FTS5 |
+| Hotkeys | sindresorhus/KeyboardShortcuts | Carbon wrapper with a SwiftUI recorder and conflict handling; used by Maccy | soffes/HotKey (no recorder); own Carbon wrapper (~200 lines plus a recorder we would have to build) |
+| Key codes for Cmd+V | Own code: `TISCopyCurrentASCIICapableKeyboardLayoutInputSource` + `UCKeyTranslate` | ~30 lines of Apple API; handles non-QWERTY layouts | Clipy/Sauce (MIT) does the same with more edge cases covered |
+| Paste | Pasteboard write + `CGEvent` Cmd+V, recipe from Maccy/Clipy (MIT) | Proven across layouts; left-Cmd device flag fix from Flycut | Copy-only mode (always available as fallback) |
+| OCR | Vision `RecognizeTextRequest`, `.accurate`, background | On-device, Swift-native API | `VNRecognizeTextRequest` (legacy API, same engine) |
+| Updates | Sparkle 2 | Standard for Developer ID apps; EdDSA-signed appcast; simple when not sandboxed | Manual "new version" check against GitHub Releases API (still a network call, no in-place install) |
+| Logging | `os.Logger` | System, no dependency; never interpolate clipboard content (§5) | swift-log: adds a dependency for nothing |
+| Tests | Swift Testing (`import Testing`) | Ships with Swift 6 toolchain | XCTest for UI tests only |
+
+> Decision needed: GRDB as the persistence layer (it is a third-party package, so [code-standards.md](engineering/code-standards.md#architecture) requires approval). Recommendation: yes. Tradeoff: one MIT dependency in exchange for FTS5 and explicit migrations; SwiftData is the zero-dependency path with worse search.
+
+> Decision needed: KeyboardShortcuts vs. our own Carbon wrapper. Recommendation: KeyboardShortcuts; the recorder UI alone justifies it.
+
+Sparkle is configured to match the network rule in [Decisions](../CLAUDE.md#decisions): automatic checks stay off until the user opts in.
+
+## 3. Data model
+
+Local-only. No sync fields, no UUIDs, no tombstones: integer row IDs are enough. SQLite holds metadata and the search index; pasteboard payloads live on disk.
+
+### 3.1 Files
+
+```text
+~/Library/Application Support/Clipshelf/      (0700)
+  clipshelf.sqlite (+ -wal, -shm)
+  Payloads/<aa>/<sha256>                       content-addressed representation data
+  Thumbnails/<sha256>.png                      keyed by card content hash
+```
+
+> TODO: confirm the directory name once the bundle ID is chosen.
+
+### 3.2 Schema
+
+```text
+card
+  id               INTEGER PRIMARY KEY
+  kind             INTEGER NOT NULL      -- 1 text, 2 link, 3 image, 4 file, 5 color, 6 unknown
+  content_hash     BLOB NOT NULL UNIQUE  -- sha256, see below
+  title            TEXT                  -- user-set; NULL = derived from content
+  preview_text     TEXT                  -- first ~1000 chars for the card face
+  metadata         TEXT                  -- JSON, per kind: url, page title, pixel size,
+                                         --   file count/total size, color value, char/word/line counts
+  source_app_id    INTEGER REFERENCES source_app(id) ON DELETE SET NULL
+  byte_size        INTEGER NOT NULL
+  created_at       REAL NOT NULL
+  last_copied_at   REAL                  -- non-NULL = in History; drives order and retention
+  board_id         INTEGER REFERENCES board(id) ON DELETE SET NULL
+  board_position   REAL                  -- fractional index for drag reorder
+  ocr_state        INTEGER NOT NULL DEFAULT 0   -- 0 n/a, 1 pending, 2 done, 3 failed
+  CHECK (last_copied_at IS NOT NULL OR board_id IS NOT NULL)
+  INDEX card_history ON card(last_copied_at DESC) WHERE last_copied_at IS NOT NULL
+  INDEX card_board   ON card(board_id, board_position) WHERE board_id IS NOT NULL
+
+representation                           -- one row per (pasteboard item, type), full fidelity
+  card_id          INTEGER NOT NULL REFERENCES card(id) ON DELETE CASCADE
+  item_index       INTEGER NOT NULL      -- index of the NSPasteboardItem
+  type_index       INTEGER NOT NULL      -- original type order within the item
+  uti              TEXT NOT NULL
+  inline_data      BLOB                  -- small payloads (< 4 KB)
+  payload_hash     TEXT                  -- file name in Payloads/
+  byte_size        INTEGER NOT NULL
+  PRIMARY KEY (card_id, item_index, type_index)
+  CHECK ((inline_data IS NULL) <> (payload_hash IS NULL))
+  INDEX representation_payload ON representation(payload_hash) WHERE payload_hash IS NOT NULL
+
+board
+  id INTEGER PRIMARY KEY, name TEXT NOT NULL, color TEXT NOT NULL  -- system color name
+  position REAL NOT NULL, created_at REAL NOT NULL
+
+source_app
+  id INTEGER PRIMARY KEY, bundle_id TEXT NOT NULL UNIQUE, name TEXT NOT NULL
+  -- icon resolved at runtime via NSWorkspace, not stored
+
+card_search  FTS5(title, body, url, file_names, ocr_text, app_name,
+                  tokenize = 'unicode61 remove_diacritics 2', prefix = '2 3')
+  -- rowid = card.id; regular (not contentless) so snippet() works and deletes are plain
+```
+
+Rules:
+- **content_hash:** SHA-256 over the sorted `(uti, data)` pairs after dropping volatile types (source markers, our own marker type, Office OLE link types). The same text copied from two apps dedupes; rich and plain versions of the same text do not.
+- **History vs. Board:** a Card is in History when `last_copied_at` is set, on a Board when `board_id` is set, or both. A Card with neither is deleted. A Card is on at most one Board; adding it to another Board moves it.
+- **Search index** is written by app code in the same transaction as the Card (the body comes from payloads, so SQL triggers cannot build it). OCR text updates the row later.
+- **Settings** (retention, ignore lists, toggles, shortcuts) live in `UserDefaults`, not in the database.
+- **Files** are stored by reference (`public.file-url` representation), not copied, per [product.md §4.1](product.md#41-capture) (including its open bookmark question).
+
+> TODO: what happens when editing a Card's text produces a `content_hash` that already exists (merge into the existing Card vs. allow duplicates).
+
+### 3.3 Payload storage
+
+- Representations of 4 KB or more go to `Payloads/`, named by SHA-256 of their bytes. Identical payloads across Cards share one file.
+- Write order: write to a temp file, rename into place, then insert rows. A crash leaves an orphan file (collected later), never a row that points to a missing file.
+- Garbage collection runs after retention cleanup: delete files in `Payloads/` and `Thumbnails/` with no referencing row.
+- Size cap: representations above the cap are dropped per type; if nothing is left, the capture is skipped. The cap value is a pending decision in [product.md §4.1](product.md#41-capture).
+
+> TODO: whether there is a total History size cap.
+
+### 3.4 Migrations
+
+- GRDB `DatabaseMigrator` with named, append-only migrations (`v1_initial`, `v2_…`). A migration is never edited after it ships in a release.
+- Migrations run at launch before any UI shows. On failure the app shows an error and does not touch the database file.
+- Each migration has a test that builds the previous schema with synthetic rows, migrates, and checks the result.
+- `UserDefaults` key changes get a one-shot migration keyed by a stored settings version.
+
+## 4. Key flows
+
+### 4.1 Capture
+
+1. A main-run-loop timer (0.5 s, tolerance 0.1 s) reads `NSPasteboard.general.changeCount`. Unchanged: return.
+2. Apply the skip rules in the order of [product.md §4.1](product.md#41-capture), rule 2: paused; own write (count equals the one recorded by our last write, or our marker type is present); no frontmost app (`NSWorkspace.shared.frontmostApplication`); ignored app; concealed types and password-manager sources when the concealed-content setting is on; `TransientType` / `AutoGeneratedType` when the temporary-content setting is on (see §5).
+3. Read `pasteboardItems` → `types` → `data(forType:)`. Drop types over the size cap.
+4. Classify in the order of [product.md §4.2](product.md#42-type-detection): file URL → file; image type → image; trimmed string that is a single URL → link; string that matches the hex rule → color; any text → text; otherwise unknown.
+5. Compute `content_hash`. If a Card with that hash exists: set `last_copied_at = now` (this also brings a Board-only Card back into History) and stop.
+6. Otherwise write payloads, then insert `card`, `representation` and `card_search` rows in one transaction.
+7. Enqueue background work: thumbnail; OCR for images if enabled; link metadata if enabled.
+8. Store the handled `changeCount` in `UserDefaults` so a relaunch does not recapture the current clipboard.
+
+> TODO: handling of `com.apple.is-remote-clipboard` (Universal Clipboard) and whether `org.nspasteboard.source` should override the frontmost app as the source.
+> TODO: whether a short debounce is needed for apps that write the pasteboard in several steps, and its value.
+
+### 4.2 Paste
+
+1. When the Shelf opens, record the frontmost app as the paste target. The Shelf is non-activating, so the target stays frontmost.
+2. On paste: `clearContents()`, write every stored representation in original item and type order, and add our marker type. For "paste as plain text", write only `public.utf8-plain-text`. Record the resulting `changeCount` so capture ignores it. Whether a paste also updates `last_copied_at` is open in [product.md §4.3](product.md#43-dedupe-and-re-copy).
+3. Hide the Shelf.
+4. If the target app is no longer frontmost, activate it and wait for activation.
+5. If `AXIsProcessTrusted()`: post Cmd+V via `CGEvent`: source `.combinedSessionState`, local events suppressed during the post, key code for "V" from the current ASCII-capable layout, Cmd flag plus the left-Cmd device bit, posted to `.cgSessionEventTap`.
+6. Without Accessibility: the Card stays on the pasteboard (copy-only); the first time, explain how to enable direct paste.
+
+Multiple selected Cards: text only → one text joined with `\n`; mixed kinds → one write with several `NSPasteboardItem`s; files → one item list with several file URLs. Card order follows the open decision in [product.md §4.12](product.md#412-multi-select).
+
+> TODO: whether to restore the user's previous clipboard after a paste, and whether to use `prepareForNewContents(with: .currentHostOnly)` ([doc](https://developer.apple.com/documentation/appkit/nspasteboard/prepareforcontents(with:))) to keep pastes out of Universal Clipboard.
+
+### 4.3 Quick paste
+
+While the Shelf is key, Cmd+1…9 runs the paste flow on the Nth Card counted from the first visible Card. Number badges appear while the modifier is held. This is local key handling in the panel; no global hook.
+
+### 4.4 Sequence
+
+1. The Sequence hotkey opens the Sequence window. If triggered from another app, synthesize Cmd+C there; the next captures are appended to the Sequence (front or back per the direction setting) while the window is open.
+2. The head Card is placed on the pasteboard ahead of time. The user pastes with their normal Cmd+V; we do not intercept it.
+3. When the paste is detected, the head is removed and the next Card is placed on the pasteboard. After the last Card, the window closes.
+4. "Paste all": text Cards joined with `\n`, one paste.
+5. Sequence state (ordered Card IDs, direction, plain-text flag, undo stack) lives in memory. Cards stay in History.
+
+Paste detection, to be prototyped:
+- (a) lazy data provider: put the head on the pasteboard via `NSPasteboardItemDataProvider`; the callback fires when the target app reads it. No extra permission.
+- (b) fallback: global key-down monitor filtered to Cmd+V (works because Accessibility is already granted).
+
+> TODO: prototype (a); check that a target app reading the pasteboard on focus or on menu validation does not advance the Sequence early.
+
+### 4.5 Retention cleanup
+
+Runs at launch, hourly, and when the retention setting is lowered (after confirmation in the UI).
+
+1. `cutoff = now − retention`.
+2. Board Cards leave History: `UPDATE card SET last_copied_at = NULL WHERE board_id IS NOT NULL AND last_copied_at < cutoff`.
+3. Delete expired History Cards: `DELETE FROM card WHERE board_id IS NULL AND last_copied_at < cutoff`, with matching `card_search` rows, in one transaction. `representation` rows cascade.
+4. Garbage-collect payload and thumbnail files (§3.3).
+
+"Erase History" is the same with `cutoff = +∞`. Deleting a Board sets `board_id = NULL` on its Cards (FK rule), then deletes Cards with `last_copied_at IS NULL`.
+
+## 5. Permissions and privacy
+
+| Topic | Design |
+|---|---|
+| Accessibility | Needed only for direct paste (synthesized Cmd+V) and for Cmd+C when starting a Sequence. Request via `AXIsProcessTrustedWithOptions` with the prompt option on first direct paste, not at launch. Re-check on app activation. The grant is tied to the code signature: dev builds must be signed with a stable certificate or TCC asks again on every build. |
+| Pasteboard access (macOS 15.4+) | `NSPasteboard.accessBehavior` ([doc](https://developer.apple.com/documentation/appkit/nspasteboard/accessbehavior-swift.enum)) is `.default`, `.ask`, `.alwaysAllow` or `.alwaysDeny`. A clipboard manager reads programmatically in the background, so it needs `.alwaysAllow`. Check at launch and on wake; on `.ask` or `.alwaysDeny`, show an onboarding card with an "Open System Settings…" button ([design.md §9](design.md#9-onboarding-and-permissions)); whether a direct link to the pane exists is open in [product.md §4.1](product.md#41-capture). Use `detectedPatterns(for:)` for alert-free sniffing where it is enough. |
+| Screen sharing | The Shelf and Sequence windows set `sharingType = .none` by default, with a setting to show them. |
+| Concealed and transient content | Skipped per the Privacy toggles in [product.md §4.1](product.md#41-capture) (both on by default): nspasteboard.org `ConcealedType` and 1Password legacy types under the concealed-content setting; `TransientType` and `AutoGeneratedType` under the temporary-content setting. Ignored-apps default and the list of password managers treated as concealed sources (Keychain Access among them) are defined there too. |
+| Logging | Clipboard content, previews, OCR text, URLs and file names are never logged, printed, put in crash reports or test fixtures. Logs carry only events, counts, sizes and UTIs. No third-party crash reporting. |
+| Network | Only the two opt-in calls in [Decisions](../CLAUDE.md#decisions): link metadata and Sparkle update checks (§2). |
+| Spotlight / Shortcuts | History is not exported to Spotlight. |
+| Data at rest | Database and payload files in a 0700 directory, protected by FileVault; no app-level encryption. |
+
+> TODO: is pasteboard privacy enforced by default on macOS 26/27, and does reading `changeCount` or `types` (not contents) trigger the alert? Only third-party reports exist (see the [mjtsai summary](https://mjtsai.com/blog/2025/05/12/pasteboard-privacy-preview-in-macos-15-4)). Test on a clean user account.
+> TODO: verify that ScreenCaptureKit-based recorders honor `sharingType = .none` on macOS 26.
+> TODO: which TCC bucket `CGRequestPostEventAccess()` ([doc](https://developer.apple.com/documentation/coregraphics/cgrequestposteventaccess())) maps to; if it is narrower than Accessibility it could replace it for paste.
+> TODO: app-level encryption of the store: out of scope unless the maintainer wants it.
+
+## 6. Project layout, testing, CI, releases
+
+### 6.1 Layout
+
+A thin Xcode app target plus one local Swift package with feature modules. Xcode owns signing, entitlements, Info.plist, assets and the archive; the package owns code and is testable with `swift test`.
+
+```text
+Clipshelf.xcodeproj
+App/                        app target: entry point, AppDelegate, menu bar item, Settings scene,
+                            onboarding, hotkeys, launch at login, Sparkle wiring
+Packages/ClipshelfKit/
+  Package.swift
+  Sources/
+    Store/                  GRDB schema, migrations, records, retention, payload files, search queries
+    Capture/                monitor, ignore rules, reader, classifier, hashing
+    Media/                  thumbnails, OCR, link metadata
+    Pasting/                paste service, key codes, Sequence state machine
+    DesignSystem/           design tokens (spacing, radii, sizes from design.md), shared SwiftUI components
+    ShelfUI/                NSPanel, SwiftUI Shelf, Cards, search field, Quick Look
+  Tests/                    one test target per module
+scripts/release/            release helpers (DMG, appcast)
+```
+
+This is the module list; other docs link here instead of repeating it.
+
+Dependency direction: `ShelfUI` → `DesignSystem`, `Pasting`, `Media`, `Store`; `Capture` → `Store`; the app target's Settings and onboarding use `DesignSystem`; `Store` and `DesignSystem` depend on nothing in the package.
+
+> Decision needed: plain Xcode project + local SPM package (recommended, no extra tools) vs. a generated project (XcodeGen/Tuist) to avoid `.pbxproj` merge conflicts.
+
+### 6.2 Testing
+
+- **Unit (Swift Testing):** classifier, hashing and dedupe rules, ignore rules, size cap, retention SQL, Board deletion, FTS queries (prefix, diacritics), Sequence state machine, migrations.
+- **Pasteboard tests** use private named pasteboards (`NSPasteboard(name:)`), never `.general`.
+- **Fixtures are synthetic.** Never build test data from real clipboard content.
+- **Performance:** seed 100k synthetic Cards, measure search latency and launch time.
+- **Manual checklist per release:** direct paste into a native app, a browser, a terminal and an Electron app; non-QWERTY layout; full-screen Space; second display; Accessibility revoked; screen recording hides the Shelf.
+
+> TODO: set the performance budget (search latency, launch time) once there is a baseline.
+
+### 6.3 CI (GitHub Actions)
+
+- On pull request and push to `main`: macOS runner, select the Xcode version, `xcodebuild build` and `xcodebuild test` (ad-hoc signed; no secrets), `scripts/lint.sh` (SwiftFormat + SwiftLint).
+- Cache SPM checkouts.
+
+> TODO: confirm a GitHub-hosted runner image with the Xcode that has the macOS 26 SDK, and its label.
+
+Formatting and linting use SwiftFormat and SwiftLint, the pair most popular macOS apps use. The rules are in [docs/engineering/code-standards.md](engineering/code-standards.md).
+
+### 6.4 Release pipeline
+
+Triggered by a maintainer pushing tag `vX.Y.Z` on `main` (see [CONTRIBUTING.md](../CONTRIBUTING.md#releases)).
+
+1. Import the Developer ID Application certificate from repository secrets into a temporary keychain.
+2. Set `CFBundleShortVersionString` from the tag; build number from the run number.
+3. `xcodebuild archive`, then `-exportArchive` with the Developer ID method and Hardened Runtime.
+4. Notarize with `xcrun notarytool submit --wait` using an App Store Connect API key from secrets; `xcrun stapler staple` the app.
+5. Package: `ditto -c -k --keepParent` for the zip (Sparkle feed) and `hdiutil` for the DMG; sign, notarize and staple the DMG.
+6. Sign the zip with Sparkle's `sign_update` (EdDSA private key from secrets) and regenerate the appcast with `generate_appcast`.
+7. `gh release create vX.Y.Z --generate-notes` (grouped by [.github/release.yml](../.github/release.yml)), attach DMG and zip.
+8. Publish the appcast.
+
+Secrets never enter the repository; only GitHub Actions secrets.
+
+> TODO: where the appcast is hosted (the author's site vs. GitHub Pages) and its URL.
+> TODO: Homebrew cask: not decided.
+
+## 7. Dependencies and references
+
+### 7.1 Third-party dependencies
+
+All are added only with maintainer approval.
+
+| Package | Use | License | GPL-3.0 compatible |
+|---|---|---|---|
+| [groue/GRDB.swift](https://github.com/groue/GRDB.swift) | SQLite, FTS5, migrations | MIT | Yes |
+| [sindresorhus/KeyboardShortcuts](https://github.com/sindresorhus/KeyboardShortcuts) | Global hotkeys, recorder | MIT | Yes |
+| [sparkle-project/Sparkle](https://github.com/sparkle-project/Sparkle) | Updates | MIT-style (GitHub reports NOASSERTION) | Expected yes |
+
+Optional, only if our own code proves insufficient: [Clipy/Sauce](https://github.com/Clipy/Sauce) (MIT, layout-aware key codes).
+
+Notices of every dependency and of any copied code go into an Acknowledgements screen in About and into the source file headers of copied code.
+
+> TODO: read Sparkle's `LICENSE` file, including licenses of bundled third-party code, and confirm compatibility.
+
+### 7.2 Projects to learn from
+
+| Project | License | Worth reading | Code reuse |
+|---|---|---|---|
+| [p0deje/Maccy](https://github.com/p0deje/Maccy) | MIT | Polling, CGEvent paste, floating panel, one-row-per-type storage, sequential paste queue | Yes, with notice |
+| [Clipy/Clipy](https://github.com/Clipy/Clipy) | MIT | Paste service | Yes, with notice |
+| [TermiT/Flycut](https://github.com/TermiT/Flycut) | MIT | Left-Cmd flag fix ([PR #18](https://github.com/TermiT/Flycut/pull/18)) | Yes, with notice |
+| [momenbasel/pesty](https://github.com/momenbasel/pesty) | MIT | Bottom-shelf UX, Boards | Yes, with notice |
+| [sindresorhus/Pasteboard-Viewer](https://github.com/sindresorhus/Pasteboard-Viewer) | MIT | Dev tool to inspect real pasteboard types | Tool only |
+| [mobrava/Clipbara](https://github.com/mobrava/Clipbara) | GPL-3.0 | Card UI, Quick Look, direct-paste build | Yes, with notice |
+| [lifedever/PasteMemo-app](https://github.com/lifedever/PasteMemo-app), [SwallOwDili/OpenPaste](https://github.com/SwallOwDili/OpenPaste) | GPL-3.0 | Ideas | Yes, with notice |
+| [openpaste/openpaste](https://github.com/openpaste/openpaste) | AGPL-3.0 | — | **No** |
+| [yuzeguitarist/Deck](https://github.com/yuzeguitarist/Deck) | AGPL-3.0 + All Rights Reserved | — | **No** |
+| [vladimir-ikryanov/ClipBook](https://github.com/vladimir-ikryanov/ClipBook) | Custom restricted | — | **No** |
+| [appdev/ClipDock](https://github.com/appdev/ClipDock) | None | — | **No** |
+
+> TODO: check whether each GPL-3.0 project is "only" or "or later" before copying code, and match our LICENSE header accordingly.
+
+## 8. Open questions
+
+> TODO: pasteboard-privacy enforcement on macOS 26/27 and whether polling `changeCount` triggers the alert (§5).
+> TODO: Sequence paste detection: prototype the lazy data provider (§4.4).
+> TODO: Quick Look popover (`NSPopover` + `QLPreviewView`, [design.md §5](design.md#quick-look)) inside a non-activating panel; prototype early.
+> TODO: Shelf window level and `collectionBehavior` that work over full-screen apps on every Space without stealing focus.
+> TODO: Universal Clipboard: capture remote copies or not; keep our pastes local or not (§4.1, §4.2).
+> TODO: total storage cap (§3.3). Size cap and polling interval are open in [product.md §4.1](product.md#41-capture).
+> TODO: GRDB vs. SwiftData performance at 100k Cards was never measured; measure before the schema freezes.
+> TODO: bundle ID, Application Support folder name, appcast URL.
