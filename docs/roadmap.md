@@ -36,6 +36,7 @@ Not maintainer decisions. They are the doc's current text or the simplest choice
 | WD-22 | Shelf size and Dock auto-hide ([design §2](design.md#placement-and-size)) | Minimum height 160 pt (one compact row), default 300 pt, maximum 40% of the visible height; placement uses the display's visible frame, so an auto-hidden Dock is not avoided |
 | WD-23 | Frontmost app without a bundle ID ([product §4.1](product.md#41-capture) rule 3) | Counts as no frontmost app, so the capture is skipped |
 | WD-24 | Database fails to open at launch ([architecture §3.4](architecture.md#34-migrations)) | An alert shows the error with one "Quit Clipsy" button, then the app quits; no files are moved or deleted |
+| WD-25 | Plain-text paste of a Card without a plain string ([architecture §4.2](architecture.md#42-paste)) | Writes every representation, as a normal paste would |
 
 ## Rules for every task
 
@@ -266,12 +267,13 @@ What exists:
 ## M4. Pasting
 
 ### T4.1 Pasteboard writer and own-write ledger
-- Module(s): Pasting, App
+- Module(s): Pasting
 - Depends on: T1.5, T2.5
-- Spec: [product §4.5](product.md#45-paste-mechanics) step 2, [architecture §4.2](architecture.md#42-paste), WD-17, WD-21
-- Deliverable: writer that clears the pasteboard, writes all representations in item and type order (or plain text only), adds the marker, records the change count; App wires the ledger into the capture monitor
+- Spec: [product §4.5](product.md#45-paste-mechanics) step 2, [architecture §4.2](architecture.md#42-paste), WD-17, WD-21, WD-25
+- Deliverable: `PasteboardWriter` that clears the pasteboard, writes all representations in item and type order (or plain text only), adds the marker, records the change count and answers `isOwnWrite(_:)`; the app wiring moved to T4.3, the first task that writes from the app (the monitor is started by T2.6)
 - Acceptance: tests on a private pasteboard: `writesAllRepresentationsInOrder`, `plainWritesOnlyString`, `markerIsPresent`, `ledgerMatchesChangeCount`
 - Size: S
+- Status: done
 
 ### T4.2 Synthesized ⌘V and Accessibility
 - Module(s): Pasting
@@ -283,10 +285,10 @@ What exists:
 - Size: M
 
 ### T4.3 Paste flow from the shelf
-- Module(s): ShelfUI, Pasting
-- Depends on: T4.2, T3.4
+- Module(s): ShelfUI, Pasting, App
+- Depends on: T4.2, T3.4, T2.6
 - Spec: [product §4.5](product.md#45-paste-mechanics), [design §9 Rules](design.md#9-onboarding-and-permissions), WD-6, WD-8
-- Deliverable: `PasteCoordinator`: Return and double-click paste, ⇧ for plain, ⌘C copies, copy-only setting, plain-by-default setting; hide shelf, reactivate target if needed, then post ⌘V; first paste without Accessibility shows the alert with "Don't ask again"
+- Deliverable: the app creates one `PasteboardWriter` and passes its `isOwnWrite` to the capture monitor in place of T2.6's placeholder; `PasteCoordinator`: Return and double-click paste, ⇧ for plain, ⌘C copies, copy-only setting, plain-by-default setting; hide shelf, reactivate target if needed, then post ⌘V; first paste without Accessibility shows the alert with "Don't ask again"
 - Acceptance: tests with fakes: `copyOnlyNeverPostsKeystroke`, `missingTrustAsksOnce`, `shiftForcesPlain`, `pasteHidesShelfBeforeKeystroke`
 - Human check: the alert appears once with Accessibility revoked; afterwards Return copies only
 - Size: M

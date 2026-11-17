@@ -190,7 +190,7 @@ Rules:
 ### 4.2 Paste
 
 1. When the Shelf opens, record the frontmost app as the paste target. The Shelf is non-activating, so the target stays frontmost.
-2. On paste: `clearContents()`, write every stored representation in original item and type order, and add our marker type. For "paste as plain text", write only `public.utf8-plain-text`. Record the resulting `changeCount` so capture ignores it. Whether a paste also updates `last_copied_at` is open in [product.md §4.3](product.md#43-dedupe-and-re-copy).
+2. On paste: `clearContents()`, write every stored representation in original item and type order, and add our marker type. For "paste as plain text", write only `public.utf8-plain-text`; a Card without it is written in full (WD-25 in [roadmap.md](roadmap.md)). Record the resulting `changeCount` so capture ignores it. Whether a paste also updates `last_copied_at` is open in [product.md §4.3](product.md#43-dedupe-and-re-copy).
 3. Hide the Shelf.
 4. If the target app is no longer frontmost, activate it and wait for activation.
 5. If `AXIsProcessTrusted()`: post Cmd+V via `CGEvent`: source `.combinedSessionState`, local events suppressed during the post, key code for "V" from the current ASCII-capable layout, Cmd flag plus the left-Cmd device bit, posted to `.cgSessionEventTap`.
