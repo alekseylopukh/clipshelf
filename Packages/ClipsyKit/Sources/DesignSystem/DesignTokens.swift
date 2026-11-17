@@ -57,6 +57,9 @@ public enum DesignTokens {
     public static let selectionRingGap: CGFloat = 2
     public static let boardDotSize: CGFloat = 8
     public static let boardDotOutlineWidth: CGFloat = 1
+    public static let boardSwatchSize: CGFloat = 20
+    public static let boardSheetWidth: CGFloat = 400
+    public static let boardSheetPadding: CGFloat = 20
     public static let badgeSize: CGFloat = 20
     public static let renameFieldWidth: CGFloat = 220
 

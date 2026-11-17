@@ -367,6 +367,8 @@ Decided (2026-11-17): the default Sequence shortcut is ⇧⌘C (rebindable). It 
 | Move focus between search and cards | Tab; ↓ from the search field | MVP |
 | Previous / next tab (History, boards) | ⌘← / ⌘→ (customizable) | MVP |
 | New board | ⇧⌘N | MVP |
+| Edit current board | ⇧⌘E | MVP |
+| Delete current board | ⇧⌘⌫ | MVP |
 | Pause / resume capture | ⌘T | MVP |
 | Preview | Space | v1 |
 | Rename | ⌘R | v1 |

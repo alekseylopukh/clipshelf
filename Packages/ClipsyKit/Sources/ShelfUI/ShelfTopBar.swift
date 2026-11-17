@@ -20,10 +20,8 @@ struct ShelfTopBar: View {
                             Label("History", systemImage: "clock")
                         }
                         ForEach(model.boards) { board in
-                            TabCapsule(isSelected: model.tab == .board(id: board.id)) {
+                            BoardCapsule(board: board, isSelected: model.tab == .board(id: board.id)) {
                                 model.showTab(.board(id: board.id))
-                            } label: {
-                                BoardLabel(board: board)
                             }
                         }
                     }
@@ -87,6 +85,33 @@ private struct TabCapsule<Title: View>: View {
         } else {
             Button(action: action, label: label)
                 .buttonStyle(.glass)
+        }
+    }
+}
+
+private struct BoardCapsule: View {
+    let board: Board
+    let isSelected: Bool
+    let action: () -> Void
+
+    @Environment(BoardEditor.self) private var editor
+
+    var body: some View {
+        TabCapsule(isSelected: isSelected, action: action) {
+            BoardLabel(board: board)
+        }
+        .contextMenu {
+            BoardContextMenu(board: board)
+        }
+        .draggable(BoardReference(boardID: board.id)) {
+            BoardLabel(board: board)
+        }
+        .dropDestination(for: BoardReference.self) { references, _ in
+            guard let reference = references.first, reference.boardID != board.id else { return false }
+            Task {
+                await editor.move(reference.boardID, onto: board.id)
+            }
+            return true
         }
     }
 }

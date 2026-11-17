@@ -22,6 +22,7 @@ public final class ShelfModel {
     public private(set) var boards: [Board] = []
     var query = ""
     private var hasLoadedCards = false
+    private var hasLoadedBoards = false
     public private(set) var selection: Set<Int64> = []
     public private(set) var observationError: (any Error)?
     public private(set) var isQuickPasteModifierHeld = false
@@ -247,9 +248,12 @@ public final class ShelfModel {
         selectFirstIfPending()
     }
 
+    /// after the first list, only a board that disappears leaves its tab, because a new one can lag a list behind
     func receiveBoards(_ newBoards: [Board]) {
+        let previousIDs = hasLoadedBoards ? Set(boards.map(\.id)) : nil
         boards = newBoards
-        if case let .board(id) = tab, !newBoards.contains(where: { $0.id == id }) {
+        hasLoadedBoards = true
+        if case let .board(id) = tab, !newBoards.contains(where: { $0.id == id }), previousIDs?.contains(id) ?? true {
             showTab(.history)
         }
     }

@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 public enum BoardColor: String, CaseIterable, Sendable {
@@ -18,6 +19,18 @@ public enum BoardColor: String, CaseIterable, Sendable {
         case .blue: .blue
         case .purple: .purple
         case .gray: .gray
+        }
+    }
+
+    public var nsColor: NSColor {
+        switch self {
+        case .red: .systemRed
+        case .orange: .systemOrange
+        case .yellow: .systemYellow
+        case .green: .systemGreen
+        case .blue: .systemBlue
+        case .purple: .systemPurple
+        case .gray: .systemGray
         }
     }
 }

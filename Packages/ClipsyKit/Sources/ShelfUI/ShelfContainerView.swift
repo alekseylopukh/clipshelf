@@ -10,8 +10,10 @@ struct ShelfContainerView: View {
     let onResizeEnded: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(BoardEditor.self) private var boardEditor
 
     var body: some View {
+        @Bindable var boardEditor = boardEditor
         ZStack {
             if presentation.isVisible {
                 VStack(spacing: 0) {
@@ -31,6 +33,9 @@ struct ShelfContainerView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .sheet(item: $boardEditor.draft) { draft in
+            BoardEditorSheet(isNew: draft.boardID == nil)
+        }
         .task(id: model.tab) {
             await model.observeCards()
         }
@@ -52,6 +57,14 @@ struct ShelfContainerView: View {
         observeBoards: { AsyncThrowingStream { $0.finish() } }
     )
     model.receive(CardSummary.previewCards)
+    let boardEditor = BoardEditor(
+        model: model,
+        create: { _, _ in 0 },
+        rename: { _, _ in },
+        recolor: { _, _ in },
+        move: { _, _ in },
+        delete: { _ in }
+    )
     return ShelfContainerView(
         presentation: presentation,
         model: model,
@@ -60,6 +73,7 @@ struct ShelfContainerView: View {
         onResizeEnded: {}
     )
     .environment(CardActions())
+    .environment(boardEditor)
     .frame(width: 800, height: 300)
     .padding()
 }

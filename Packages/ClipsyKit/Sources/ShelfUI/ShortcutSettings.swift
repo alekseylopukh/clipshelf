@@ -215,6 +215,14 @@ public final class ShortcutSettings {
                 String(localized: "New Board", comment: "Name of a shelf shortcut in a conflict message")
             ),
             (
+                .init(.e, modifiers: [.command, .shift]),
+                String(localized: "Edit Board", comment: "Name of a shelf shortcut in a conflict message")
+            ),
+            (
+                .init(.delete, modifiers: [.command, .shift]),
+                String(localized: "Delete Board", comment: "Name of a shelf shortcut in a conflict message")
+            ),
+            (
                 .init(.t, modifiers: .command),
                 String(localized: "Pause Capture", comment: "Name of a shelf shortcut in a conflict message")
             ),

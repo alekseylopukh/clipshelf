@@ -142,15 +142,24 @@ struct ClipsyApp: App {
         paster: PasteCoordinator,
         sequence: SequenceCoordinator
     ) -> ShelfController {
-        ShelfController(
-            model: ShelfModel(
-                observe: { repository.observeCards(in: $0) },
-                observeBoards: { repository.observeBoards() }
-            ),
+        let model = ShelfModel(
+            observe: { repository.observeCards(in: $0) },
+            observeBoards: { repository.observeBoards() }
+        )
+        return ShelfController(
+            model: model,
             paster: paster,
             deletion: CardDeletion(
                 delete: { try await repository.delete(cards: $0, in: $1) },
                 restore: { try await repository.restore($0) }
+            ),
+            boardEditor: BoardEditor(
+                model: model,
+                create: { try await repository.createBoard(named: $0, color: $1) },
+                rename: { try await repository.renameBoard($0, to: $1) },
+                recolor: { try await repository.recolorBoard($0, to: $1) },
+                move: { try await repository.moveBoard($0, after: $1) },
+                delete: { try await repository.deleteBoard($0) }
             ),
             representations: { try await repository.representations(of: $0) },
             rename: { try await repository.rename(card: $0, to: $1) },

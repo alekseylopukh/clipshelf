@@ -34,4 +34,24 @@ extension ShelfController {
         alert.addButton(withTitle: String(localized: "Cancel", comment: "Button that dismisses a confirmation"))
         return await alert.beginSheetModal(for: panel) == .alertFirstButtonReturn
     }
+
+    func confirmDeletion(of board: Board) async -> Bool {
+        let alert = NSAlert()
+        alert.alertStyle = .warning
+        alert.messageText = String(
+            localized: "Delete the board “\(board.name)”?",
+            comment: "Title of the confirmation shown before deleting a board"
+        )
+        alert.informativeText = String(
+            localized: "Its cards stay in History. Cards that are only on this board are deleted. You can’t undo this.",
+            comment: "Informative text of the confirmation shown before deleting a board"
+        )
+        alert.addButton(withTitle: String(
+            localized: "Delete",
+            comment: "Context menu item and confirmation button that delete the selected cards"
+        ))
+        alert.buttons.first?.hasDestructiveAction = true
+        alert.addButton(withTitle: String(localized: "Cancel", comment: "Button that dismisses a confirmation"))
+        return await alert.beginSheetModal(for: panel) == .alertFirstButtonReturn
+    }
 }

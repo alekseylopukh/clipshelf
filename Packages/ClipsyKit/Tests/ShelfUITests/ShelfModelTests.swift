@@ -273,6 +273,28 @@ final class ShelfModelTests {
         #expect(makeModel().tab == .history)
     }
 
+    @Test func `remembered board missing at launch falls back to history`() {
+        defaults.set("board:3", forKey: "ShelfTab")
+        let model = makeModel()
+
+        model.receiveBoards(Self.boards([1, 2]))
+
+        #expect(model.tab == .history)
+    }
+
+    @Test func `board not listed yet keeps its tab`() {
+        let model = makeModel()
+        model.receiveBoards(Self.boards([1]))
+
+        model.showTab(.board(id: 2))
+        model.receiveBoards(Self.boards([1]))
+        #expect(model.tab == .board(id: 2))
+
+        model.receiveBoards(Self.boards([1, 2]))
+        model.receiveBoards(Self.boards([1]))
+        #expect(model.tab == .history)
+    }
+
     @Test func `empty states follow tab, search and pause`() {
         let model = makeModel()
         #expect(model.emptyState(isCapturePaused: false) == nil)

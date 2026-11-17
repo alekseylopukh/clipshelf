@@ -25,6 +25,7 @@ public final class ShelfController {
     private let model: ShelfModel
     private let paster: PasteCoordinator
     private let deletion: CardDeletion
+    private let boardEditor: BoardEditor
     private let representations: PasteCoordinator.RepresentationLoading
     private let renameCard: Rename
     private let addToSequence: ([Int64]) -> Void
@@ -36,6 +37,7 @@ public final class ShelfController {
         model: ShelfModel,
         paster: PasteCoordinator,
         deletion: CardDeletion,
+        boardEditor: BoardEditor,
         representations: @escaping PasteCoordinator.RepresentationLoading,
         rename: @escaping Rename,
         addToSequence: @escaping ([Int64]) -> Void,
@@ -45,6 +47,7 @@ public final class ShelfController {
         self.model = model
         self.paster = paster
         self.deletion = deletion
+        self.boardEditor = boardEditor
         self.representations = representations
         renameCard = rename
         self.addToSequence = addToSequence
@@ -55,7 +58,8 @@ public final class ShelfController {
             commands: commands,
             onResize: { [weak self] in self?.resize() },
             onResizeEnded: { [weak self] in self?.endResize() }
-        ).environment(actions).environment(\.richTextLoader, RichTextLoader(representations: representations))
+        ).environment(actions).environment(boardEditor)
+            .environment(\.richTextLoader, RichTextLoader(representations: representations))
             .environment(\.cardMediaLoader, CardMediaLoader(representations: representations, thumbnails: thumbnails)))
         hostingView.sizingOptions = []
         hostingView.autoresizingMask = [.width, .height]
@@ -73,6 +77,9 @@ public final class ShelfController {
             }
         }
         actions.pasteOnDoubleClick = { [weak self] ids in self?.pasteOnDoubleClick(ids) }
+        commands.newBoard = { [weak boardEditor] in boardEditor?.beginNew() }
+        boardEditor.confirmDeletion = { [weak self] board in await self?.confirmDeletion(of: board) ?? false }
+        boardEditor.reportError = { [weak self] error, title in await self?.presentError(error, title: title) }
     }
 
     public var isShown: Bool {
@@ -115,6 +122,7 @@ public final class ShelfController {
         resizeStart = nil
         model.setQuickPasteModifierHeld(false)
         actions.renamingCardID = nil
+        boardEditor.cancel()
         deletion.discardUndo()
         withAnimation(reduceMotion ? .default : .snappy) {
             presentation.isVisible = false
@@ -202,7 +210,9 @@ public final class ShelfController {
             }
             return true
         }
-        if handleNavigationKey(event, character: key, modifiers: modifiers) {
+        if handleNavigationKey(event, character: key, modifiers: modifiers)
+            || handleBoardKey(event, character: key, modifiers: modifiers)
+        {
             return true
         }
         if modifiers == .command, handleCommandKey(key, isRepeat: event.isARepeat) {
@@ -286,18 +296,6 @@ public final class ShelfController {
         }
     }
 
-    private func presentError(_ error: any Error, title: String) async {
-        let alert = NSAlert(error: error)
-        alert.messageText = title
-        alert.informativeText = error.localizedDescription
-        if isShown {
-            _ = await alert.beginSheetModal(for: panel)
-        } else {
-            NSApplication.shared.activate()
-            alert.runModal()
-        }
-    }
-
     private func updateQuickPasteModifier(_ modifierFlags: NSEvent.ModifierFlags) {
         model.setQuickPasteModifierHeld(QuickPasteModifiers(defaults: defaults).isQuickPasteHeld(in: modifierFlags))
     }
@@ -334,6 +332,18 @@ public final class ShelfController {
 }
 
 private extension ShelfController {
+    func presentError(_ error: any Error, title: String) async {
+        let alert = NSAlert(error: error)
+        alert.messageText = title
+        alert.informativeText = error.localizedDescription
+        if isShown {
+            _ = await alert.beginSheetModal(for: panel)
+        } else {
+            NSApplication.shared.activate()
+            alert.runModal()
+        }
+    }
+
     func handleCommandKey(_ key: String?, isRepeat: Bool) -> Bool {
         switch key {
         case "t":
@@ -344,6 +354,26 @@ private extension ShelfController {
             Task {
                 await undoDelete()
             }
+        default:
+            return false
+        }
+        return true
+    }
+
+    func handleBoardKey(_ event: NSEvent, character: String?, modifiers: NSEvent.ModifierFlags) -> Bool {
+        guard modifiers == [.shift, .command] else { return false }
+        let isRepeat = event.isARepeat
+        switch (Int(event.keyCode), character) {
+        case (_, "n") where !isRepeat:
+            boardEditor.beginNew()
+        case (_, "e") where !isRepeat:
+            boardEditor.beginEditingCurrent()
+        case (kVK_Delete, _) where !isRepeat:
+            Task {
+                await boardEditor.deleteCurrent()
+            }
+        case (_, "n"), (_, "e"), (kVK_Delete, _):
+            break
         default:
             return false
         }
@@ -375,6 +405,7 @@ public extension ShelfController {
         resizeStart = nil
         model.setQuickPasteModifierHeld(false)
         actions.renamingCardID = nil
+        boardEditor.cancel()
         deletion.discardUndo()
         presentation.isVisible = false
         panel.orderOut(nil)

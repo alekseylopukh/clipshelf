@@ -5,6 +5,86 @@
       "comment" : "Shelf top bar button that creates a board",
       "extractionState" : "manual"
     },
+    "Name" : {
+      "comment" : "Label of the name field in the New Board and Edit Board sheet",
+      "extractionState" : "manual"
+    },
+    "Edit Board" : {
+      "comment" : "Title of the sheet that renames and recolors a board; name of a shelf shortcut in a conflict message",
+      "extractionState" : "manual"
+    },
+    "Create" : {
+      "comment" : "Button that creates the board in the New Board sheet",
+      "extractionState" : "manual"
+    },
+    "Save" : {
+      "comment" : "Button that saves the changes in the Edit Board sheet",
+      "extractionState" : "manual"
+    },
+    "Edit Board…" : {
+      "comment" : "Board tab context menu item that opens the Edit Board sheet",
+      "extractionState" : "manual"
+    },
+    "Delete Board…" : {
+      "comment" : "Board tab context menu item that deletes the board after a confirmation",
+      "extractionState" : "manual"
+    },
+    "Delete Board" : {
+      "comment" : "Name of a shelf shortcut in a conflict message",
+      "extractionState" : "manual"
+    },
+    "Red" : {
+      "comment" : "Board color name",
+      "extractionState" : "manual"
+    },
+    "Orange" : {
+      "comment" : "Board color name",
+      "extractionState" : "manual"
+    },
+    "Yellow" : {
+      "comment" : "Board color name",
+      "extractionState" : "manual"
+    },
+    "Green" : {
+      "comment" : "Board color name",
+      "extractionState" : "manual"
+    },
+    "Blue" : {
+      "comment" : "Board color name",
+      "extractionState" : "manual"
+    },
+    "Purple" : {
+      "comment" : "Board color name",
+      "extractionState" : "manual"
+    },
+    "Gray" : {
+      "comment" : "Board color name",
+      "extractionState" : "manual"
+    },
+    "Clipsy can’t create this board." : {
+      "comment" : "Title of the alert shown when creating a board fails",
+      "extractionState" : "manual"
+    },
+    "Clipsy can’t change this board." : {
+      "comment" : "Title of the alert shown when renaming or recoloring a board fails",
+      "extractionState" : "manual"
+    },
+    "Clipsy can’t move this board." : {
+      "comment" : "Title of the alert shown when reordering boards fails",
+      "extractionState" : "manual"
+    },
+    "Clipsy can’t delete this board." : {
+      "comment" : "Title of the alert shown when deleting a board fails",
+      "extractionState" : "manual"
+    },
+    "Delete the board “%@”?" : {
+      "comment" : "Title of the confirmation shown before deleting a board",
+      "extractionState" : "manual"
+    },
+    "Its cards stay in History. Cards that are only on this board are deleted. You can’t undo this." : {
+      "comment" : "Informative text of the confirmation shown before deleting a board",
+      "extractionState" : "manual"
+    },
     "New Text Card" : {
       "comment" : "Shelf More menu item that opens the editor for a new text card",
       "extractionState" : "manual"
@@ -99,7 +179,7 @@
       "extractionState" : "manual"
     },
     "Color" : {
-      "comment" : "Card type name",
+      "comment" : "Card type name; label of the board color picker and the board color submenu",
       "extractionState" : "manual"
     },
     "Copy" : {
