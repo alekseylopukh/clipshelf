@@ -26,8 +26,8 @@ struct PrivacySettingsView: View {
                         IgnoredAppRow(bundleID: bundleID)
                     }
                 }
-                .listStyle(.bordered)
-                .alternatingRowBackgrounds()
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
                 .frame(height: DesignTokens.settingsListHeight)
                 .onDeleteCommand(perform: removeSelectedApps)
                 HStack(spacing: 0) {

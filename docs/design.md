@@ -78,11 +78,20 @@ Liquid Glass on the Shelf is a background layer, not a wrapper: wrapping the Car
 
 ### Snapshot harness
 
-`scripts/snapshots.sh [dir]` renders the Shelf offscreen to `.build/snapshots` (or `dir`): `shelf-{regular,compact}-{light,dark}.png`, 1920 pt wide at the backing scale. It runs the `ShelfSnapshotTests` suite in `ShelfUITests`, which is skipped unless `CLIPSY_SNAPSHOTS` names the output folder, so `scripts/build.sh test` never renders.
+`scripts/snapshots.sh [dir]` renders offscreen to `.build/snapshots` (or `dir`), each in light and dark (`<name>-{light,dark}.png`, at the backing scale). The suites are skipped unless `CLIPSY_SNAPSHOTS` names the output folder, so `scripts/build.sh test` never renders.
 
-- Fixture: eight made-up Cards (`SnapshotFixtures`: text, rich text, link with preview image, color, code, image, file, three files) and three Boards. Images and files are generated into a temporary folder; app icons come from system apps. No clipboard data is read.
-- It hosts `ShelfContainerView` in a borderless `NSWindow` that is never ordered in, so nothing appears on screen, and captures it with `cacheDisplay`.
-- Liquid Glass is composited by the window server and does not render offscreen. The harness draws a material stand-in for the Shelf, and glass buttons in the top bar show only their labels. Check glass in the running app.
+All suites live in the `SnapshotTests` target:
+
+| Suite | Renders |
+|---|---|
+| `ShelfSnapshotTests` | `shelf-{regular,compact}`: the Shelf, 1920 pt wide |
+| `PopoverSnapshotTests` | `sequence`, `sequence-empty`, `rename`, `preview-<card id>`, `edit-{text,link,color,board}`, `filters` |
+| `AppSnapshotTests` | `settings-{general,shortcuts,privacy,about}`, `onboarding-{welcome,paste-directly,clipboard-access,finish}` |
+
+- Fixture: eight made-up Cards (`SnapshotFixtures`: text, rich text, link with preview image, color, code, image, file, three files) and three Boards. Images and files are generated into a temporary folder; app icons come from system apps. No clipboard data is read. Settings and onboarding use a private defaults suite, a temporary database, a fake updater and a fake pasteboard access status (`.ask`, so the clipboard step shows).
+- `SnapshotRenderer` hosts each view in a borderless `NSWindow` that is never ordered in, so nothing appears on screen, and captures it with `cacheDisplay`. Views without a fixed size render at their fitting size.
+- The Settings panes and onboarding live in the app target, which `swift test` cannot build. `Tests/SnapshotTests/App` is a symlink to `App/`, and `Package.swift` lists the view files the target compiles and excludes the rest, so a new file in `App/` goes into one of the two lists; the menu bar menu (`StatusItemController`) is not rendered because it creates a real status item.
+- Liquid Glass is composited by the window server and does not render offscreen. The harness draws a material stand-in for the Shelf and the Sequence panel, and glass buttons show only their labels. Popovers and sheets get a window background instead of their system chrome. Windows are never key, so default and prominent buttons render gray. Check glass, chrome and button tint in the running app.
 
 Left, right and top edges (vertical layout) are not part of v1; they are listed under Later in [roadmap.md](roadmap.md#later-not-scheduled).
 Placement uses the display's visible frame, so an auto-hidden Dock is not avoided ([WD-22](roadmap.md#working-defaults-for-open-todos)).
@@ -404,6 +413,21 @@ Step 3 and the Privacy pane row read `NSPasteboard.general.accessBehavior` (chec
 | Toast/HUD | None. The menu bar symbol shows the paused state ([§7](#7-menu-bar-extra)) and sounds confirm capture and paste ([WD-34](roadmap.md#working-defaults-for-open-todos)) |
 
 Checked against the macOS 26 SDK: SwiftUI has `.glass`, `.glassProminent`, `glassEffectID(_:in:)` and `glassEffectUnion(id:namespace:)`; `NSGlassEffectView` has `contentView`, `cornerRadius`, `tintColor` and `style`.
+
+### Window and popover metrics
+
+Metrics of everything other than the Shelf. Every value lives in `DesignTokens`.
+
+| Surface | Metric |
+|---|---|
+| Settings | 500 pt wide (`settingsWidth`); each pane is as tall as its grouped `Form`. Ignored Apps list 120 pt tall, rows with 16 pt app icons, flush inside its section like System Settings lists |
+| About | 64 pt app icon; Acknowledgements sheet 460 × 420 pt |
+| Onboarding | 480 pt wide, at least 380 pt tall, 20 pt padding, 64 pt step icon |
+| Sequence panel | 280 pt wide, 18 pt radius, glass as a background layer (like the Shelf, so rows keep label colors); 44 pt rows, up to 6 before it scrolls, 8 pt list inset with a 10 pt concentric radius |
+| Quick Look popover | 520 × 400 pt |
+| Rename popover | 220 pt text field, system padding |
+| Filters popover | 260 × 380 pt |
+| Edit sheets | 20 pt padding (`sheetPadding`) on every sheet. Link and color sheets are 420 pt and the Board sheet 400 pt wide grouped forms; text editor 480 × 320 pt, never taller than the Shelf, 6 pt text-area radius |
 
 ---
 

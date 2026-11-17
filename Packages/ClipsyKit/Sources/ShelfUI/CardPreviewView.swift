@@ -17,7 +17,11 @@ struct CardPreviewView: View {
             case .text:
                 TextCardPreview(card: card, isCodeLike: content.isCodeLike)
             case .link:
-                LinkCardPreview(title: card.title, host: content.host, url: content.metadata.url)
+                LinkCardPreview(
+                    title: card.title ?? content.metadata.pageTitle,
+                    host: content.host,
+                    url: content.metadata.url
+                )
             case .color:
                 ColorCardPreview(
                     swatch: content.swatch,

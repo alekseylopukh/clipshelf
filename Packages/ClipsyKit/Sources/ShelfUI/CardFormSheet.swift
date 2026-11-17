@@ -39,7 +39,7 @@ struct CardFormSheet<Fields: View>: View {
                 .keyboardShortcut(.defaultAction)
                 .disabled(!canSave)
             }
-            .padding([.horizontal, .bottom], DesignTokens.boardSheetPadding)
+            .padding([.horizontal, .bottom], DesignTokens.sheetPadding)
         }
         .frame(width: DesignTokens.cardFormSheetWidth)
         .frame(maxHeight: maxHeight)

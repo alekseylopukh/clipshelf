@@ -36,7 +36,7 @@ struct BoardEditorSheet: View {
                 }
                 .keyboardShortcut(.defaultAction)
             }
-            .padding([.horizontal, .bottom], DesignTokens.boardSheetPadding)
+            .padding([.horizontal, .bottom], DesignTokens.sheetPadding)
         }
         .frame(width: DesignTokens.boardSheetWidth)
     }

@@ -37,6 +37,24 @@ let package = Package(
         .testTarget(name: "PastingTests", dependencies: ["Pasting"]),
         .testTarget(name: "DesignSystemTests", dependencies: ["DesignSystem"]),
         .testTarget(name: "ShelfUITests", dependencies: ["ShelfUI"]),
+        .testTarget(
+            name: "SnapshotTests",
+            dependencies: ["Capture", "DesignSystem", "Media", "Pasting", "ShelfUI", "Store", "Updates"],
+            // `App` is a symlink to the app target's folder; a new file there belongs in `sources` or `exclude`
+            exclude: [
+                "App/AppDelegate.swift", "App/ClipsyApp.swift", "App/ClipsyApp+URLScheme.swift",
+                "App/PasteboardAccessAlert.swift", "App/SettingsWindow.swift", "App/StatusItemController.swift",
+                "App/Intents", "App/Sounds", "App/Credits.rtf", "App/Localizable.xcstrings"
+            ],
+            sources: [
+                "AppSnapshotTests.swift", "PopoverSnapshotTests.swift", "ShelfSnapshotTests.swift",
+                "SnapshotFixtures.swift", "SnapshotRenderer.swift",
+                "App/SettingsView.swift", "App/GeneralSettingsView.swift", "App/ShortcutsSettingsView.swift",
+                "App/PrivacySettingsView.swift", "App/AboutSettingsView.swift", "App/AcknowledgementsView.swift",
+                "App/OnboardingView.swift", "App/PermissionStatusLabel.swift", "App/MenuBarSettings.swift",
+                "App/RetentionPeriod+Title.swift"
+            ]
+        ),
         .testTarget(name: "UpdatesTests", dependencies: ["Updates"]),
         .testTarget(name: "IntegrationsTests", dependencies: ["Integrations"])
     ]

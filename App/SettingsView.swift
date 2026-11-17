@@ -1,4 +1,5 @@
 import Capture
+import DesignSystem
 import ShelfUI
 import Store
 import SwiftUI
@@ -22,7 +23,7 @@ struct SettingsView: View {
                 AboutSettingsView()
             }
         }
-        .frame(width: 500)
+        .frame(width: DesignTokens.settingsWidth)
     }
 }
 

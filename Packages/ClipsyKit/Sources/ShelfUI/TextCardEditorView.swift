@@ -41,7 +41,7 @@ struct TextCardEditorView: View {
                 .disabled(!editor.canSave)
             }
         }
-        .padding()
+        .padding(DesignTokens.sheetPadding)
         .frame(width: DesignTokens.textEditorWidth)
         .frame(height: min(DesignTokens.textEditorHeight, maxHeight))
     }

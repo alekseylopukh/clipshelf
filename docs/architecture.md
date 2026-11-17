@@ -278,7 +278,7 @@ Packages/ClipsyKit/
     ShelfUI/                NSPanel, SwiftUI Shelf, Cards, search field, Quick Look
     Updates/                Sparkle wrapper: the updater starts only after opt-in or a manual check
     Integrations/           store calls behind App Intents
-  Tests/                    one test target per module
+  Tests/                    one test target per module, plus SnapshotTests (design.md §2, Snapshot harness)
 scripts/release/            release scripts: archive, notarize, DMG and zip, appcast (§6.4)
 ```
 

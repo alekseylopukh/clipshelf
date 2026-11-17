@@ -67,6 +67,7 @@ public enum DesignTokens {
     public static let sequenceMaximumVisibleRows = 6
     public static let sequenceNextMarkerSize: CGFloat = 6
 
+    public static let settingsWidth: CGFloat = 500
     public static let settingsListHeight: CGFloat = 120
     public static let settingsListIconSize: CGFloat = 16
     public static let aboutIconSize: CGFloat = 64
@@ -85,7 +86,7 @@ public enum DesignTokens {
     public static let boardDotOutlineWidth: CGFloat = 1
     public static let boardSwatchSize: CGFloat = 20
     public static let boardSheetWidth: CGFloat = 400
-    public static let boardSheetPadding: CGFloat = 20
+    public static let sheetPadding: CGFloat = 20
     public static let badgeSize: CGFloat = 20
     public static let badgeInset: CGFloat = cardCornerRadius - badgeSize / 2
     public static let renameFieldWidth: CGFloat = 220

@@ -5,22 +5,10 @@ import SwiftUI
 import Testing
 @testable import ShelfUI
 
-private let snapshotDirectory = ProcessInfo.processInfo.environment["CLIPSY_SNAPSHOTS"]
-    .map { URL(filePath: $0, directoryHint: .isDirectory) }
-
 /// renders the shelf offscreen to .build/snapshots; run with scripts/snapshots.sh
 @MainActor
 @Suite(.enabled(if: snapshotDirectory != nil), .serialized)
 final class ShelfSnapshotTests {
-    enum Appearance: String, CaseIterable {
-        case light
-        case dark
-
-        var name: NSAppearance.Name {
-            self == .light ? .aqua : .darkAqua
-        }
-    }
-
     enum Size: String, CaseIterable {
         case regular
         case compact
@@ -43,9 +31,8 @@ final class ShelfSnapshotTests {
         try? FileManager.default.removeItem(at: fixtures.directory)
     }
 
-    @Test(arguments: Appearance.allCases, Size.allCases)
-    func `render the shelf`(appearance: Appearance, size: Size) async throws {
-        let directory = try #require(snapshotDirectory)
+    @Test(arguments: SnapshotRenderer.Appearance.allCases, Size.allCases)
+    func `render the shelf`(appearance: SnapshotRenderer.Appearance, size: Size) async throws {
         let defaults = try #require(UserDefaults(suiteName: suiteName))
         let model = ShelfModel(
             defaults: defaults,
@@ -87,36 +74,30 @@ final class ShelfSnapshotTests {
         .padding(DesignTokens.shelfInset)
         .background(SnapshotWallpaper())
 
-        let frame = CGRect(x: 0, y: 0, width: Self.width, height: size.height + 2 * DesignTokens.shelfInset)
-        let hostingView = NSHostingView(rootView: root)
-        let window = NSWindow(contentRect: frame, styleMask: [.borderless], backing: .buffered, defer: false)
-        window.isReleasedWhenClosed = false
-        window.appearance = NSAppearance(named: appearance.name)
-        window.contentView = hostingView
         model.select(fixtures.cards[1].id)
-        hostingView.layoutSubtreeIfNeeded()
-        try await Task.sleep(for: .seconds(2))
-        hostingView.layoutSubtreeIfNeeded()
-
-        let rep = try #require(hostingView.bitmapImageRepForCachingDisplay(in: frame))
-        hostingView.cacheDisplay(in: frame, to: rep)
-        let png = try #require(rep.representation(using: .png, properties: [:]))
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        try png.write(to: directory.appending(path: "shelf-\(size.rawValue)-\(appearance.rawValue).png"))
+        try await SnapshotRenderer.render(
+            root,
+            named: "shelf-\(size.rawValue)",
+            appearance: appearance,
+            size: CGSize(width: Self.width, height: size.height + 2 * DesignTokens.shelfInset),
+            settle: .seconds(2)
+        )
     }
 }
 
 /// stands in for the desktop the glass shelf floats over
-private struct SnapshotWallpaper: View {
+struct SnapshotWallpaper: View {
     var body: some View {
         LinearGradient(colors: [.teal, .indigo], startPoint: .topLeading, endPoint: .bottomTrailing)
     }
 }
 
 /// glass is composited by the window server and never reaches `cacheDisplay`, so this outlines the panel
-private struct GlassStandIn: View {
+struct GlassStandIn: View {
+    var cornerRadius = DesignTokens.shelfCornerRadius
+
     var body: some View {
-        RoundedRectangle(cornerRadius: DesignTokens.shelfCornerRadius)
+        RoundedRectangle(cornerRadius: cornerRadius)
             .fill(.regularMaterial)
             .strokeBorder(.white.opacity(0.5))
     }
