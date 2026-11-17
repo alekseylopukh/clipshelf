@@ -1,6 +1,7 @@
 import AppKit
 import Capture
 import os
+import Pasting
 import ShelfUI
 import Store
 import SwiftUI
@@ -10,17 +11,21 @@ struct ClipsyApp: App {
     @State private var shelf: ShelfController
 
     init() {
-        let database = Self.openDatabase()
+        let repository = CardRepository(database: Self.openDatabase())
+        let writer = PasteboardWriter()
         let monitor = PasteboardMonitor(
-            isOwnWrite: { _ in false },
+            isOwnWrite: { writer.isOwnWrite($0) },
             policy: { CapturePolicy() },
-            repository: CardRepository(database: database)
+            repository: repository
         )
         _ = Task {
             try await monitor.run()
         }
 
-        let shelf = ShelfController()
+        let shelf = ShelfController(
+            model: ShelfModel { repository.observeCards(in: $0) },
+            paster: PasteCoordinator(writer: writer) { try await repository.representations(of: $0) }
+        )
         _shelf = State(initialValue: shelf)
         KeyboardShortcuts.onKeyUp(for: .toggleShelf) {
             shelf.toggle()

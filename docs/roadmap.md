@@ -38,6 +38,7 @@ Not maintainer decisions. They are the doc's current text or the simplest choice
 | WD-24 | Database fails to open at launch ([architecture §3.4](architecture.md#34-migrations)) | An alert shows the error with one "Quit Clipsy" button, then the app quits; no files are moved or deleted. A damaged store is recovered instead (T7.4) |
 | WD-25 | Plain-text paste of a Card without a plain string ([architecture §4.2](architecture.md#42-paste)) | Writes every representation, as a normal paste would |
 | WD-26 | Sequence details ([product §4.7](product.md#47-sequence)) | Paste All with any non-text Card writes one item per Card, as a multi-paste does; Reverse Order lasts for the app session and affects only Cards added later; the same Card copied twice is queued twice; Clear empties the panel and keeps it open; removing the last Card keeps the panel open, pasting it closes the panel |
+| WD-27 | Accessibility alert on paste ([product §4.5](product.md#45-paste-mechanics) step 5, [design §9](design.md#9-onboarding-and-permissions)) | Shown at most once per launch; "Don't ask again" makes that permanent; either way later pastes copy only until Accessibility is granted. "Open System Settings…" calls `AXIsProcessTrustedWithOptions` with the prompt, which lists Clipsy in Privacy & Security and offers the system's own "Open System Settings"; "Copy Only" reactivates the target app so ⌘V works. Before T11.1, Return and ⌘C with several cards selected do nothing |
 
 ## Rules for every task
 
@@ -293,7 +294,10 @@ What exists:
 - Deliverable: the app creates one `PasteboardWriter` and passes its `isOwnWrite` to the capture monitor in place of T2.6's placeholder; `PasteCoordinator`: Return and double-click paste, ⇧ for plain, ⌘C copies, copy-only setting, plain-by-default setting; hide shelf, reactivate target if needed, then post ⌘V; first paste without Accessibility shows the alert with "Don't ask again"
 - Acceptance: tests with fakes: `copyOnlyNeverPostsKeystroke`, `missingTrustAsksOnce`, `shiftForcesPlain`, `pasteHidesShelfBeforeKeystroke`
 - Human check: the alert appears once with Accessibility revoked; afterwards Return copies only
+- Human check: with Accessibility granted, Return pastes the newest card into TextEdit, ⇧Return pastes it as plain text and ⌘C only copies (the card strip arrives with T3.5, so check after both land)
+- Note: the card view (T3.5) wires double-click and ⇧-double-click to `ShelfController.perform(_:cardID:plainModifier:)`; WD-27 covers the alert details
 - Size: M
+- Status: done
 
 ### T4.4 Quick Paste
 - Module(s): ShelfUI

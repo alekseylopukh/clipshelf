@@ -3,6 +3,7 @@ import AppKit
 final class ShelfPanel: NSPanel {
     var onCancel: () -> Void = {}
     var onResignKey: () -> Void = {}
+    var onKeyDown: (NSEvent) -> Bool = { _ in false }
 
     init() {
         super.init(
@@ -34,6 +35,12 @@ final class ShelfPanel: NSPanel {
 
     override func cancelOperation(_: Any?) {
         onCancel()
+    }
+
+    override func keyDown(with event: NSEvent) {
+        if !onKeyDown(event) {
+            super.keyDown(with: event)
+        }
     }
 
     override func resignKey() {

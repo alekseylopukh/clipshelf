@@ -3,6 +3,7 @@ import SwiftUI
 
 struct ShelfContainerView: View {
     let presentation: ShelfPresentation
+    let model: ShelfModel
     let onResize: () -> Void
     let onResizeEnded: () -> Void
 
@@ -21,6 +22,9 @@ struct ShelfContainerView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .task(id: model.tab) {
+            await model.observeCards()
+        }
     }
 
     private static let riseTransition: AnyTransition = .offset(y: DesignTokens.shelfOpenOffset)
@@ -31,7 +35,8 @@ struct ShelfContainerView: View {
 #Preview {
     let presentation = ShelfPresentation()
     presentation.isVisible = true
-    return ShelfContainerView(presentation: presentation, onResize: {}, onResizeEnded: {})
+    let model = ShelfModel { _ in AsyncThrowingStream { $0.finish() } }
+    return ShelfContainerView(presentation: presentation, model: model, onResize: {}, onResizeEnded: {})
         .frame(width: 800, height: 300)
         .padding()
 }

@@ -1,11 +1,17 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Allow Clipsy to paste into other apps?" : {
+      "comment" : "Title of the alert shown on the first paste without Accessibility permission"
+    },
     "Clipsy" : {
 
     },
     "Clipsy can’t open its clipboard history." : {
       "comment" : "Title of the alert shown when the database fails to open at launch"
+    },
+    "Clipsy can’t paste this card." : {
+      "comment" : "Title of the alert shown when a card's contents cannot be read for pasting"
     },
     "Clipsy moved it to “%@” and started a new, empty history." : {
       "comment" : "Informative text of the alert shown after a damaged database was moved aside at launch; the argument is the backup folder path"
@@ -13,11 +19,20 @@
     "Clipsy’s clipboard history was damaged." : {
       "comment" : "Title of the alert shown after a damaged database was moved aside at launch"
     },
+    "Copy Only" : {
+      "comment" : "Alert button that keeps the card on the clipboard without pasting"
+    },
+    "Don’t ask again" : {
+      "comment" : "Checkbox in the Accessibility alert that stops it from appearing"
+    },
     "OK" : {
 
     },
     "Open Shelf" : {
 
+    },
+    "Open System Settings…" : {
+      "comment" : "Alert button that asks macOS for Accessibility permission"
     },
     "Quit Clipsy" : {
 
@@ -27,6 +42,9 @@
     },
     "Show in Finder" : {
       "comment" : "Button that reveals the backup of a damaged database"
+    },
+    "To paste directly, Clipsy needs Accessibility permission in Privacy & Security settings. Until then, Clipsy copies the card and you can press ⌘V to paste it." : {
+      "comment" : "Body of the alert shown on the first paste without Accessibility permission"
     },
     "Untitled" : {
       "comment" : "Name of a board created without one",
