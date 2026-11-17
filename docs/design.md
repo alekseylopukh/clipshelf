@@ -36,7 +36,7 @@ Values marked "proposed" are starting points to tune on real hardware, not measu
 | In-app promotional banners | None. Only system alerts where a permission is actually missing | No nudges, no upsell. |
 | Brand-tinted Sequence window | Plain glass panel with system rows | First-party look. |
 
-> TODO: optional faint tint (proposed 8–12% opacity) of the source app's icon color behind the Card header, off by default. Decide whether to ship it at all.
+An optional faint tint (8–12% opacity) of the source app's icon color behind the Card header is not part of v1; it is listed under Later in [roadmap.md](roadmap.md#later-not-scheduled).
 
 ---
 
@@ -47,20 +47,59 @@ Values marked "proposed" are starting points to tune on real hardware, not measu
 | Aspect | Design |
 |---|---|
 | Edge | Bottom of the screen, centered horizontally. Bottom only in v1. |
-| Inset | Floats like the Dock: inset from the bottom and side edges of the visible frame (proposed 8–12 pt), with a soft system shadow. Never covers the menu bar. Respects the Dock: placed above it when the Dock is at the bottom and visible. |
-| Corners | Corner radius concentric with the display corners (proposed: match the system window radius for the inset used). Inner elements use concentric radii. |
+| Inset | Floats like the Dock: inset 8 pt from the bottom and side edges of the visible frame, with a soft system shadow. Never covers the menu bar. Respects the Dock: placed above it when the Dock is at the bottom and visible. |
+| Corners | 36 pt, concentric with the Cards at the 16 pt inner padding. Inner elements use concentric radii; see [Metrics](#metrics). |
 | Width | Full width of the visible frame minus the insets. |
-| Height | User-resizable by dragging the top edge; remembered per display size class. Proposed range: from one compact row to about 40% of the visible height. |
-| Compact mode | Below a height threshold (proposed: when a regular Card would be under ~150 pt tall) Cards switch to a condensed layout: header collapses to an icon and time, body fills the rest. |
+| Height | User-resizable by dragging the top edge; one remembered height for all displays ([WD-13](roadmap.md#working-defaults-for-open-todos)). Range: from one compact row (160 pt) to 40% of the visible height; default 300 pt ([WD-22](roadmap.md#working-defaults-for-open-todos)). |
+| Compact mode | When a regular Card would be under 150 pt tall ([WD-15](roadmap.md#working-defaults-for-open-todos)), Cards switch to a condensed layout: the header collapses to a 20 pt app icon and the time, the footer is hidden and the body fills the rest. Compact Cards are 4:3 instead of square so the time fits next to the icon. |
 | Display | Opens on the display that holds the pointer. Moves with the user to the active Space and appears over full-screen apps. |
 
-> TODO: support left/right/top edges (vertical layout) as a later option, not in v1.
-> TODO: confirm the Dock-avoidance rule when the Dock is set to auto-hide.
+### Metrics
+
+One radius system and an 8 pt grid (12 pt is the one half step, inside Cards). Every value lives in `DesignTokens`.
+
+| Metric | Value | Rule |
+|---|---|---|
+| Screen inset | 8 pt | `shelfInset` |
+| Shelf padding | 16 pt | `shelfPadding`: top, sides and bottom; the gap between the top bar and the Cards is the same 16 pt |
+| Card gap | 16 pt | `cardSpacing` = `shelfPadding`, so gaps between Cards equal the outer insets |
+| Card radius | 20 pt | `cardCornerRadius` |
+| Shelf radius | 36 pt | `shelfCornerRadius` = Card radius + Shelf padding (concentric) |
+| Card content inset | 12 pt | `cardContentInset`, on all four sides |
+| Card inner radius | 8 pt | `cardInnerCornerRadius` = Card radius − content inset. Body previews (link image, color swatch, image) clip to `ConcentricRectangle` against the Card's `containerShape`, with this as the minimum |
+| Selection ring | 3 pt (4 pt with Increase Contrast), 2 pt gap | Radius = Card radius + gap + width, so the ring is concentric outside the Card |
+| Quick-paste badge | 20 pt, inset 10 pt | Inset = Card radius − badge radius, so the badge circle is concentric with the corner |
+| Top bar controls | 28 pt tall | Large control size; icon-only buttons are 28 pt circles (16 pt glyph box), the search field is a 28 pt capsule |
+| Header icon | 32 pt regular, 20 pt compact | 32 pt is a native app icon size, recognizable at a glance; its squircle corner (~7 pt) matches the 8 pt inner radius |
+| Header/body/footer spacing | 8 pt regular, 4 pt compact | `spacingMedium` / `spacingSmall` |
+| Text fade | 16 pt | `cardFadeHeight` |
+
+Liquid Glass on the Shelf is a background layer, not a wrapper: wrapping the Cards in `.glassEffect` gave their text the glass's adaptive (vibrant) foreground, which turned Card text dark on dark Cards. Content outside the panel shape is clipped to it, so a Card scrolled under a rounded corner does not poke out.
+
+### Snapshot harness
+
+`scripts/snapshots.sh [dir]` renders offscreen to `.build/snapshots` (or `dir`), each in light and dark (`<name>-{light,dark}.png`, at the backing scale). The suites are skipped unless `CLIPSY_SNAPSHOTS` names the output folder, so `scripts/build.sh test` never renders.
+
+All suites live in the `SnapshotTests` target:
+
+| Suite | Renders |
+|---|---|
+| `ShelfSnapshotTests` | `shelf-{regular,compact}`: the Shelf, 1920 pt wide |
+| `PopoverSnapshotTests` | `sequence`, `sequence-empty`, `rename`, `preview-<card id>`, `edit-{text,link,color,board}`, `filters` |
+| `AppSnapshotTests` | `settings-{general,shortcuts,privacy,about}`, `onboarding-{welcome,paste-directly,clipboard-access,finish}` |
+
+- Fixture: eight made-up Cards (`SnapshotFixtures`: text, rich text, link with preview image, color, code, image, file, three files) and three Boards. Images and files are generated into a temporary folder; app icons come from system apps. No clipboard data is read. Settings and onboarding use a private defaults suite, a temporary database, a fake updater and a fake pasteboard access status (`.ask`, so the clipboard step shows).
+- `SnapshotRenderer` hosts each view in a borderless `NSWindow` that is never ordered in, so nothing appears on screen, and captures it with `cacheDisplay`. Views without a fixed size render at their fitting size.
+- The Settings panes and onboarding live in the app target, which `swift test` cannot build. `Tests/SnapshotTests/App` is a symlink to `App/`, and `Package.swift` lists the view files the target compiles and excludes the rest, so a new file in `App/` goes into one of the two lists; the menu bar menu (`StatusItemController`) is not rendered because it creates a real status item.
+- Liquid Glass is composited by the window server and does not render offscreen. The harness draws a material stand-in for the Shelf and the Sequence panel, and glass buttons show only their labels. Popovers and sheets get a window background instead of their system chrome. Windows are never key, so default and prominent buttons render gray. Check glass, chrome and button tint in the running app.
+
+Left, right and top edges (vertical layout) are not part of v1; they are listed under Later in [roadmap.md](roadmap.md#later-not-scheduled).
+Placement uses the display's visible frame, so an auto-hidden Dock is not avoided ([WD-22](roadmap.md#working-defaults-for-open-todos)).
 
 ### Behavior as the user sees it
 
 - Opens with the global shortcut (see [product.md](product.md)) or from the menu bar extra. The frontmost app keeps its focus and text cursor; the Shelf takes keyboard input without activating Clipsy's menu bar.
-- Closes on Esc, on the shortcut again, after a paste, or when the user clicks outside it. It stays open while its own sheets, menus, Quick Look or editors are showing.
+- Closes on Esc, on the shortcut again, after a paste, or when the user clicks outside it. It stays open while one of its sheets (such as an editor) is attached, or while it or one of its child windows (a popover, the Quick Look preview) has keyboard focus, and closes when focus leaves both (see [product.md §4.13](product.md#413-shelf-window-behavior)).
 - Hidden from screenshots and screen sharing by default (setting in Privacy).
 - One Card is always selected while the Shelf has items; on open, the newest Card in the current view is selected.
 
@@ -83,13 +122,13 @@ Durations: system spring defaults. We set no custom timing curves unless testing
 
 ### Anatomy
 
-A Card is a rounded rectangle with an opaque fill (`controlBackgroundColor` or the SwiftUI secondary background), a hairline `separatorColor` border, and the system Card shadow when lifted. Proposed aspect ratio: square in regular mode.
+A Card is a rounded rectangle with an opaque fill (`controlBackgroundColor` or the SwiftUI secondary background), a hairline `separatorColor` border, and the system Card shadow when lifted. Square in regular mode, 4:3 in compact mode. Metrics are in [§2 Metrics](#metrics).
 
 | Part | Contents | Style |
 |---|---|---|
-| Header | Source app icon (proposed 16–20 pt); title if the user renamed the Card, else the type label; relative time ("2 min ago") | Title `.headline`; type and time `.caption` in secondary label color; digits monospaced |
+| Header | Source app icon (32 pt, centered on the two text lines, like a two-line list row); title if the user renamed the Card, else the type label; relative time ("2 min ago") below it | Title or type label `.headline`, so every header has the same height; time `.caption` in secondary label color; digits monospaced |
 | Body | Type-specific preview (table below) | Clipped to the Card's inner radius |
-| Footer | Type-specific metadata | `.caption`, tertiary label color, single line, truncated |
+| Footer | Type-specific metadata | `.caption`, secondary label color (tertiary was too faint for 4.5:1), single line, truncated |
 | Board marker | When showing search results from all of History and Boards: the Board's colored dot next to the time | Board color, 6–8 pt dot (proposed) |
 
 ### Per-type layouts
@@ -100,11 +139,13 @@ A Card is a rounded rectangle with an opaque fill (`controlBackgroundColor` or t
 | Rich text | Rendered with its own fonts and colors, scaled to the system body size; colors that fail contrast on the Card fill fall back to label color | Character count |
 | Code-like text | Plain text heuristically detected as code gets SF Mono (`.monospaced()`); no syntax colors. Not a separate type | Line count |
 | Link | Link preview image (when previews are on) filling the top of the body; page title below in `.callout` semibold. Without a preview: large site favicon or `link` symbol, centered | Host name, head-truncated URL |
-| Image | Image aspect-fit on a neutral fill; checkerboard behind transparency | Pixel dimensions |
+| Image | Image aspect-fit on a neutral fill; checkerboard behind transparency | Pixel dimensions, without grouping separators ("1600 × 1000") |
 | File | Quick Look thumbnail or file icon, centered | File name, middle-truncated |
 | Multiple files | Up to three stacked thumbnails, slightly fanned | "N files" and total size |
 | Color | Swatch filling the body, with the value overlaid on a small glass capsule for legibility | Value in the copied format (hex, rgb) |
 | Unknown | Generic `questionmark.square.dashed` symbol, short note that the item can still be pasted | Type identifier, if useful |
+
+Details such as rich text scaling, the contrast threshold and the link body without a preview follow [WD-32](roadmap.md#working-defaults-for-open-todos); link previews follow [WD-40](roadmap.md#working-defaults-for-open-todos).
 
 ### States
 
@@ -112,7 +153,7 @@ A Card is a rounded rectangle with an opaque fill (`controlBackgroundColor` or t
 |---|---|
 | Rest | Opaque fill, hairline border |
 | Hover | Slight lift (shadow strengthens); no color change |
-| Selected | Accent-colored ring at a concentric radius outside the Card (proposed 3 pt), slight lift (scale ~1.02) |
+| Selected | Accent-colored 3 pt ring, 2 pt outside the Card at a concentric radius, slight lift (scale 1.02) |
 | Multi-selected | Each selected Card gets the ring; a count ("3 selected") appears in the top bar |
 | Keyboard focus without selection change | Same as Selected; there is only one focus indicator |
 | Being dragged | System drag image; the source Card dims |
@@ -138,13 +179,13 @@ Order, leading to trailing:
 4. **New Board button** (`plus`).
 5. **More menu** (`ellipsis`): New Text Card, Start Sequence, Pause/Resume capture, Settings…
 
-While search is active, the Board switcher stays visible. Whether selecting a Board then narrows the results depends on the open search-scope TODO in [product.md §4.9](product.md#49-search-and-filters).
+While search is active, the Board switcher stays visible. Selecting a Board clears the search and shows that Board ([product.md §4.9](product.md#49-search-and-filters)). Matches in a Card's title and text are highlighted with the system find-highlight color.
 
 ### Board colors
 
 System colors only, so they adapt to light/dark and Increase Contrast: red, orange, yellow, green, blue, purple, gray (the Finder tag set). Pink is left out because it is hard to tell apart from red. The color picker in the New/Edit Board sheet is a row of these swatches, not a free color well.
 
-> TODO: decide whether "no color" is allowed for a Board.
+Working default [WD-9](roadmap.md#working-defaults-for-open-todos): every Board has a color; there is no "no color".
 
 ### Empty states
 
@@ -172,26 +213,33 @@ Native `NSMenu` with SF Symbols on items and section separators. Items that do n
 | Open | Open (links, files), Open With ▸ (files), Show in Finder (files) |
 | Organize | Add to Board ▸ (list of Boards + New Board…), Remove from Board (inside a Board), Add to Sequence |
 | Item | Quick Look (`eye`), Show in List (search results only), Edit… (`pencil`), Rename… , Duplicate |
-| Share | Share ▸ (system share menu) |
+| Share | Share… (`square.and.arrow.up`), opens the system share picker at the Card, like Share… in Finder |
 | Destructive | Delete (`trash`, destructive role) |
 
 With several Cards selected, the menu shows only actions that work on many: Paste, Paste as Plain Text, Copy, Add to Board, Add to Sequence, Share, Delete.
 
+Inside a Board, Delete is hidden and Remove from Board takes its place, because Delete on a Board only removes the Card from it ([WD-12](roadmap.md#working-defaults-for-open-todos)).
+
 ### Quick Look
 
-- Space toggles a preview anchored to the selected Card, as an `NSPopover` with a glass background.
-- Files and images use `QLPreviewView`. Text, rich text, links and colors use our own read-only SwiftUI views (selectable text, link metadata with the full URL, large swatch with all color formats).
+- Space toggles a preview anchored to the Card under the keyboard cursor, as an `NSPopover` with the system's glass background. Esc closes the preview before it clears the search or closes the Shelf.
+- Files use `QLPreviewView`; a file that was moved or deleted shows "File Not Found" with its name. Several files show a list of their names with Quick Look thumbnails.
+- Images use our own image view (decoded at up to 2048 px, checkerboard behind transparency): `QLPreviewView` needs a file, and image Cards keep their data in the store, so a temporary copy would put clipboard data outside it.
+- Text, rich text, links and colors use our own read-only SwiftUI views: selectable text (rich text keeps the Card's styling rules), the link's title or host with the full URL, and a large swatch with Hex, RGB and HSL values. Details follow [WD-49](roadmap.md#working-defaults-for-open-todos).
 - Arrow keys move the selection and the preview follows.
+
+Prototype result (T8.1): the popover uses `.applicationDefined` behavior, is anchored to an invisible view behind the cursor Card, and hands key status back to the Shelf after it opens and after it closes while key, so Space, arrows and Esc keep reaching the Shelf. When a click in the preview (selecting text, scrolling a PDF) makes the popover key, it forwards every key without ⌘ to the Shelf, Esc included, and keeps ⌘ shortcuts so ⌘C copies the selected text. The Shelf stays open while the popover or another child window is key and closes when focus leaves both; the popover's own loss of key status runs the same check as the panel's. This builds and the previews render offscreen in light and dark, but the live behavior inside the non-activating panel was not run by the agent; it is a human check of T8.1.
 
 > TODO: compare against `QLPreviewPanel` (the Finder-style floating panel) in practice; the popover is chosen because it works inside a non-activating panel, but the system panel may feel more native.
 
 ### Edit sheet
 
-- Opens as a sheet attached to the Shelf (or a standalone window if the Shelf is too short; proposed threshold: Shelf height < sheet min height).
+- Opens as a sheet attached to the Shelf. Working default ([WD-48](roadmap.md#working-defaults-for-open-todos)): no standalone window; the sheet is never taller than the Shelf, and the text area shrinks to fit.
 - Toolbar per type, using system controls:
-  - Text: Bold, Italic, Underline, Strikethrough as a segmented control; character/word/line counts in the bottom bar.
+  - Text: Bold, Italic, Underline, Strikethrough as a segmented control (⌘B, ⌘I, ⌘U); character/word/line counts in the bottom bar; an inline error next to the buttons.
   - Link: URL field and optional title field.
-  - Color: `ColorPicker` / system color panel plus a format picker.
+  - Color: `ColorPicker` / system color panel plus a format picker (Hex, RGB) and a value field.
+  - Link and color editors are grouped forms with Cancel (Esc) and Save (Return); the form scrolls when the Shelf is shorter than the sheet.
   - Image (later): rotate left/right.
 - Buttons: Cancel (Esc) and Save (Return with ⌘ in text editors), standard placement.
 - Rename uses a small popover with a single text field; empty name clears the title.
@@ -231,7 +279,9 @@ Menu contents: the items and pause durations are set in [product.md §6](product
 | Help | Clipsy Help (opens the project docs), Report an Issue |
 | Quit | Quit Clipsy (⌘Q) |
 
-> TODO: pick the final symbol after checking which clipboard symbols ship in SF Symbols for macOS 26.
+Decided (T6.4): `clipboard` normally and `pause.circle` while paused, swapped with the `.replace` content transition. SF Symbols on macOS 26 has no clipboard pause badge.
+
+Decided (T7.3): the disabled line reads "Paused until 15:45", in the locale's short time format, with the abbreviated weekday when the resume time is not today. Until Resumed shows no line.
 
 ---
 
@@ -251,7 +301,7 @@ SwiftUI `Settings` scene with a toolbar `TabView`. Each pane is a `Form` with `.
 | Paste without formatting by default | Toggle |
 | Accessibility status | Status row (granted / not granted) with "Open System Settings…" button when missing |
 | Keep history for | Slider with tick marks: 1 Day, 1 Week, 1 Month, 1 Year, Forever |
-| Storage summary | Secondary text: item count and disk size |
+| Storage | Row with secondary value text: card count and disk size, for example "1,234 cards, 56.7 MB" |
 | Erase History… | Button, destructive confirmation alert; Board contents are kept |
 
 ### Shortcuts
@@ -266,7 +316,7 @@ SwiftUI `Settings` scene with a toolbar `TabView`. Each pane is a `Form` with `.
 | Plain text modifier | Pop-up: ⇧ / ⌥ / ⌃ / ⌘ |
 | Restore Defaults | Button with confirmation |
 
-The recorder rejects combinations already used by the app, by a menu item or by the system, and shows the conflict inline below the field.
+The recorder rejects combinations already used by the app, by a menu item or by the system. A conflict with another Clipsy shortcut is shown inline below the field; a menu item or system conflict is shown in the recorder's own sheet (WD-36 in the roadmap).
 
 ### Privacy
 
@@ -282,10 +332,10 @@ The recorder rejects combinations already used by the app, by a menu item or by 
 
 ### About
 
-App icon, name, version and build, "Free and open-source under GPL-3.0", links: Source Code, Report an Issue, Acknowledgements (third-party licenses). Check for Updates button and an "Automatically check for updates" toggle.
+App icon, name, version and build, "Free and open-source under GPL-3.0", links: Source Code, Report an Issue, Acknowledgements (third-party licenses, shown in a sheet from `App/Credits.rtf`). An Updates section with an "Automatically check for updates" toggle (off by default) and a Check for Updates… button.
 
-> TODO: decide whether update settings live in About or General.
-> TODO: an Advanced pane (capture polling, size limit) only if real need appears.
+Decided (T13.1, WD-19): update settings live in About.
+There is no Advanced pane; capture polling and the size limit are fixed ([WD-1](roadmap.md#working-defaults-for-open-todos), [product §4.1](product.md#41-capture)).
 
 ---
 
@@ -306,8 +356,10 @@ Rules:
 - Permission status is re-checked when the app becomes active; Settings rows update live.
 - No seeded Boards or sample Cards.
 
-> TODO: verify the macOS 15.4+ pasteboard privacy model on macOS 26: the exact `NSPasteboard` access-behavior API names, whether reading `changeCount` alone triggers a prompt, and the name of the System Settings pane, before writing step 3 copy.
-> TODO: verify the System Settings deep-link URLs for Accessibility and pasteboard access on macOS 26.
+Step 3 and the Privacy pane row read `NSPasteboard.general.accessBehavior` (checked against the macOS 26 SDK). The step and the row appear only once macOS has asked about Clipsy (`.ask`, `.alwaysAllow` or `.alwaysDeny`); `.default` means the system never asked, so there is nothing to set. The pane is System Settings › Privacy & Security › Paste from Other Apps, and its button opens `x-apple.systempreferences:com.apple.preference.security?Privacy_Pasteboard` (the anchor is in the macOS 27.2 System Settings; the copy names the pane in case the anchor does not resolve). The Accessibility button calls the system prompt instead of a URL (WD-27).
+
+> TODO: whether reading `changeCount` alone triggers the pasteboard prompt on macOS 26 (see [product.md §4.1](product.md#41-capture)).
+> TODO: verify on macOS 26 that the `Privacy_Pasteboard` anchor opens the Paste from Other Apps list.
 
 ---
 
@@ -334,7 +386,7 @@ Rules:
 | Element | Component |
 |---|---|
 | Shelf window | `NSPanel` subclass, non-activating, full-size content view, resizable from the top edge, floating level, joins the active Space and full-screen Spaces; `sharingType = .none` unless the privacy toggle is on. Details in [architecture.md](architecture.md). |
-| Shelf background | `NSGlassEffectView` as the panel's content view (or SwiftUI `.glassEffect(.regular, in: .rect(cornerRadius:))` on the root view), concentric corner radius |
+| Shelf background | SwiftUI `.glassEffect(.regular, in: .rect(cornerRadius:))` on a background layer of the root view (see [§2 Metrics](#metrics)), concentric corner radius |
 | Shelf content | SwiftUI hosted in `NSHostingView` |
 | Card strip | Horizontal `ScrollView` + `LazyHStack` (or `NSCollectionView` if performance needs it) |
 | Card | SwiftUI view with opaque `background(.background.secondary)` fill and `separatorColor` stroke; no glass |
@@ -347,31 +399,44 @@ Rules:
 | Board color dot | `Circle().fill(Color(nsColor: .systemBlue))` etc. |
 | Empty states | `ContentUnavailableView` |
 | Context menu | `NSMenu` / SwiftUI `.contextMenu` with `Label` items (SF Symbols), `Divider` between sections, destructive role on Delete |
-| Quick Look | `NSPopover` containing `QLPreviewView` (files, images) or SwiftUI previews |
-| Edit sheet | `.sheet` with `Form`, `TextEditor`, `ColorPicker`, standard toolbar |
+| Quick Look | `NSPopover` containing `QLPreviewView` (files) or SwiftUI previews (images, text, links, colors) |
+| Edit sheet | `.sheet` with `Form`, `ColorPicker`, standard toolbar; the text editor is an `NSTextView` in `NSViewRepresentable`, because RTF in and out needs AppKit font attributes that SwiftUI's `TextEditor` does not keep |
 | New/Edit Board | Sheet with `TextField` and a swatch row |
 | Sequence panel | Separate `NSPanel` (utility, non-activating) hosting SwiftUI; header in `GlassEffectContainer`; rows in `List` with `.onMove` and `.onDelete` |
-| Menu bar extra | `MenuBarExtra` with `.menuBarExtraStyle(.menu)`, or `NSStatusItem` when left-click-opens-Shelf is on |
+| Menu bar extra | `NSStatusItem` with an `NSMenu` ([WD-35](roadmap.md#working-defaults-for-open-todos)) |
 | Symbol effects | `.symbolEffect(.bounce)` on capture |
 | Settings | `Settings` scene, `TabView` with `.tabItem`, `Form` + `.formStyle(.grouped)` |
-| Shortcut recorder | > TODO: Apple has no public recorder control; choose between our own control and an MIT/BSD-licensed package (needs maintainer approval) |
+| Shortcut recorder | `KeyboardShortcuts.Recorder` from KeyboardShortcuts ([architecture §2](architecture.md#2-stack)) |
 | Ignored apps list | `List` + `NSOpenPanel` limited to applications |
 | Onboarding | SwiftUI `Window` scene with a step container and standard buttons |
 | Alerts | `.alert` / `NSAlert` with `showsSuppressionButton` |
-| Toast/HUD (paused, copied) | Small glass capsule near the bottom center; > TODO: decide whether we need it at all or rely on the menu bar symbol |
+| Toast/HUD | None. The menu bar symbol shows the paused state ([§7](#7-menu-bar-extra)) and sounds confirm capture and paste ([WD-34](roadmap.md#working-defaults-for-open-todos)) |
 
-> TODO: verify exact SwiftUI glass API spellings (`.glass`, `.glassProminent`, `glassEffectID`, `glassEffectUnion`) and `NSGlassEffectView` properties against the macOS 26 SDK before implementation.
+Checked against the macOS 26 SDK: SwiftUI has `.glass`, `.glassProminent`, `glassEffectID(_:in:)` and `glassEffectUnion(id:namespace:)`; `NSGlassEffectView` has `contentView`, `cornerRadius`, `tintColor` and `style`.
+
+### Window and popover metrics
+
+Metrics of everything other than the Shelf. Every value lives in `DesignTokens`.
+
+| Surface | Metric |
+|---|---|
+| Settings | 500 pt wide (`settingsWidth`); each pane is as tall as its grouped `Form`. Ignored Apps list 120 pt tall, rows with 16 pt app icons, flush inside its section like System Settings lists |
+| About | 64 pt app icon; Acknowledgements sheet 460 × 420 pt |
+| Onboarding | 480 pt wide, at least 380 pt tall, 20 pt padding, 64 pt step icon |
+| Sequence panel | 280 pt wide, 18 pt radius, glass as a background layer (like the Shelf, so rows keep label colors); 44 pt rows, up to 6 before it scrolls, 8 pt list inset with a 10 pt concentric radius |
+| Quick Look popover | 520 × 400 pt |
+| Rename popover | 220 pt text field, system padding |
+| Filters popover | 260 × 380 pt |
+| Edit sheets | 20 pt padding (`sheetPadding`) on every sheet. Link and color sheets are 420 pt and the Board sheet 400 pt wide grouped forms; text editor 480 × 320 pt, never taller than the Shelf, 6 pt text-area radius |
 
 ---
 
 ## 12. Open questions
 
-> TODO: optional source-app tint on Card headers (§1) — ship or drop.
-> TODO: other Shelf edges (left/right/top) — later or never.
-> TODO: Quick Look as popover vs system `QLPreviewPanel`.
-> TODO: menu bar left-click default — menu (HIG) vs open Shelf. Current choice: menu, with opt-in.
-> TODO: compact-mode threshold and Card sizes — tune on 13" and 27"+ displays.
-> TODO: a Spotlight-like vertical list layout as an alternative to Cards.
-> TODO: Board "no color" option and maximum Board count in the switcher before it scrolls or collapses into a menu.
-> TODO: multi-display rule when the pointer and the key window are on different displays.
+These still need a test on real hardware or the task that settles them. Choices that follow a working default are in [roadmap.md](roadmap.md#working-defaults-for-open-todos); features left for later are in [roadmap.md](roadmap.md#later-not-scheduled).
+
+> TODO: Quick Look as popover vs system `QLPreviewPanel` (§5).
+> TODO: whether reading `changeCount` alone triggers the pasteboard prompt on macOS 26, and whether the `Privacy_Pasteboard` anchor opens the Paste from Other Apps list (§9).
+> TODO: compact-mode threshold and Card sizes: tune on 13" and 27"+ displays ([WD-15](roadmap.md#working-defaults-for-open-todos) until then).
+> TODO: maximum Board count in the switcher before it scrolls or collapses into a menu.
 > TODO: behavior and visuals on macOS releases after 26 (Liquid Glass changes not yet reviewed).

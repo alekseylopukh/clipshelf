@@ -1,17 +1,1112 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Edit Link" : {
+      "comment" : "Title of the sheet that edits a link card"
+    },
+    "Edit Color" : {
+      "comment" : "Title of the sheet that edits a color card"
+    },
+    "URL" : {
+      "comment" : "Label of the URL field in the link editor"
+    },
+    "Optional" : {
+      "comment" : "Placeholder of the title field in the link editor when the link has no page title"
+    },
+    "Format" : {
+      "comment" : "Label of the color format picker in the color editor"
+    },
+    "Value" : {
+      "comment" : "Label of the field with the color value in the color editor"
+    },
+    "Hex" : {
+      "comment" : "Color format picker option for values such as #1A2B3C"
+    },
+    "RGB" : {
+      "comment" : "Color format picker option for values such as rgb(26, 43, 60)"
+    },
+    "%lld words" : {
+      "comment" : "Word count below the text editor",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld word"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld words"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "A card with the same content already exists." : {
+      "comment" : "Inline error in the text editor when saving would make the card identical to another"
+    },
+    "Bold" : {
+      "comment" : "Text editor toggle that makes the selected text bold"
+    },
+    "Card Text" : {
+      "comment" : "Accessibility label of the text editor in the edit sheet"
+    },
+    "Clipsy can’t edit this card." : {
+      "comment" : "Title of the alert shown when a card's text cannot be loaded for editing"
+    },
+    "Clipsy can’t save this card." : {
+      "comment" : "Inline error in the text editor when saving fails"
+    },
+    "Edit…" : {
+      "comment" : "Context menu item that opens the editor for the selected text, link or color card"
+    },
+    "Italic" : {
+      "comment" : "Text editor toggle that makes the selected text italic"
+    },
+    "Strikethrough" : {
+      "comment" : "Text editor toggle that strikes through the selected text"
+    },
+    "Underline" : {
+      "comment" : "Text editor toggle that underlines the selected text"
+    },
+    "Board" : {
+      "comment" : "VoiceOver name of the board a search result is on",
+      "extractionState" : "manual"
+    },
+    "New Board" : {
+      "comment" : "Shelf top bar button that creates a board",
+      "extractionState" : "manual"
+    },
+    "Name" : {
+      "comment" : "Label of the name field in the New Board and Edit Board sheet",
+      "extractionState" : "manual"
+    },
+    "Edit Board" : {
+      "comment" : "Title of the sheet that renames and recolors a board; name of a shelf shortcut in a conflict message",
+      "extractionState" : "manual"
+    },
+    "Create" : {
+      "comment" : "Button that creates the board in the New Board sheet",
+      "extractionState" : "manual"
+    },
+    "Save" : {
+      "comment" : "Button that saves the changes in the Edit Board sheet and in the text editor",
+      "extractionState" : "manual"
+    },
+    "Edit Board…" : {
+      "comment" : "Board tab context menu item that opens the Edit Board sheet",
+      "extractionState" : "manual"
+    },
+    "Delete Board…" : {
+      "comment" : "Board tab context menu item that deletes the board after a confirmation",
+      "extractionState" : "manual"
+    },
+    "Delete Board" : {
+      "comment" : "Name of a shelf shortcut in a conflict message",
+      "extractionState" : "manual"
+    },
+    "Red" : {
+      "comment" : "Board color name",
+      "extractionState" : "manual"
+    },
+    "Orange" : {
+      "comment" : "Board color name",
+      "extractionState" : "manual"
+    },
+    "Yellow" : {
+      "comment" : "Board color name",
+      "extractionState" : "manual"
+    },
+    "Green" : {
+      "comment" : "Board color name",
+      "extractionState" : "manual"
+    },
+    "Blue" : {
+      "comment" : "Board color name",
+      "extractionState" : "manual"
+    },
+    "Purple" : {
+      "comment" : "Board color name",
+      "extractionState" : "manual"
+    },
+    "Gray" : {
+      "comment" : "Board color name",
+      "extractionState" : "manual"
+    },
+    "Clipsy can’t create this board." : {
+      "comment" : "Title of the alert shown when creating a board fails",
+      "extractionState" : "manual"
+    },
+    "Clipsy can’t change this board." : {
+      "comment" : "Title of the alert shown when renaming or recoloring a board fails",
+      "extractionState" : "manual"
+    },
+    "Clipsy can’t move this board." : {
+      "comment" : "Title of the alert shown when reordering boards fails",
+      "extractionState" : "manual"
+    },
+    "Clipsy can’t delete this board." : {
+      "comment" : "Title of the alert shown when deleting a board fails",
+      "extractionState" : "manual"
+    },
+    "Delete the board “%@”?" : {
+      "comment" : "Title of the confirmation shown before deleting a board",
+      "extractionState" : "manual"
+    },
+    "Its cards stay in History. Cards that are only on this board are deleted. You can’t undo this." : {
+      "comment" : "Informative text of the confirmation shown before deleting a board",
+      "extractionState" : "manual"
+    },
+    "New Text Card" : {
+      "comment" : "Shelf More menu item that opens the editor for a new text card",
+      "extractionState" : "manual"
+    },
+    "Start Sequence" : {
+      "comment" : "Shelf More menu item, menu bar menu item and shortcut recorder label that open the Sequence panel",
+      "extractionState" : "manual"
+    },
+    "Pause Capture" : {
+      "comment" : "Shelf More menu item that stops saving copies",
+      "extractionState" : "manual"
+    },
+    "Resume Capture" : {
+      "comment" : "Shelf More menu item and empty-state button that start saving copies again",
+      "extractionState" : "manual"
+    },
+    "Filters" : {
+      "comment" : "Shelf top bar button that opens the filter browser",
+      "extractionState" : "manual"
+    },
+    "Type" : {
+      "comment" : "Search filter category: card type",
+      "extractionState" : "manual"
+    },
+    "App" : {
+      "comment" : "Search filter category: the app a card was copied from",
+      "extractionState" : "manual"
+    },
+    "Date" : {
+      "comment" : "Search filter category: when a card was copied",
+      "extractionState" : "manual"
+    },
+    "Today" : {
+      "comment" : "Search date filter",
+      "extractionState" : "manual"
+    },
+    "Yesterday" : {
+      "comment" : "Search date filter",
+      "extractionState" : "manual"
+    },
+    "Last 7 Days" : {
+      "comment" : "Search date filter",
+      "extractionState" : "manual"
+    },
+    "Last 30 Days" : {
+      "comment" : "Search date filter",
+      "extractionState" : "manual"
+    },
+    "Custom Range…" : {
+      "comment" : "Filter browser row that shows the date pickers",
+      "extractionState" : "manual"
+    },
+    "From" : {
+      "comment" : "Start day of a custom date filter",
+      "extractionState" : "manual"
+    },
+    "Through" : {
+      "comment" : "Last day of a custom date filter",
+      "extractionState" : "manual"
+    },
+    "Apply Range" : {
+      "comment" : "Filter browser button that adds the custom date filter",
+      "extractionState" : "manual"
+    },
+    "Filter Suggestions" : {
+      "comment" : "VoiceOver name of the list of suggested search filters",
+      "extractionState" : "manual"
+    },
+    "Remove Filter %@" : {
+      "comment" : "VoiceOver label of a search filter token; the argument is the filter",
+      "extractionState" : "manual"
+    },
+    "Remove Filter" : {
+      "comment" : "Tooltip of a search filter token",
+      "extractionState" : "manual"
+    },
+    "Search" : {
+      "comment" : "Placeholder of the shelf search field",
+      "extractionState" : "manual"
+    },
+    "Clear Search" : {
+      "comment" : "Button inside the shelf search field that empties it",
+      "extractionState" : "manual"
+    },
+    "No Clipboard History" : {
+      "comment" : "Title of the shelf empty state when History has no cards",
+      "extractionState" : "manual"
+    },
+    "Copy something and it shows up here." : {
+      "comment" : "Description of the shelf empty state when History has no cards",
+      "extractionState" : "manual"
+    },
+    "This Board Is Empty" : {
+      "comment" : "Title of the shelf empty state when the current board has no cards",
+      "extractionState" : "manual"
+    },
+    "Drag Cards here or use “Add to Board”." : {
+      "comment" : "Description of the shelf empty state when the current board has no cards",
+      "extractionState" : "manual"
+    },
+    "No Results" : {
+      "comment" : "Title of the shelf empty state when a search finds nothing",
+      "extractionState" : "manual"
+    },
+    "Try a different search or remove a filter." : {
+      "comment" : "Description of the shelf empty state when a search finds nothing",
+      "extractionState" : "manual"
+    },
+    "Capture Paused" : {
+      "comment" : "Title of the shelf empty state when History is empty and capture is paused",
+      "extractionState" : "manual"
+    },
+    "Allow Clipsy to paste into other apps?" : {
+      "comment" : "Title of the alert shown on the first paste without Accessibility permission"
+    },
+    "Clear" : {
+      "comment" : "Sequence panel menu item that removes every card and keeps the panel open",
+      "extractionState" : "manual"
+    },
+    "Cancel" : {
+      "comment" : "Button that dismisses a confirmation"
+    },
     "Clipsy" : {
+      "comment" : "Accessibility label of the menu bar item"
+    },
+    "Clipsy can’t delete these cards." : {
+      "comment" : "Title of the alert shown when deleting cards fails"
+    },
+    "Clipsy can’t open its clipboard history." : {
+      "comment" : "Title of the alert shown when the database fails to open at launch"
+    },
+    "Clipsy can’t open this card." : {
+      "comment" : "Title of the alert shown when a card's link or file cannot be opened"
+    },
+    "Clipsy can’t paste this card." : {
+      "comment" : "Title of the alert shown when a card's contents cannot be read for pasting"
+    },
+    "Clipsy can’t rename this card." : {
+      "comment" : "Title of the alert shown when renaming a card fails"
+    },
+    "Clipsy can’t restore the deleted cards." : {
+      "comment" : "Title of the alert shown when undoing a delete fails"
+    },
+    "Clipsy moved it to “%@” and started a new, empty history." : {
+      "comment" : "Informative text of the alert shown after a damaged database was moved aside at launch; the argument is the backup folder path"
+    },
+    "Clipsy’s clipboard history was damaged." : {
+      "comment" : "Title of the alert shown after a damaged database was moved aside at launch"
+    },
+    "Close" : {
+      "comment" : "Sequence panel button that closes the panel and clears the Sequence",
+      "extractionState" : "manual"
+    },
+    "Color" : {
+      "comment" : "Card type name; label of the board color picker, the board color submenu and the color editor's color well",
+      "extractionState" : "manual"
+    },
+    "Copy" : {
+      "comment" : "Context menu item that copies the card to the clipboard"
+    },
+    "Copy Only" : {
+      "comment" : "Alert button that keeps the card on the clipboard without pasting"
+    },
+    "Copy something, or drag cards here from the shelf." : {
+      "comment" : "Empty state of the Sequence panel",
+      "extractionState" : "manual"
+    },
+    "Copy as Plain Text" : {
+      "comment" : "Context menu item that copies the card without formatting"
+    },
+    "Delete" : {
+      "comment" : "Context menu item and confirmation button that delete the selected cards"
+    },
+    "Delete %lld cards?" : {
+      "comment" : "Title of the confirmation shown before deleting several cards from History"
+    },
+    "Don’t ask again" : {
+      "comment" : "Checkbox in the Accessibility alert that stops it from appearing"
+    },
+    "File" : {
+      "comment" : "Card type name",
+      "extractionState" : "manual"
+    },
+    "Image" : {
+      "comment" : "Card type name",
+      "extractionState" : "manual"
+    },
+    "Link" : {
+      "comment" : "Card type name",
+      "extractionState" : "manual"
+    },
+    "More" : {
+      "comment" : "Sequence panel and shelf top bar menu button with more actions",
+      "extractionState" : "manual"
+    },
+    "Next" : {
+      "comment" : "Accessibility value of the Sequence row that is pasted next",
+      "extractionState" : "manual"
+    },
+    "number %lld" : {
+      "comment" : "Part of a card's VoiceOver label while its Quick Paste badge shows"
+    },
+    "OK" : {
 
+    },
+    "Open" : {
+      "comment" : "Context menu item that opens a link or file card"
+    },
+    "Open Shelf" : {
+
+    },
+    "Open System Settings…" : {
+      "comment" : "Alert button that asks macOS for Accessibility permission"
+    },
+    "Other" : {
+      "comment" : "Card type name for content of an unknown type",
+      "extractionState" : "manual"
+    },
+    "Paste All" : {
+      "comment" : "Sequence panel menu item that pastes all remaining cards at once",
+      "extractionState" : "manual"
+    },
+    "Paste" : {
+      "comment" : "Context menu item that pastes the card when no target app is known"
+    },
+    "Paste as Plain Text" : {
+      "comment" : "Context menu item that pastes the card without formatting, and Sequence panel menu toggle that pastes cards without formatting"
+    },
+    "Paste to %@" : {
+      "comment" : "Context menu item that pastes the card into the app the shelf was opened from; the argument is that app's name"
     },
     "Quit Clipsy" : {
 
     },
+    "Remove" : {
+      "comment" : "Button that confirms removing cards from a board, and button and accessibility action that removes a card from the Sequence"
+    },
+    "Rename…" : {
+      "comment" : "Context menu item that opens a popover to give the selected card a custom title"
+    },
+    "Show in List" : {
+      "comment" : "Context menu item on a search result that clears the search and selects the card in its History or board tab"
+    },
+    "Reverse Order" : {
+      "comment" : "Sequence panel menu toggle that adds new cards at the head instead of the end",
+      "extractionState" : "manual"
+    },
+    "Sequence" : {
+      "comment" : "Title of the Sequence panel",
+      "extractionState" : "manual"
+    },
+    "Remove %lld cards from this board?" : {
+      "comment" : "Title of the confirmation shown before removing several cards from a board"
+    },
+    "Remove from Board" : {
+      "comment" : "Context menu item that removes the selected cards from the current board"
+    },
     "Settings…" : {
 
     },
-    "Version" : {
-
+    "Show in Finder" : {
+      "comment" : "Button that reveals the backup of a damaged database, and card context menu item that selects a file card's files in Finder"
+    },
+    "Text" : {
+      "comment" : "Card type name",
+      "extractionState" : "manual"
+    },
+    "Title" : {
+      "comment" : "Label and placeholder of the field that renames a card; label of the title field in the link editor"
+    },
+    "To paste directly, Clipsy needs Accessibility permission in Privacy & Security settings. Until then, Clipsy copies the card and you can press ⌘V to paste it." : {
+      "comment" : "Body of the alert shown on the first paste without Accessibility permission"
+    },
+    "Undo" : {
+      "comment" : "Sequence panel button that restores the last pasted or removed card",
+      "extractionState" : "manual"
+    },
+    "Untitled" : {
+      "comment" : "Name of a board created without one",
+      "extractionState" : "manual"
+    },
+    "You can undo this until the shelf closes." : {
+      "comment" : "Informative text of the confirmation shown before deleting several cards"
+    },
+    "General" : {
+      "comment" : "Title of the General pane in Settings"
+    },
+    "Open at login" : {
+      "comment" : "Settings toggle that registers Clipsy as a login item"
+    },
+    "Needs your approval" : {
+      "comment" : "Settings row shown when the login item waits for approval in System Settings"
+    },
+    "Allow Clipsy in System Settings › General › Login Items." : {
+      "comment" : "Explanation under the login item approval row in Settings"
+    },
+    "Open Login Items…" : {
+      "comment" : "Settings button that opens Login Items in System Settings"
+    },
+    "Sound effects" : {
+      "comment" : "Settings toggle for sounds on paste and capture"
+    },
+    "Pasting" : {
+      "comment" : "Section header in the General settings pane"
+    },
+    "Paste behavior" : {
+      "comment" : "Label of the radio group that chooses what pasting a card does"
+    },
+    "Paste into the active app" : {
+      "comment" : "Paste behavior option that pastes the card into the frontmost app"
+    },
+    "Copy to the clipboard only" : {
+      "comment" : "Paste behavior option that only copies the card"
+    },
+    "Paste without formatting by default" : {
+      "comment" : "Settings toggle that makes every paste plain text"
+    },
+    "Accessibility" : {
+      "comment" : "Label of the Accessibility permission status row in Settings"
+    },
+    "Allowed" : {
+      "comment" : "Status of a granted permission in Settings"
+    },
+    "Clipsy can paste directly into other apps." : {
+      "comment" : "Explanation under the Accessibility row when the permission is granted"
+    },
+    "Not allowed. Clipsy copies cards to the clipboard instead of pasting them." : {
+      "comment" : "Explanation under the Accessibility row when the permission is missing"
+    },
+    "History" : {
+      "comment" : "Section header in the General settings pane, and the shelf tab that shows the clipboard history"
+    },
+    "Keep history for" : {
+      "comment" : "Label of the retention slider in Settings"
+    },
+    "Storage" : {
+      "comment" : "Label of the storage summary row in Settings"
+    },
+    "^[%lld cards](inflect: true), %@" : {
+      "comment" : "Storage summary in Settings: the number of stored cards and their size on disk"
+    },
+    "1 Day" : {
+      "comment" : "Retention slider tick"
+    },
+    "1 Week" : {
+      "comment" : "Retention slider tick"
+    },
+    "1 Month" : {
+      "comment" : "Retention slider tick"
+    },
+    "1 Year" : {
+      "comment" : "Retention slider tick"
+    },
+    "Forever" : {
+      "comment" : "Retention slider tick"
+    },
+    "Remove all cards from History" : {
+      "comment" : "Label of the Erase History row in Settings"
+    },
+    "Cards on boards are kept." : {
+      "comment" : "Explanation under the Erase History row in Settings"
+    },
+    "Erase History…" : {
+      "comment" : "Settings button that asks to erase the history"
+    },
+    "Erase all History?" : {
+      "comment" : "Title of the alert confirming Erase History"
+    },
+    "All cards will be removed from History. Cards on boards are kept. You can’t undo this action." : {
+      "comment" : "Message of the alert confirming Erase History"
+    },
+    "Erase History" : {
+      "comment" : "Destructive button in the alert confirming Erase History"
+    },
+    "Clipsy can’t erase the history." : {
+      "comment" : "Title of the alert shown when erasing the history fails"
+    },
+    "Remove older cards from History?" : {
+      "comment" : "Title of the alert shown when a shorter retention limit would remove cards"
+    },
+    "Cards older than the new limit will be removed from History. Cards on boards are kept. You can’t undo this action." : {
+      "comment" : "Message of the alert shown when a shorter retention limit would remove cards"
+    },
+    "Remove Cards" : {
+      "comment" : "Destructive button that confirms a shorter retention limit"
+    },
+    "Clipsy can’t change how long it keeps history." : {
+      "comment" : "Title of the alert shown when changing the retention limit fails"
+    },
+    "Clipsy can’t change the login item." : {
+      "comment" : "Title of the alert shown when registering or unregistering the login item fails"
+    },
+    "%lld characters" : {
+      "comment" : "Card footer: number of characters in a text card",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld character"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld characters"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld lines" : {
+      "comment" : "Card footer: number of lines in a code-like text card",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld line"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld lines"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld files" : {
+      "comment" : "Card footer: number of files in a card",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld file"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld files"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld cards" : {
+      "comment" : "VoiceOver value of the card strip: the number of cards",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld card"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld cards"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld files, %@" : {
+      "comment" : "Card footer: number of files and their total size",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@files@, %@"
+          },
+          "substitutions" : {
+            "files" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg file"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg files"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%@ × %@" : {
+      "comment" : "Card footer: pixel width and height of an image card",
+      "extractionState" : "manual"
+    },
+    "%@ from %@, %@" : {
+      "comment" : "VoiceOver label of a card: type, source app and relative time, e.g. Text from TextEdit, 2 minutes ago",
+      "extractionState" : "manual"
+    },
+    "%@, %@" : {
+      "comment" : "VoiceOver label of a card without a source app: type and relative time",
+      "extractionState" : "manual"
+    },
+    "Cards" : {
+      "comment" : "VoiceOver label of the card strip on the shelf",
+      "extractionState" : "manual"
+    },
+    "Clipsy can still paste this item." : {
+      "comment" : "Body of a card whose type is unknown",
+      "extractionState" : "manual"
+    },
+    "No Preview" : {
+      "comment" : "Title of the preview of a card that Clipsy cannot show",
+      "extractionState" : "manual"
+    },
+    "File Not Found" : {
+      "comment" : "Title of the preview of a file card whose file was moved or deleted",
+      "extractionState" : "manual"
+    },
+    "Hex" : {
+      "comment" : "Label of a color's hexadecimal value in the preview",
+      "extractionState" : "manual"
+    },
+    "RGB" : {
+      "comment" : "Label of a color's red, green and blue value in the preview",
+      "extractionState" : "manual"
+    },
+    "HSL" : {
+      "comment" : "Label of a color's hue, saturation and lightness value in the preview",
+      "extractionState" : "manual"
+    },
+    "Privacy" : {
+      "comment" : "Settings tab for privacy options"
+    },
+    "Ignore passwords and other concealed content" : {
+      "comment" : "Privacy setting that skips copies marked as concealed or made in a password manager"
+    },
+    "Ignore temporary content from other apps" : {
+      "comment" : "Privacy setting that skips copies other apps mark as transient or auto-generated"
+    },
+    "Ignored Apps" : {
+      "comment" : "Header of the list of apps whose copies are never kept"
+    },
+    "Add App…" : {
+      "comment" : "Button that opens a picker to add apps to Ignored Apps"
+    },
+    "Remove App" : {
+      "comment" : "Button that removes the selected apps from Ignored Apps"
+    },
+    "Clipsy doesn’t keep anything copied in these apps. Browser extensions of password managers may not mark copied passwords as concealed; to keep them out of your history, add your browser." : {
+      "comment" : "Explanation under the Ignored Apps list in Settings"
+    },
+    "Fetch link previews" : {
+      "comment" : "Privacy setting that loads the title and image of copied web links"
+    },
+    "Clipsy loads each web link you copy to show the page’s title and image. Loading a page can use up a one-time link or let the site track the visit." : {
+      "comment" : "Explanation under the Fetch link previews setting"
+    },
+    "Show the Shelf in screenshots and screen sharing" : {
+      "comment" : "Privacy setting that lets screenshots and screen sharing capture the Shelf"
+    },
+    "Recognize text in images" : {
+      "comment" : "Privacy setting that turns on-device text recognition in image cards on or off"
+    },
+    "Text is recognized on this Mac, so you can search for it." : {
+      "comment" : "Explanation under the Recognize text in images setting"
+    },
+    "Some apps can’t be ignored." : {
+      "comment" : "Title of the alert shown when a chosen app has no bundle identifier"
+    },
+    "%@ can’t be identified, so Clipsy can’t tell when you copy in them." : {
+      "comment" : "Message of the alert shown when chosen apps have no bundle identifier; the placeholder is a list of app names"
+    },
+    "Show in menu bar" : {
+      "comment" : "Settings toggle that shows or hides the menu bar item"
+    },
+    "Click on menu bar icon opens the Shelf" : {
+      "comment" : "Settings toggle that makes a left click on the menu bar item open the shelf"
+    },
+    "Pause Capture" : {
+      "comment" : "Menu bar submenu that stops adding copies to History for a chosen time"
+    },
+    "Resume Capture" : {
+      "comment" : "Menu bar menu item that starts adding copies to History again"
+    },
+    "For 15 Minutes" : {
+      "comment" : "Pause Capture submenu item; capture resumes after 15 minutes"
+    },
+    "For 1 Hour" : {
+      "comment" : "Pause Capture submenu item; capture resumes after one hour"
+    },
+    "For 8 Hours" : {
+      "comment" : "Pause Capture submenu item; capture resumes after eight hours"
+    },
+    "Until Tomorrow" : {
+      "comment" : "Pause Capture submenu item; capture resumes at midnight"
+    },
+    "Until Resumed" : {
+      "comment" : "Pause Capture submenu item; capture stays paused until the user resumes it"
+    },
+    "Paused until %@" : {
+      "comment" : "Disabled menu bar menu line while capture is paused; the placeholder is the time capture resumes"
+    },
+    "About Clipsy" : {
+      "comment" : "Menu bar menu item that shows the About panel"
+    },
+    "Clipsy Help" : {
+      "comment" : "Menu bar menu item that opens the project documentation"
+    },
+    "Report an Issue" : {
+      "comment" : "Menu bar menu item that opens the issue tracker"
+    },
+    "Capture Paused" : {
+      "comment" : "Accessibility description of the paused menu bar symbol"
+    },
+    "Capture paused" : {
+      "comment" : "VoiceOver announcement when capture is paused"
+    },
+    "Capture resumed" : {
+      "comment" : "VoiceOver announcement when capture is resumed"
+    },
+    "Shortcuts" : {
+      "comment" : "Title of the Shortcuts settings pane"
+    },
+    "Previous Board" : {
+      "comment" : "Shortcut recorder label in the Shortcuts settings pane"
+    },
+    "Next Board" : {
+      "comment" : "Shortcut recorder label in the Shortcuts settings pane"
+    },
+    "Shelf" : {
+      "comment" : "Section header in the Shortcuts settings pane"
+    },
+    "Quick Paste modifier" : {
+      "comment" : "Pop-up label in the Shortcuts settings pane"
+    },
+    "Plain text modifier" : {
+      "comment" : "Pop-up label in the Shortcuts settings pane"
+    },
+    "⌘ Command" : {
+      "comment" : "Modifier key choice in the Shortcuts settings pane"
+    },
+    "⌃ Control" : {
+      "comment" : "Modifier key choice in the Shortcuts settings pane"
+    },
+    "⌥ Option" : {
+      "comment" : "Modifier key choice in the Shortcuts settings pane"
+    },
+    "⇧ Shift" : {
+      "comment" : "Modifier key choice in the Shortcuts settings pane"
+    },
+    "Restore Defaults…" : {
+      "comment" : "Button that asks to restore the default shortcuts"
+    },
+    "Restore the default shortcuts?" : {
+      "comment" : "Title of the confirmation shown before restoring the default shortcuts"
+    },
+    "Restore Defaults" : {
+      "comment" : "Button that confirms restoring the default shortcuts"
+    },
+    "All shortcuts and modifiers on this pane return to their default values." : {
+      "comment" : "Message of the confirmation shown before restoring the default shortcuts"
+    },
+    "%@ is already used by “%@”." : {
+      "comment" : "Shown below a shortcut recorder when the recorded shortcut is taken; the first value is the shortcut, the second the action that uses it"
+    },
+    "Shortcuts that use only ⌥ as a modifier may not work reliably." : {
+      "comment" : "Warning below a shortcut recorder"
+    },
+    "Quick Paste" : {
+      "comment" : "Name of the Quick Paste shortcuts in a conflict message"
+    },
+    "First Card" : {
+      "comment" : "Name of a shelf shortcut in a conflict message"
+    },
+    "Last Card" : {
+      "comment" : "Name of a shelf shortcut in a conflict message"
+    },
+    "Select All" : {
+      "comment" : "Name of a shelf shortcut in a conflict message"
+    },
+    "Search" : {
+      "comment" : "Name of a shelf shortcut in a conflict message"
+    },
+    "New Board" : {
+      "comment" : "Name of a shelf shortcut in a conflict message"
+    },
+    "New Text Card" : {
+      "comment" : "Name of a shelf shortcut in a conflict message"
+    },
+    "Rename" : {
+      "comment" : "Name of a shelf shortcut in a conflict message"
+    },
+    "Edit" : {
+      "comment" : "Name of a shelf shortcut in a conflict message"
+    },
+    "Show in List" : {
+      "comment" : "Name of a shelf shortcut in a conflict message"
+    },
+    "Not Allowed" : {
+      "comment" : "Status of a missing permission"
+    },
+    "Allow Clipsy to read what you copy?" : {
+      "comment" : "Title of the alert shown when macOS asks before or blocks Clipsy's clipboard access"
+    },
+    "macOS asks before Clipsy reads what you copy in other apps, or doesn’t let it read at all, so your history may miss items. Allow Clipsy in System Settings › Privacy & Security › Paste from Other Apps." : {
+      "comment" : "Body of the alert shown when macOS asks before or blocks Clipsy's clipboard access"
+    },
+    "Not Now" : {
+      "comment" : "Button that skips a permission request for now"
+    },
+    "Welcome to Clipsy" : {
+      "comment" : "Title of the onboarding window and of its first step"
+    },
+    "Everything you copy, one shortcut away." : {
+      "comment" : "Subtitle of the first onboarding step"
+    },
+    "Continue" : {
+      "comment" : "Button that moves to the next onboarding step"
+    },
+    "Paste Directly" : {
+      "comment" : "Title of the onboarding step about Accessibility permission"
+    },
+    "To paste into other apps, Clipsy needs Accessibility permission. Without it, Clipsy copies the card and you press ⌘V to paste it." : {
+      "comment" : "Explanation in the onboarding step about Accessibility permission"
+    },
+    "Clipboard Access" : {
+      "comment" : "Title of the onboarding step and label of the status row about the system clipboard permission"
+    },
+    "macOS asks before Clipsy reads what you copy in other apps, or doesn’t let it read at all. To keep your history complete, allow Clipsy in System Settings › Privacy & Security › Paste from Other Apps." : {
+      "comment" : "Explanation in the onboarding step about the system clipboard permission"
+    },
+    "You’re All Set" : {
+      "comment" : "Title of the last onboarding step"
+    },
+    "Press %@ to open the Shelf and try it." : {
+      "comment" : "Hint in the last onboarding step; the placeholder is the Open Shelf shortcut, such as ⇧⌘V"
+    },
+    "Set a shortcut in Settings to open the Shelf." : {
+      "comment" : "Hint in the last onboarding step when the Open Shelf shortcut is cleared"
+    },
+    "Done" : {
+      "comment" : "Button that closes the onboarding window"
+    },
+    "Clipsy can’t change this setting." : {
+      "comment" : "Title of the alert shown when a setting in the onboarding window fails to change"
+    },
+    "Clipsy can read what you copy in other apps." : {
+      "comment" : "Status text of the clipboard access row in Settings when access is allowed"
+    },
+    "Not allowed. Clipsy can’t add what you copy in other apps to your history." : {
+      "comment" : "Status text of the clipboard access row in Settings when access is denied"
+    },
+    "macOS asks before Clipsy reads what you copy in other apps. Allow it in Privacy & Security › Paste from Other Apps." : {
+      "comment" : "Status text of the clipboard access row in Settings when macOS asks before each read"
+    },
+    "Paste All Sequence Cards" : {
+      "comment" : "Shortcut recorder label in the Shortcuts settings pane"
+    },
+    "Add to Sequence" : {
+      "comment" : "Card context menu item that adds the selected cards to the Sequence"
+    },
+    "Add to Board" : {
+      "comment" : "Card context menu submenu that lists the boards the selected cards can be added to"
+    },
+    "New Board…" : {
+      "comment" : "Item at the end of the Add to Board submenu that creates a board holding the selected cards"
+    },
+    "Open With" : {
+      "comment" : "Card context menu submenu that lists the apps that can open a file card's files"
+    },
+    "%@ (default)" : {
+      "comment" : "Open With menu item of the app that opens the file by default"
+    },
+    "Share…" : {
+      "comment" : "Card context menu item that opens the system share picker for the selected cards"
+    },
+    "Quick Look" : {
+      "comment" : "Card context menu item and VoiceOver action that opens the card's preview"
+    },
+    "Clipsy can’t show this file in Finder." : {
+      "comment" : "Title of the alert shown when a file card's files cannot be shown in Finder"
+    },
+    "Clipsy can’t share these cards." : {
+      "comment" : "Title of the alert shown when the selected cards cannot be read for sharing"
+    },
+    "Clipsy can’t drag these cards." : {
+      "comment" : "Title of the alert shown when the dragged cards cannot be read"
+    },
+    "Add to %@" : {
+      "comment" : "VoiceOver action of a card that adds it to the named board"
+    },
+    "Add to New Board…" : {
+      "comment" : "VoiceOver action of a card that creates a board for it"
+    },
+    "Clipsy can’t add these cards to the board." : {
+      "comment" : "Title of the alert shown when adding cards to a board fails"
+    },
+    "Clipsy can’t move these cards." : {
+      "comment" : "Title of the alert shown when reordering cards on a board fails"
+    },
+    "Clipsy can’t paste the Sequence." : {
+      "comment" : "Title of the alert shown when Paste All cannot read the Sequence cards"
+    },
+    "Clipsy can’t add the dropped content." : {
+      "comment" : "Title of the alert shown when content dropped on the Sequence panel cannot be saved"
+    },
+    "About" : {
+      "comment" : "Settings tab with the app version, links and update settings"
+    },
+    "Version %@ (%@)" : {
+      "comment" : "Version and build number in the About pane"
+    },
+    "Free and open-source under GPL-3.0" : {
+      "comment" : "License line in the About pane"
+    },
+    "Source Code" : {
+      "comment" : "About pane link that opens the project repository"
+    },
+    "Acknowledgements" : {
+      "comment" : "About pane button that shows third-party licenses"
+    },
+    "Updates" : {
+      "comment" : "About pane section header for update settings"
+    },
+    "Automatically check for updates" : {
+      "comment" : "About pane toggle that turns on scheduled update checks"
+    },
+    "Check for Updates…" : {
+      "comment" : "Button and menu bar menu item that checks for a new version now"
+    },
+    "Clipsy looks for a new version on GitHub only when you check or turn on automatic checks." : {
+      "comment" : "Footnote under the update settings in the About pane"
+    },
+    "Clipsy can’t check for updates." : {
+      "comment" : "Title of the alert shown when the updater cannot start"
+    },
+    "Adds a board to Clipsy." : {
+      "comment" : "Description of the Create Board action in Shortcuts"
+    },
+    "Adds a text card to Clipsy. Leave Board empty to add it to History." : {
+      "comment" : "Description of the Create Card action in Shortcuts"
+    },
+    "Boards" : {
+      "comment" : "Category of the board actions in Shortcuts"
+    },
+    "Card" : {
+      "comment" : "Name of the card type in Shortcuts"
+    },
+    "Card Type" : {
+      "comment" : "Name of the card type parameter type in Shortcuts"
+    },
+    "Create Board" : {
+      "comment" : "Title of the Shortcuts action that adds a board"
+    },
+    "Create Card" : {
+      "comment" : "Title of the Shortcuts action that adds a text card"
+    },
+    "Created" : {
+      "comment" : "Shortcuts property of a card: when it was created"
+    },
+    "Get Card at Index" : {
+      "comment" : "Title of the Shortcuts action that gets a card by position"
+    },
+    "Get Latest Card of Type" : {
+      "comment" : "Title of the Shortcuts action that gets the newest card of a type"
+    },
+    "Gets a card by its position, starting at 1. Leave Board empty to count from the newest card in History." : {
+      "comment" : "Description of the Get Card at Index action in Shortcuts"
+    },
+    "Gets the newest card of a type from History." : {
+      "comment" : "Description of the Get Latest Card of Type action in Shortcuts"
+    },
+    "Index" : {
+      "comment" : "Shortcuts parameter: position of the card, starting at 1"
+    },
+    "Last Copied" : {
+      "comment" : "Shortcuts property of a card: when it was last copied"
+    },
+    "Source App" : {
+      "comment" : "Shortcuts property of a card: the app it was copied from"
+    },
+    "Create a board named ${name}" : {
+      "comment" : "Summary of the Create Board action in Shortcuts; ${name} is the name parameter"
+    },
+    "Create a card with ${text} on ${board}" : {
+      "comment" : "Summary of the Create Card action in Shortcuts; ${text} and ${board} are parameters"
+    },
+    "Get card ${index} on ${board}" : {
+      "comment" : "Summary of the Get Card at Index action in Shortcuts; ${index} and ${board} are parameters"
+    },
+    "Get the latest ${type} card" : {
+      "comment" : "Summary of the Get Latest Card of Type action in Shortcuts; ${type} is the card type parameter"
+    },
+    "The card has no text." : {
+      "comment" : "Shortcuts error when Create Card gets empty text",
+      "extractionState" : "manual"
+    },
+    "There is no card at position %lld." : {
+      "comment" : "Shortcuts error when Get Card at Index is out of range; the number is the position",
+      "extractionState" : "manual"
+    },
+    "History has no card of this type." : {
+      "comment" : "Shortcuts error when Get Latest Card finds no card of the chosen type",
+      "extractionState" : "manual"
+    },
+    "The card no longer exists." : {
+      "comment" : "Shortcuts error when a card was deleted meanwhile",
+      "extractionState" : "manual"
+    },
+    "The board no longer exists." : {
+      "comment" : "Shortcuts error when a board was deleted meanwhile",
+      "extractionState" : "manual"
     }
   },
   "version" : "1.0"

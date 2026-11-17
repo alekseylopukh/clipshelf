@@ -1,0 +1,36 @@
+name: Build
+
+# macOS runners are slow to start; run this by hand when a build on GitHub is needed
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+
+jobs:
+  build:
+    name: Build and test
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cache SPM checkouts
+        uses: actions/cache@v4
+        with:
+          path: |
+            .build/DerivedData/SourcePackages
+            Packages/ClipsyKit/.build/checkouts
+            Packages/ClipsyKit/.build/repositories
+          key: spm-${{ runner.os }}-${{ hashFiles('Packages/ClipsyKit/Package.swift', 'Packages/ClipsyKit/Package.resolved') }}
+          restore-keys: spm-${{ runner.os }}-
+      - name: Build the app
+        run: scripts/build.sh
+      - name: Run the tests
+        run: scripts/build.sh test

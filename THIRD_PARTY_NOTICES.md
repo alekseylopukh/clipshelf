@@ -15,4 +15,21 @@ These are vendored unchanged except for one cleanup: plugin manifests and images
 
 ## Swift packages
 
-None yet. Every package added later gets a row here.
+Every package added later gets a row here.
+
+| Package | Version | Use | License |
+|---|---|---|---|
+| [groue/GRDB.swift](https://github.com/groue/GRDB.swift) | 7.12.0 | SQLite, FTS5, migrations (`Store`) | MIT, © Gwendal Roué |
+| [sindresorhus/KeyboardShortcuts](https://github.com/sindresorhus/KeyboardShortcuts) | 2.4.0 | Global hotkeys, recorder (`ShelfUI`, re-exported to the app) | MIT, © Sindre Sorhus |
+| [sparkle-project/Sparkle](https://github.com/sparkle-project/Sparkle) | 2.10.1 | Updates (`Updates`; the framework is embedded in the app) | MIT, © 2006-2017 Andy Matuschak and others; bundles bsdiff 4.3 (BSD-2-Clause, © Colin Percival), sais-lite (MIT, © Yuta Mori), ed25519 (zlib, © Orson Peters) and SUSignatureVerifier (BSD-2-Clause, © Mark Hamlin) |
+
+`App/Credits.rtf` repeats the notices of the packages and adapted code that ship in the app, for the About panel. Update it with this file.
+
+## Adapted code
+
+Code adapted from other projects. Each file keeps a header line naming its source.
+
+| File | Upstream | Adapted | License |
+|---|---|---|---|
+| `Packages/ClipsyKit/Sources/Pasting/PasteKeystroke.swift` | [p0deje/Maccy](https://github.com/p0deje/Maccy) | Cmd+V paste recipe: `.combinedSessionState` source, local event suppression, post to `.cgSessionEventTap` | MIT, Copyright (c) 2025 Alex Rodionov |
+| `Packages/ClipsyKit/Sources/Pasting/PasteKeystroke.swift` | [TermiT/Flycut](https://github.com/TermiT/Flycut) ([PR #18](https://github.com/TermiT/Flycut/pull/18)) | Left-Cmd device flag on the synthesized events | MIT, Copyright (C) 2011, General Arcade, Gennadiy Potapov |
