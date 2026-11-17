@@ -33,4 +33,8 @@ public struct PasteboardSnapshot: Sendable, Equatable {
         guard representations.isEmpty == false else { return nil }
         self.representations = representations
     }
+
+    init(representations: [Representation]) {
+        self.representations = representations
+    }
 }

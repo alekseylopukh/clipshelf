@@ -17,7 +17,7 @@ public struct CardRepository: Sendable {
     @discardableResult
     @concurrent
     public func record(_ card: NewCard, at date: Date = .now) async throws -> Int64 {
-        try await database.pool.write { [payloads] connection in
+        try await database.pool.write { connection in
             let sourceAppID = try Self.upsert(card.sourceApp, in: connection)
             let time = date.timeIntervalSince1970
             if let id = try Int64.fetchOne(
@@ -36,31 +36,7 @@ public struct CardRepository: Sendable {
                 return id
             }
 
-            try connection.execute(
-                sql: """
-                INSERT INTO card (kind, content_hash, preview_text, metadata, source_app_id,
-                                  byte_size, created_at, last_copied_at, ocr_state)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                arguments: [
-                    card.kind.rawValue, card.contentHash, card.previewText, card.metadata, sourceAppID,
-                    card.representations.reduce(0) { $0 + $1.data.count }, time, time,
-                    card.kind == .image ? TextRecognitionState.pending.rawValue : TextRecognitionState.notApplicable
-                        .rawValue
-                ]
-            )
-            let id = connection.lastInsertedRowID
-
-            try Self.insert(card.representations, of: id, into: payloads, in: connection)
-
-            try connection.execute(
-                sql: "INSERT INTO card_search (rowid, body, url, file_names, app_name) VALUES (?, ?, ?, ?, ?)",
-                arguments: [
-                    id, card.searchBody ?? card.previewText, card.url,
-                    card.fileNames.isEmpty ? nil : card.fileNames.joined(separator: "\n"), card.sourceApp.name
-                ]
-            )
-            return id
+            return try insertCard(card, sourceAppID: sourceAppID, at: time, board: nil, in: connection)
         }
     }
 
@@ -89,7 +65,39 @@ public struct CardRepository: Sendable {
         }
     }
 
-    private static func insert(
+    /// a card without a board goes to History
+    func insertCard(
+        _ card: NewCard,
+        sourceAppID: Int64,
+        at time: Double,
+        board: (id: Int64, position: Double)?,
+        in connection: Database
+    ) throws -> Int64 {
+        try connection.execute(
+            sql: """
+            INSERT INTO card (kind, content_hash, preview_text, metadata, source_app_id,
+                              byte_size, created_at, last_copied_at, board_id, board_position, ocr_state)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            arguments: [
+                card.kind.rawValue, card.contentHash, card.previewText, card.metadata, sourceAppID,
+                card.byteSize, time, board == nil ? time : nil, board?.id, board?.position,
+                card.kind == .image ? TextRecognitionState.pending.rawValue : TextRecognitionState.notApplicable
+                    .rawValue
+            ]
+        )
+        let id = connection.lastInsertedRowID
+
+        try Self.insert(card.representations, of: id, into: payloads, in: connection)
+
+        try connection.execute(
+            sql: "INSERT INTO card_search (rowid, body, url, file_names, app_name) VALUES (?, ?, ?, ?, ?)",
+            arguments: [id, card.searchBody ?? card.previewText, card.url, card.joinedFileNames, card.sourceApp.name]
+        )
+        return id
+    }
+
+    static func insert(
         _ representations: [Representation],
         of cardID: Int64,
         into payloads: PayloadStore,
@@ -116,7 +124,7 @@ public struct CardRepository: Sendable {
         }
     }
 
-    private static func upsert(_ sourceApp: SourceApp, in connection: Database) throws -> Int64 {
+    static func upsert(_ sourceApp: SourceApp, in connection: Database) throws -> Int64 {
         guard let id = try Int64.fetchOne(
             connection,
             sql: """

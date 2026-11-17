@@ -29,7 +29,7 @@ struct CardCommandTests {
         #expect(menu == [
             [.paste, .pasteAsPlainText],
             [.copy, .copyAsPlainText],
-            [.rename],
+            [.edit, .rename],
             [.addToBoard, .addToSequence],
             [.share],
             [.delete]
@@ -70,7 +70,7 @@ struct CardCommandTests {
     @Test func `search result can be shown in its list`() {
         let menu = CardCommand.menu(for: [Self.card(1, .text)], in: .history, isSearchResult: true)
 
-        #expect(menu.contains([.showInList, .rename]))
+        #expect(menu.contains([.showInList, .edit, .rename]))
         #expect(CardCommand.menu(
             for: [Self.card(1, .text), Self.card(2, .text)],
             in: .history,

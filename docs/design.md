@@ -191,9 +191,9 @@ Inside a Board, Delete is hidden and Remove from Board takes its place, because 
 
 ### Edit sheet
 
-- Opens as a sheet attached to the Shelf (or a standalone window if the Shelf is too short; proposed threshold: Shelf height < sheet min height).
+- Opens as a sheet attached to the Shelf. Working default ([WD-48](roadmap.md#working-defaults-for-open-todos)): no standalone window; the sheet is never taller than the Shelf, and the text area shrinks to fit.
 - Toolbar per type, using system controls:
-  - Text: Bold, Italic, Underline, Strikethrough as a segmented control; character/word/line counts in the bottom bar.
+  - Text: Bold, Italic, Underline, Strikethrough as a segmented control (⌘B, ⌘I, ⌘U); character/word/line counts in the bottom bar; an inline error next to the buttons.
   - Link: URL field and optional title field.
   - Color: `ColorPicker` / system color panel plus a format picker.
   - Image (later): rotate left/right.
@@ -356,7 +356,7 @@ Step 3 and the Privacy pane row read `NSPasteboard.general.accessBehavior` (chec
 | Empty states | `ContentUnavailableView` |
 | Context menu | `NSMenu` / SwiftUI `.contextMenu` with `Label` items (SF Symbols), `Divider` between sections, destructive role on Delete |
 | Quick Look | `NSPopover` containing `QLPreviewView` (files, images) or SwiftUI previews |
-| Edit sheet | `.sheet` with `Form`, `TextEditor`, `ColorPicker`, standard toolbar |
+| Edit sheet | `.sheet` with `Form`, `ColorPicker`, standard toolbar; the text editor is an `NSTextView` in `NSViewRepresentable`, because RTF in and out needs AppKit font attributes that SwiftUI's `TextEditor` does not keep |
 | New/Edit Board | Sheet with `TextField` and a swatch row |
 | Sequence panel | Separate `NSPanel` (utility, non-activating) hosting SwiftUI; header in `GlassEffectContainer`; rows in `List` with `.onMove` and `.onDelete` |
 | Menu bar extra | `NSStatusItem` with an `NSMenu` ([WD-35](roadmap.md#working-defaults-for-open-todos)) |

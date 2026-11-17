@@ -154,7 +154,7 @@ Rules:
 - **Settings** (retention, ignore lists, toggles, shortcuts) live in `UserDefaults`, not in the database.
 - **Files** are stored by reference (`public.file-url` representation), not copied, per [product.md §4.1](product.md#41-capture); no bookmark is kept ([WD-4](roadmap.md#working-defaults-for-open-todos)).
 
-> TODO: what happens when editing a Card's text produces a `content_hash` that already exists (merge into the existing Card vs. allow duplicates).
+- **Editing:** a save that produces a `content_hash` another Card already has is refused, and so is a new text Card with such a hash ([WD-7](roadmap.md#working-defaults-for-open-todos)).
 
 ### 3.3 Payload storage
 

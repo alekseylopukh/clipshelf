@@ -17,10 +17,10 @@ public final class ShelfController {
 
     private static let heightKey = "ShelfHeight"
     private static let logger = Logger(subsystem: "app.gonar.clipsy", category: "Shelf")
-    private static let commandKeys: [String: CardCommand] = [
-        "b": .addToBoard, "o": .open, "r": .rename, "g": .showInList
+    static let commandKeys: [String: CardCommand] = [
+        "b": .addToBoard, "o": .open, "r": .rename, "g": .showInList, "e": .edit
     ]
-    private static let shiftCommandKeys: [String: CardCommand] = [
+    static let shiftCommandKeys: [String: CardCommand] = [
         "o": .openWith, "r": .showInFinder, "s": .share
     ]
     private static let cardMoveKeys: [Int: ShelfModel.Direction] = [kVK_LeftArrow: .previous, kVK_RightArrow: .next]
@@ -37,6 +37,8 @@ public final class ShelfController {
     let representations: PasteCoordinator.RepresentationLoading
     private let renameCard: Rename
     private let addToSequence: ([Int64]) -> Void
+    let replaceText: ReplaceText
+    let addText: AddText
     let actions = CardActions()
     private let defaults: UserDefaults
     private var resizeStart: (mouseY: CGFloat, height: CGFloat)?
@@ -50,6 +52,8 @@ public final class ShelfController {
         rename: @escaping Rename,
         addToSequence: @escaping ([Int64]) -> Void,
         thumbnails: ThumbnailCache,
+        replaceText: @escaping ReplaceText,
+        addText: @escaping AddText,
         defaults: UserDefaults = .standard
     ) {
         self.model = model
@@ -59,6 +63,8 @@ public final class ShelfController {
         self.representations = representations
         renameCard = rename
         self.addToSequence = addToSequence
+        self.replaceText = replaceText
+        self.addText = addText
         self.defaults = defaults
         let hostingView = NSHostingView(rootView: ShelfContainerView(
             presentation: presentation,
@@ -94,6 +100,7 @@ public final class ShelfController {
         actions.beginDrag = { [weak self] drag in self?.beginDrag(drag) }
         dragSource.onEnd = { [weak self] in self?.isDragging = false }
         commands.newBoard = { [weak boardEditor] in boardEditor?.beginNew() }
+        commands.newTextCard = { [weak self] in self?.beginNewTextCard() }
         boardEditor.confirmDeletion = { [weak self] board in await self?.confirmDeletion(of: board) ?? false }
         boardEditor.reportError = { [weak self] error, title in await self?.presentError(error, title: title) }
     }
@@ -137,8 +144,7 @@ public final class ShelfController {
         guard isShown else { return }
         resizeStart = nil
         model.setQuickPasteModifierHeld(false)
-        actions.renamingCardID = nil
-        actions.popUp = nil
+        actions.endEditing()
         boardEditor.cancel()
         deletion.discardUndo()
         withAnimation(reduceMotion ? .default : .snappy) {
@@ -174,7 +180,7 @@ public final class ShelfController {
         }
     }
 
-    private func perform(_ command: CardCommand, on ids: [Int64]) {
+    func perform(_ command: CardCommand, on ids: [Int64]) {
         switch command {
         case .paste, .pasteAsPlainText, .copy, .copyAsPlainText:
             pasteOrCopy(command, on: ids)
@@ -186,6 +192,8 @@ public final class ShelfController {
         case .rename:
             guard ids.count == 1 else { return }
             actions.renamingCardID = ids.first
+        case .edit:
+            edit(ids)
         case .addToBoard, .openWith, .share:
             requestPopUp(for: command, on: ids)
         case .addToSequence:
@@ -227,12 +235,7 @@ public final class ShelfController {
             }
             return true
         }
-        let commandKeys = modifiers == .command ? Self.commandKeys
-            : modifiers == [.shift, .command] ? Self.shiftCommandKeys : [:]
-        if let command = key.flatMap({ commandKeys[$0] }) {
-            if !event.isARepeat {
-                perform(command, on: model.selectedCards.map(\.id))
-            }
+        if let key, handleCardCommandKey(key, modifiers: modifiers, isRepeat: event.isARepeat) {
             return true
         }
         if handleNavigationKey(event, character: key, modifiers: modifiers)
@@ -435,8 +438,7 @@ public extension ShelfController {
     func hideImmediately() {
         resizeStart = nil
         model.setQuickPasteModifierHeld(false)
-        actions.renamingCardID = nil
-        actions.popUp = nil
+        actions.endEditing()
         boardEditor.cancel()
         deletion.discardUndo()
         presentation.isVisible = false

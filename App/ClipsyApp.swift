@@ -185,7 +185,9 @@ struct ClipsyApp: App {
             representations: { try await repository.representations(of: $0) },
             rename: { try await repository.rename(card: $0, to: $1) },
             addToSequence: { sequence.add($0) },
-            thumbnails: ThumbnailCache(directory: repository.thumbnailsDirectory)
+            thumbnails: ThumbnailCache(directory: repository.thumbnailsDirectory),
+            replaceText: { try await repository.replaceContent(of: $0, with: NewCard.editedText($1)) },
+            addText: { try await repository.add(NewCard.editedText($0), to: $1) }
         )
     }
 

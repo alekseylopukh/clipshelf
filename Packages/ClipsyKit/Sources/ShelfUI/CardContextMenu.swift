@@ -78,6 +78,9 @@ struct CardCommandButton: View {
         case .rename:
             Button("Rename…", action: action)
                 .keyboardShortcut("r")
+        case .edit:
+            Button("Edit…", systemImage: "pencil", action: action)
+                .keyboardShortcut("e")
         case .addToBoard:
             AddToBoardMenu(cards: cards)
         case .addToSequence:

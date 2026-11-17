@@ -1,6 +1,56 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%lld words" : {
+      "comment" : "Word count below the text editor",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld word"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld words"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "A card with the same content already exists." : {
+      "comment" : "Inline error in the text editor when saving would make the card identical to another"
+    },
+    "Bold" : {
+      "comment" : "Text editor toggle that makes the selected text bold"
+    },
+    "Card Text" : {
+      "comment" : "Accessibility label of the text editor in the edit sheet"
+    },
+    "Clipsy can’t edit this card." : {
+      "comment" : "Title of the alert shown when a card's text cannot be loaded for editing"
+    },
+    "Clipsy can’t save this card." : {
+      "comment" : "Inline error in the text editor when saving fails"
+    },
+    "Edit…" : {
+      "comment" : "Context menu item that opens the text editor for the selected card"
+    },
+    "Italic" : {
+      "comment" : "Text editor toggle that makes the selected text italic"
+    },
+    "Strikethrough" : {
+      "comment" : "Text editor toggle that strikes through the selected text"
+    },
+    "Underline" : {
+      "comment" : "Text editor toggle that underlines the selected text"
+    },
     "Board" : {
       "comment" : "VoiceOver name of the board a search result is on",
       "extractionState" : "manual"
@@ -22,7 +72,7 @@
       "extractionState" : "manual"
     },
     "Save" : {
-      "comment" : "Button that saves the changes in the Edit Board sheet",
+      "comment" : "Button that saves the changes in the Edit Board sheet and in the text editor",
       "extractionState" : "manual"
     },
     "Edit Board…" : {

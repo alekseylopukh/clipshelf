@@ -9,22 +9,29 @@ struct CardHeader: View {
     let highlightedTitle: AttributedString?
     let board: Board?
 
+    @Environment(CardActions.self) private var actions
+
     var body: some View {
         HStack(spacing: DesignTokens.spacingMedium) {
             AppIconView(bundleID: card.sourceApp?.bundleID, fallbackSymbol: card.kind.symbolName)
             VStack(alignment: .leading, spacing: 0) {
                 if layout == .regular {
-                    if let highlightedTitle {
-                        Text(highlightedTitle)
-                            .font(.headline)
-                    } else if let title = card.title, title.isEmpty == false {
-                        Text(title)
-                            .font(.headline)
-                    } else {
-                        Text(card.kind.name)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                    Button {
+                        actions.perform(.rename, [card.id])
+                    } label: {
+                        if let highlightedTitle {
+                            Text(highlightedTitle)
+                                .font(.headline)
+                        } else if let title = card.title, title.isEmpty == false {
+                            Text(title)
+                                .font(.headline)
+                        } else {
+                            Text(card.kind.name)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
                     }
+                    .buttonStyle(.plain)
                 }
                 HStack(spacing: DesignTokens.spacingSmall) {
                     Text(now, format: Date.AnchoredRelativeFormatStyle(

@@ -18,9 +18,10 @@ extension NewCard {
         case .text:
             text = plainString(in: representations) ?? richString(in: representations)
             if let text {
-                metadata.characterCount = text.count
-                metadata.wordCount = wordCount(of: text)
-                metadata.lineCount = lineCount(of: text)
+                let counts = TextCounts(text)
+                metadata.characterCount = counts.characters
+                metadata.wordCount = counts.words
+                metadata.lineCount = counts.lines
             }
         case .link:
             url = plainString(in: representations)?.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -79,22 +80,6 @@ private func richString(in representations: [Representation]) -> String? {
         }
     }
     return nil
-}
-
-private func wordCount(of text: String) -> Int {
-    var count = 0
-    text.enumerateSubstrings(in: text.startIndex..., options: [.byWords, .substringNotRequired]) { _, _, _, _ in
-        count += 1
-    }
-    return count
-}
-
-private func lineCount(of text: String) -> Int {
-    var count = 0
-    text.enumerateLines { _, _ in
-        count += 1
-    }
-    return count
 }
 
 private func pixelSize(in representations: [Representation]) -> (width: Int, height: Int)? {

@@ -34,3 +34,13 @@ public struct NewCard: Sendable {
         self.fileNames = fileNames
     }
 }
+
+extension NewCard {
+    var byteSize: Int {
+        representations.reduce(0) { $0 + $1.data.count }
+    }
+
+    var joinedFileNames: String? {
+        fileNames.isEmpty ? nil : fileNames.joined(separator: "\n")
+    }
+}

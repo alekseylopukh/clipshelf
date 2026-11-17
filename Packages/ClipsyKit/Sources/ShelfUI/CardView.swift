@@ -79,6 +79,7 @@ struct CardView: View {
                 await boardEditor.reorder(ids, onto: card.id)
             }
         }
+        .cardRenamePopover(for: card)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityLabel)
         .accessibilityValue(accessibilityValue)

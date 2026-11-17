@@ -75,6 +75,9 @@ public enum DesignTokens {
     public static let boardSheetPadding: CGFloat = 20
     public static let badgeSize: CGFloat = 20
     public static let renameFieldWidth: CGFloat = 220
+    public static let textEditorWidth: CGFloat = 480
+    public static let textEditorHeight: CGFloat = 320
+    public static let textEditorCornerRadius: CGFloat = 6
 
     public static func selectionRingWidth(for contrast: ColorSchemeContrast) -> CGFloat {
         contrast == .increased ? 4 : 3

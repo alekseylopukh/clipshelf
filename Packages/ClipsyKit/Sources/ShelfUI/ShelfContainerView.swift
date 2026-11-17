@@ -11,6 +11,8 @@ struct ShelfContainerView: View {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(BoardEditor.self) private var boardEditor
+    @Environment(CardActions.self) private var actions
+    @State private var height = DesignTokens.shelfDefaultHeight
 
     var body: some View {
         @Bindable var boardEditor = boardEditor
@@ -35,6 +37,10 @@ struct ShelfContainerView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .sheet(item: $boardEditor.draft) { draft in
             BoardEditorSheet(isNew: draft.boardID == nil)
+        }
+        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { height = $0 }
+        .sheet(item: Bindable(actions).textEditor) { editor in
+            TextCardEditorView(editor: editor, maxHeight: height)
         }
         .task(id: model.tab) {
             await model.observeCards()

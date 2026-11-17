@@ -297,8 +297,9 @@ Working default [WD-28](roadmap.md#working-defaults-for-open-todos): badges appe
   - Link: edit the URL; re-detect type on save.
   - Color: system color panel.
   - Image and file cards: rename only (image editing later).
-- Save replaces the card's content in place, keeps its position and board, and updates its modified time. Discard leaves it unchanged. Edits never touch the system clipboard.
-- **New text card:** ⌘N opens an empty text editor; on save the card is added to the top of History, or to the current board when a board tab is active.
+- Save replaces the card's content in place and keeps its title, position, board and times (no separate modified time is stored, [WD-48](roadmap.md#working-defaults-for-open-todos)). Discard leaves it unchanged. Edits never touch the system clipboard.
+- Saved text is classified and hashed like a copy (§4.2), so text that is only a link or a color becomes that card type. A save that would make the card identical to another card is refused with an inline error ([WD-7](roadmap.md#working-defaults-for-open-todos)).
+- **New text card:** ⌘N opens an empty text editor; on save the card is added to the top of History, or to the front of the current board (and not to History) when a board tab is active. Like an edit, it is refused when another card has the same content.
 
 ### 4.11 Deleting
 
