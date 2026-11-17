@@ -16,7 +16,8 @@ sign_app() {
   [[ -z $identity || $identity == "-" ]] && return 0
   local entitlements
   entitlements=$(mktemp)
-  trap 'rm -f "$entitlements"' RETURN
+  # shellcheck disable=SC2064 # expand now: the EXIT trap runs after the local is gone
+  trap "rm -f '$entitlements'" RETURN EXIT
   codesign -d --entitlements - --xml "$app" >"$entitlements" 2>/dev/null || true
   local args=(--force --deep --options runtime --sign "$identity")
   [[ -s $entitlements ]] && args+=(--entitlements "$entitlements")
