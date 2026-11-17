@@ -360,6 +360,9 @@ Decided (2026-11-17): the default Sequence shortcut is ⇧⌘C (rebindable). It 
 | Quick Paste Nth card as plain text | ⇧⌘1…⇧⌘9 | MVP |
 | Copy to clipboard | ⌘C | MVP |
 | Open link / file | ⌘O | MVP |
+| Open With (opens the app menu at the card) | ⇧⌘O | v1 |
+| Show in Finder | ⇧⌘R | v1 |
+| Share | ⇧⌘S | v1 |
 | Delete | ⌫ | MVP |
 | Undo | ⌘Z | MVP |
 | Search | type, or ⌘F | MVP |
@@ -463,5 +466,5 @@ These still need a test on real hardware, data from vendors, or the task that se
 - > TODO: front or end for cards newly added to a board (§4.8).
 - > TODO: Delete on a board vs History (§4.11).
 - > TODO: whether file thumbnails need a toggle (§6).
-- > TODO: drag-out formats for several cards and for images (file vs image data).
+- > TODO: drag-out formats for several cards and for images (file vs image data) ([WD-14](roadmap.md#working-defaults-for-open-todos)).
 - > TODO: URL scheme name and grammar (§3.7).

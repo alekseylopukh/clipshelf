@@ -25,7 +25,7 @@ Not maintainer decisions. They are the doc's current text or the simplest choice
 | WD-11 | Undo scope | Delete only |
 | WD-12 | Delete on a board | Removes from the board only |
 | WD-13 | Keep shelf open after paste; height per display | No option; one height for all displays |
-| WD-14 | Drag-out formats | Same representations as a paste, one item per card; images also offer a PNG file |
+| WD-14 | Drag-out formats | Same representations as a paste, one pasteboard item per representation item (a multi-file card gives one item per file), each carrying the card's `CardReference`; images also offer a PNG file |
 | WD-15 | Compact threshold | Regular card height below 150 pt |
 | WD-16 | System Settings deep links | Use a pane URL only if verified on macOS 26; otherwise open System Settings and say where to go |
 | WD-17 | Own-write marker type | `app.gonar.clipsy.own-write`, declared in `Store` so `Capture` and `Pasting` share it |
@@ -519,7 +519,11 @@ What exists:
 - Deliverable: Open With submenu for files, Show in Finder, Share submenu for single and multi selection; drag one or several cards into other apps, images also as PNG files; each dragged card also carries a `CardReference` (T11.4) so the Sequence panel accepts it
 - Acceptance: tests `openWithHiddenForText`, `dragItemsMatchPasteRepresentations`
 - Human check: share a link to Notes; drag an image card to Finder and a text card to TextEdit
+- Human check: drag a text card and a multi-selection into the Sequence panel, onto a board capsule and inside a board; the drag image follows the pointer and each target still accepts the cards; light and dark
+- Human check: ⇧⌘O opens the Open With menu at a selected file card, ⇧⌘R shows its files in Finder, ⇧⌘S opens the share picker at the card
 - Size: M
+- Working default: Share is a "Share…" item that opens the system share picker at the card, as in Finder, instead of a submenu, because a SwiftUI context menu cannot build its submenu from content that is read asynchronously. It shares the text of text and color cards, the URL of links, the image of image cards and the files of file cards; cards of unknown type offer no Share. Open With lists the apps that open every file of the card, the default app first as "*App* (default)", then the rest by name, and is hidden when no app qualifies. Keys: ⇧⌘O opens the Open With menu at the card, ⇧⌘R is Show in Finder (⌘R is Rename), ⇧⌘S is Share. Show in Finder and Open With act on single file cards; a file that no longer exists shows an error. Dragging uses an AppKit drag session, because a `Transferable` has a fixed list of types and a card has its own: the cards are read when the pointer crosses the drag threshold and the drag starts once they are loaded, if the button is still down. Each pasteboard item of each dragged card carries the card's paste representations and a `CardReference`; drop targets drop repeated references. An image card's item also promises a PNG file named after the card title, or "Image"
+- Status: done
 
 ### T8.3 Rename
 - Module(s): Store, ShelfUI

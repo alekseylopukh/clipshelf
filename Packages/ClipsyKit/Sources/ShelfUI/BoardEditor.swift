@@ -190,8 +190,10 @@ public final class BoardEditor {
             case let .board(reference):
                 await move(reference.boardID, onto: boardID)
                 return
-            case let .card(reference):
+            case let .card(reference) where !cardIDs.contains(reference.cardID):
                 cardIDs.append(reference.cardID)
+            case .card:
+                break
             }
         }
         let ids = draggedCards(cardIDs).filter { id in

@@ -44,6 +44,7 @@ public enum DesignTokens {
     public static let fileStackIconSize: CGFloat = 80
     public static let fileStackAngle: Double = 8
     public static let fileStackOffset: CGFloat = 16
+    public static let menuIconSize: CGFloat = 16
 
     public static let sequencePanelWidth: CGFloat = 280
     public static let sequencePanelScreenInset: CGFloat = 16

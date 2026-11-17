@@ -350,7 +350,7 @@
 
     },
     "Show in Finder" : {
-      "comment" : "Button that reveals the backup of a damaged database"
+      "comment" : "Button that reveals the backup of a damaged database, and card context menu item that selects a file card's files in Finder"
     },
     "Text" : {
       "comment" : "Card type name",
@@ -849,6 +849,24 @@
     },
     "New Board…" : {
       "comment" : "Item at the end of the Add to Board submenu that creates a board holding the selected cards"
+    },
+    "Open With" : {
+      "comment" : "Card context menu submenu that lists the apps that can open a file card's files"
+    },
+    "%@ (default)" : {
+      "comment" : "Open With menu item of the app that opens the file by default"
+    },
+    "Share…" : {
+      "comment" : "Card context menu item that opens the system share picker for the selected cards"
+    },
+    "Clipsy can’t show this file in Finder." : {
+      "comment" : "Title of the alert shown when a file card's files cannot be shown in Finder"
+    },
+    "Clipsy can’t share these cards." : {
+      "comment" : "Title of the alert shown when the selected cards cannot be read for sharing"
+    },
+    "Clipsy can’t drag these cards." : {
+      "comment" : "Title of the alert shown when the dragged cards cannot be read"
     },
     "Add to %@" : {
       "comment" : "VoiceOver action of a card that adds it to the named board"

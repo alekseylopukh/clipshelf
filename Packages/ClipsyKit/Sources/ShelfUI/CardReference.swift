@@ -14,6 +14,14 @@ public struct CardReference: Codable, Sendable, Transferable {
     }
 }
 
+extension [CardReference] {
+    /// a dragged card puts its reference on each of its items, so a multi-file card arrives more than once
+    var cardIDs: [Int64] {
+        var seen = Set<Int64>()
+        return map(\.cardID).filter { seen.insert($0).inserted }
+    }
+}
+
 extension UTType {
     static let clipsyCardReference = UTType(exportedAs: "app.gonar.clipsy.card-reference")
 }

@@ -20,19 +20,24 @@ public final class ShelfController {
     private static let commandKeys: [String: CardCommand] = [
         "b": .addToBoard, "o": .open, "r": .rename, "g": .showInList
     ]
+    private static let shiftCommandKeys: [String: CardCommand] = [
+        "o": .openWith, "r": .showInFinder, "s": .share
+    ]
     private static let cardMoveKeys: [Int: ShelfModel.Direction] = [kVK_LeftArrow: .previous, kVK_RightArrow: .next]
 
     let panel = ShelfPanel()
+    let dragSource = CardDragSource()
+    var isDragging = false
     private let presentation = ShelfPresentation()
     private let calculator = ShelfFrameCalculator()
-    private let model: ShelfModel
+    let model: ShelfModel
     private let paster: PasteCoordinator
     private let deletion: CardDeletion
-    private let boardEditor: BoardEditor
-    private let representations: PasteCoordinator.RepresentationLoading
+    let boardEditor: BoardEditor
+    let representations: PasteCoordinator.RepresentationLoading
     private let renameCard: Rename
     private let addToSequence: ([Int64]) -> Void
-    private let actions = CardActions()
+    let actions = CardActions()
     private let defaults: UserDefaults
     private var resizeStart: (mouseY: CGFloat, height: CGFloat)?
 
@@ -80,7 +85,14 @@ public final class ShelfController {
             }
         }
         actions.pasteOnDoubleClick = { [weak self] ids in self?.pasteOnDoubleClick(ids) }
-        actions.showBoardMenu = { [weak self] frame in self?.showBoardMenu(at: frame) }
+        actions.showPopUp = { [weak self] popUp, frame in self?.showPopUp(popUp, at: frame) }
+        actions.openWith = { [weak self] application, cardID in
+            Task {
+                await self?.open(cardID, with: application)
+            }
+        }
+        actions.beginDrag = { [weak self] drag in self?.beginDrag(drag) }
+        dragSource.onEnd = { [weak self] in self?.isDragging = false }
         commands.newBoard = { [weak boardEditor] in boardEditor?.beginNew() }
         boardEditor.confirmDeletion = { [weak self] board in await self?.confirmDeletion(of: board) ?? false }
         boardEditor.reportError = { [weak self] error, title in await self?.presentError(error, title: title) }
@@ -126,7 +138,7 @@ public final class ShelfController {
         resizeStart = nil
         model.setQuickPasteModifierHeld(false)
         actions.renamingCardID = nil
-        actions.boardMenuCardID = nil
+        actions.popUp = nil
         boardEditor.cancel()
         deletion.discardUndo()
         withAnimation(reduceMotion ? .default : .snappy) {
@@ -166,19 +178,16 @@ public final class ShelfController {
         switch command {
         case .paste, .pasteAsPlainText, .copy, .copyAsPlainText:
             pasteOrCopy(command, on: ids)
-        case .open:
-            guard ids.count == 1, let cardID = ids.first else { return }
-            Task {
-                await open(cardID)
-            }
+        case .open, .showInFinder:
+            openOrReveal(command, on: ids)
         case .showInList:
             guard ids.count == 1, let cardID = ids.first else { return }
             model.showInList(cardID)
         case .rename:
             guard ids.count == 1 else { return }
             actions.renamingCardID = ids.first
-        case .addToBoard:
-            actions.boardMenuCardID = model.cursorID.flatMap { ids.contains($0) ? $0 : nil } ?? ids.first
+        case .addToBoard, .openWith, .share:
+            requestPopUp(for: command, on: ids)
         case .addToSequence:
             addToSequence(model.cards.map(\.id).filter { ids.contains($0) })
         case .removeFromBoard, .delete:
@@ -218,7 +227,9 @@ public final class ShelfController {
             }
             return true
         }
-        if modifiers == .command, let command = key.flatMap({ Self.commandKeys[$0] }) {
+        let commandKeys = modifiers == .command ? Self.commandKeys
+            : modifiers == [.shift, .command] ? Self.shiftCommandKeys : [:]
+        if let command = key.flatMap({ commandKeys[$0] }) {
             if !event.isARepeat {
                 perform(command, on: model.selectedCards.map(\.id))
             }
@@ -233,26 +244,6 @@ public final class ShelfController {
             return true
         }
         return handleCommandOrTyping(event, character: key, modifiers: modifiers, quickPaste: quickPaste)
-    }
-
-    private func open(_ cardID: Int64) async {
-        guard let card = model.cards.first(where: { $0.id == cardID }), card.kind == .link || card.kind == .file else {
-            return
-        }
-        do {
-            let loaded = card.kind == .file ? try await representations(cardID) : []
-            for url in card.openableURLs(in: loaded) {
-                try await NSWorkspace.shared.open(url, configuration: NSWorkspace.OpenConfiguration())
-            }
-        } catch is CancellationError {
-            return
-        } catch {
-            Self.logger.error("open failed: \(String(describing: type(of: error)), privacy: .public)")
-            await presentError(error, title: String(
-                localized: "Clipsy can’t open this card.",
-                comment: "Title of the alert shown when a card's link or file cannot be opened"
-            ))
-        }
     }
 
     private func delete(_ ids: [Int64]) async {
@@ -334,7 +325,7 @@ public final class ShelfController {
     }
 }
 
-private extension ShelfController {
+extension ShelfController {
     func presentError(_ error: any Error, title: String) async {
         let alert = NSAlert(error: error)
         alert.messageText = title
@@ -346,21 +337,14 @@ private extension ShelfController {
             alert.runModal()
         }
     }
+}
 
+private extension ShelfController {
     func pasteOnDoubleClick(_ ids: [Int64]) {
         perform(
             QuickPasteModifiers(defaults: defaults).doubleClickCommand(modifierFlags: NSEvent.modifierFlags),
             on: ids
         )
-    }
-
-    func showBoardMenu(at frame: CGRect) {
-        guard let contentView = panel.contentView else { return }
-        let menu = NSHostingMenu(rootView: AddToBoardItems(cards: model.selectedCards).environment(boardEditor))
-        let point = NSPoint(x: frame.midX, y: contentView.bounds.height - frame.midY)
-        Task {
-            menu.popUp(positioning: nil, at: point, in: contentView)
-        }
     }
 
     func handleCommandKey(_ key: String?, isRepeat: Bool) -> Bool {
@@ -452,7 +436,7 @@ public extension ShelfController {
         resizeStart = nil
         model.setQuickPasteModifierHeld(false)
         actions.renamingCardID = nil
-        actions.boardMenuCardID = nil
+        actions.popUp = nil
         boardEditor.cancel()
         deletion.discardUndo()
         presentation.isVisible = false

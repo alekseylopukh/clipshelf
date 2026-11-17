@@ -47,7 +47,7 @@ struct SequencePanelView: View {
             .glassEffect(.regular, in: .rect(cornerRadius: DesignTokens.sequencePanelCornerRadius))
         }
         .dropDestination(for: CardReference.self) { references, _ in
-            model.sequence.add(references.map(\.cardID))
+            model.sequence.add(references.cardIDs)
             return true
         }
         .task(id: model.cardIDs) {

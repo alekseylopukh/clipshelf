@@ -1,18 +1,18 @@
 import Store
 import SwiftUI
 
-struct CardBoardMenuAnchor: ViewModifier {
+struct CardPopUpAnchor: ViewModifier {
     let card: CardSummary
 
     @Environment(CardActions.self) private var actions
 
     func body(content: Content) -> some View {
         content.background {
-            if actions.boardMenuCardID == card.id {
+            if let popUp = actions.popUp, popUp.anchorID == card.id {
                 GeometryReader { proxy in
                     Color.clear.onAppear {
-                        actions.boardMenuCardID = nil
-                        actions.showBoardMenu(proxy.frame(in: .global))
+                        actions.popUp = nil
+                        actions.showPopUp(popUp, proxy.frame(in: .global))
                     }
                 }
             }
@@ -21,7 +21,7 @@ struct CardBoardMenuAnchor: ViewModifier {
 }
 
 extension View {
-    func cardBoardMenuAnchor(for card: CardSummary) -> some View {
-        modifier(CardBoardMenuAnchor(card: card))
+    func cardPopUpAnchor(for card: CardSummary) -> some View {
+        modifier(CardPopUpAnchor(card: card))
     }
 }

@@ -174,7 +174,7 @@ Native `NSMenu` with SF Symbols on items and section separators. Items that do n
 | Open | Open (links, files), Open With ▸ (files), Show in Finder (files) |
 | Organize | Add to Board ▸ (list of Boards + New Board…), Remove from Board (inside a Board), Add to Sequence |
 | Item | Quick Look (`eye`), Show in List (search results only), Edit… (`pencil`), Rename… , Duplicate |
-| Share | Share ▸ (system share menu) |
+| Share | Share… (`square.and.arrow.up`), opens the system share picker at the Card, like Share… in Finder |
 | Destructive | Delete (`trash`, destructive role) |
 
 With several Cards selected, the menu shows only actions that work on many: Paste, Paste as Plain Text, Copy, Add to Board, Add to Sequence, Share, Delete.

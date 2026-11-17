@@ -13,6 +13,8 @@ struct CardView: View {
     private let highlights: CardHighlights
 
     @State private var isHovered = false
+    @State private var size = CGSize.zero
+    @State private var openWithApplications: [OpenWithApplication] = []
     @Environment(CardActions.self) private var actions
     @Environment(BoardEditor.self) private var boardEditor
 
@@ -46,6 +48,7 @@ struct CardView: View {
             isHovered: isHovered
         )
         .onHover { isHovered = $0 }
+        .onGeometryChange(for: CGSize.self, of: \.size) { size = $0 }
         .gesture(TapGesture(count: 2).onEnded { actions.pasteOnDoubleClick([card.id]) })
         .simultaneousGesture(TapGesture().onEnded { click() })
         .contextMenu {
@@ -53,15 +56,25 @@ struct CardView: View {
             CardContextMenu(
                 cards: cards,
                 list: model.removalList(for: cards.map(\.id)),
-                isSearchResult: model.isSearching
+                isSearchResult: model.isSearching,
+                openWithApplications: openWithApplications
             )
         }
-        .draggable(CardReference(cardID: card.id))
+        .task(id: card.id) {
+            openWithApplications = await OpenWithApplication.applications(for: card)
+        }
+        .simultaneousGesture(DragGesture().onChanged { value in
+            actions.beginDrag(CardDrag(
+                cardIDs: isSelected ? model.selectedCards.map(\.id) : [card.id],
+                cardSize: size,
+                pointer: value.location
+            ))
+        })
         .dropDestination(
             for: CardReference.self,
             isEnabled: model.tab != .history && !model.isSearching
         ) { references, _ in
-            let ids = references.map(\.cardID)
+            let ids = references.cardIDs
             Task {
                 await boardEditor.reorder(ids, onto: card.id)
             }
@@ -108,14 +121,14 @@ struct CardView: View {
             }
         }
         .quickPasteBadge(model.quickPasteNumber(for: card.id))
-        .cardBoardMenuAnchor(for: card)
+        .cardPopUpAnchor(for: card)
     }
 
-    /// add to board is a submenu, so voiceover gets one action per board instead
+    /// add to board is a submenu, so voiceover gets one action per board instead; open with stays on ⇧⌘O
     private var accessibilityCommands: [CardCommand] {
         CardCommand.menu(for: [card], in: model.list(of: card), isSearchResult: model.isSearching)
             .joined()
-            .filter { $0 != .addToBoard }
+            .filter { $0 != .addToBoard && $0 != .openWith }
     }
 
     private var accessibilityValue: Text {

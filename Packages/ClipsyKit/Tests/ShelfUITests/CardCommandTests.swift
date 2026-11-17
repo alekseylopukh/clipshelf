@@ -11,14 +11,14 @@ struct CardCommandTests {
     @Test(arguments: [CardList.history, .board(id: 1)])
     func `multi selection menu has only batch items`(list: CardList) {
         let batch: Set<CardCommand> = [
-            .paste, .pasteAsPlainText, .copy, .addToBoard, .addToSequence, .removeFromBoard, .delete
+            .paste, .pasteAsPlainText, .copy, .addToBoard, .addToSequence, .share, .removeFromBoard, .delete
         ]
 
         let menu = CardCommand.menu(for: [Self.card(1, .text), Self.card(2, .link)], in: list, isSearchResult: false)
 
         #expect(Set(menu.joined()).isSubset(of: batch))
         #expect(menu == [
-            [.paste, .pasteAsPlainText], [.copy], [.addToBoard, .addToSequence],
+            [.paste, .pasteAsPlainText], [.copy], [.addToBoard, .addToSequence], [.share],
             [list == .history ? .delete : .removeFromBoard]
         ])
     }
@@ -31,6 +31,7 @@ struct CardCommandTests {
             [.copy, .copyAsPlainText],
             [.rename],
             [.addToBoard, .addToSequence],
+            [.share],
             [.delete]
         ])
     }
@@ -38,7 +39,32 @@ struct CardCommandTests {
     @Test func `file card on a board can be opened and removed`() {
         let menu = CardCommand.menu(for: [Self.card(1, .file)], in: .board(id: 1), isSearchResult: false)
 
-        #expect(menu == [[.paste], [.copy], [.open], [.rename], [.addToBoard, .addToSequence], [.removeFromBoard]])
+        #expect(menu == [
+            [.paste], [.copy], [.open, .openWith, .showInFinder], [.rename], [.addToBoard, .addToSequence], [.share],
+            [.removeFromBoard]
+        ])
+    }
+
+    @Test(arguments: [CardKind.text, .link, .image, .color, .unknown])
+    func `open with hidden for text`(kind: CardKind) async {
+        let menu = CardCommand.menu(for: [Self.card(1, kind)], in: .history, isSearchResult: false).joined()
+
+        #expect(menu.contains(.openWith) == false)
+        #expect(menu.contains(.showInFinder) == false)
+        #expect(await OpenWithApplication.applications(for: Self.card(1, kind)).isEmpty)
+    }
+
+    @Test func `cards of unknown type cannot be shared`() {
+        let unknown = [Self.card(1, .unknown), Self.card(2, .unknown)]
+
+        #expect(CardCommand.menu(for: [unknown[0]], in: .history, isSearchResult: false).joined()
+            .contains(.share) == false)
+        #expect(CardCommand.menu(for: unknown, in: .history, isSearchResult: false).joined().contains(.share) == false)
+        #expect(CardCommand.menu(
+            for: [unknown[0], Self.card(3, .text)],
+            in: .history,
+            isSearchResult: false
+        ).joined().contains(.share))
     }
 
     @Test func `search result can be shown in its list`() {

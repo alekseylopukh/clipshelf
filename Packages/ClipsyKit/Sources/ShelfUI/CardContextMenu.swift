@@ -6,6 +6,7 @@ struct CardContextMenu: View {
     let cards: [CardSummary]
     let list: CardList
     let isSearchResult: Bool
+    let openWithApplications: [OpenWithApplication]
 
     @Environment(CardActions.self) private var actions
 
@@ -18,7 +19,8 @@ struct CardContextMenu: View {
                         cards: cards,
                         targetAppName: actions.targetAppName,
                         plainTextModifiers: actions.plainTextModifier.eventModifiers,
-                        isCopyAsPlainTextShortcutTaken: actions.isCopyAsPlainTextShortcutTaken
+                        isCopyAsPlainTextShortcutTaken: actions.isCopyAsPlainTextShortcutTaken,
+                        openWithApplications: openWithApplications
                     ) {
                         actions.perform(command, cards.map(\.id))
                     }
@@ -34,6 +36,7 @@ struct CardCommandButton: View {
     let targetAppName: String?
     let plainTextModifiers: EventModifiers
     let isCopyAsPlainTextShortcutTaken: Bool
+    var openWithApplications: [OpenWithApplication] = []
     let action: () -> Void
 
     var body: some View {
@@ -62,6 +65,13 @@ struct CardCommandButton: View {
         case .open:
             Button("Open", action: action)
                 .keyboardShortcut("o")
+        case .openWith:
+            if let card = cards.first {
+                OpenWithMenu(cardID: card.id, applications: openWithApplications)
+            }
+        case .showInFinder:
+            Button("Show in Finder", action: action)
+                .keyboardShortcut("r", modifiers: [.shift, .command])
         case .showInList:
             Button("Show in List", action: action)
                 .keyboardShortcut("g")
@@ -76,6 +86,9 @@ struct CardCommandButton: View {
         case .removeFromBoard:
             Button("Remove from Board", action: action)
                 .keyboardShortcut(.delete, modifiers: [])
+        case .share:
+            Button("Share…", systemImage: "square.and.arrow.up", action: action)
+                .keyboardShortcut("s", modifiers: [.shift, .command])
         case .delete:
             Button("Delete", systemImage: "trash", role: .destructive, action: action)
                 .keyboardShortcut(.delete, modifiers: [])

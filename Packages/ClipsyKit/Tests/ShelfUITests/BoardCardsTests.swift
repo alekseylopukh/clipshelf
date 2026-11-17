@@ -99,6 +99,24 @@ final class BoardCardsTests {
         #expect(try await boardCards(board) == [cards[1], cards[0], cards[2]])
     }
 
+    @Test func `a card dropped with one reference per item is added once`() async throws {
+        let cards = try await makeCards(3)
+        let board = try await makeBoard()
+        try await show(.history)
+        model.select(cards[2])
+
+        await editor.drop(
+            [
+                .card(CardReference(cardID: cards[1])),
+                .card(CardReference(cardID: cards[1])),
+                .card(CardReference(cardID: cards[0]))
+            ],
+            onBoard: board
+        )
+
+        #expect(try await boardCards(board) == [cards[1], cards[0]])
+    }
+
     @Test func `drop on the card's own board leaves it in place`() async throws {
         let cards = try await makeCards(2)
         let board = try await makeBoard()
