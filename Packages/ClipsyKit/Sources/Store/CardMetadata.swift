@@ -11,6 +11,7 @@ public struct CardMetadata: Codable, Sendable, Equatable {
     public var wordCount: Int?
     public var lineCount: Int?
     public var typeIdentifier: String?
+    public var pageTitle: String?
 
     public init(
         url: String? = nil,
@@ -22,7 +23,8 @@ public struct CardMetadata: Codable, Sendable, Equatable {
         characterCount: Int? = nil,
         wordCount: Int? = nil,
         lineCount: Int? = nil,
-        typeIdentifier: String? = nil
+        typeIdentifier: String? = nil,
+        pageTitle: String? = nil
     ) {
         self.url = url
         self.pixelWidth = pixelWidth
@@ -34,5 +36,6 @@ public struct CardMetadata: Codable, Sendable, Equatable {
         self.wordCount = wordCount
         self.lineCount = lineCount
         self.typeIdentifier = typeIdentifier
+        self.pageTitle = pageTitle
     }
 }

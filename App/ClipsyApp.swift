@@ -1,5 +1,6 @@
 import AppKit
 import Capture
+import DesignSystem
 import Media
 import os
 import Pasting
@@ -38,6 +39,8 @@ struct ClipsyApp: App {
         }
         _retention = State(initialValue: retention)
 
+        let linkPreviews = Self.startLinkPreviews(repository: repository, privacy: privacy)
+
         let shelf = Self.makeShelf(repository: repository, writer: writer, pause: pause)
         shelf.commands.isCapturePaused = { pause.isPaused }
         shelf.commands.setCapturePaused = { pause.isPaused = $0 }
@@ -57,13 +60,7 @@ struct ClipsyApp: App {
         _ = Task {
             await statusItem.run()
         }
-        let sounds = SoundEffects()
-        _ = Task {
-            for await _ in monitor.capturedCardIDs {
-                sounds.play(.capture)
-                statusItem.bounce()
-            }
-        }
+        Self.startCaptureEffects(of: monitor, statusItem: statusItem, linkPreviews: linkPreviews)
         appDelegate.onReopen = {
             if !menuBarSettings.isItemShown {
                 SettingsWindow.open()
@@ -146,6 +143,33 @@ struct ClipsyApp: App {
             rename: { try await repository.rename(card: $0, to: $1) },
             thumbnails: ThumbnailCache(directory: repository.thumbnailsDirectory)
         )
+    }
+
+    private static func startLinkPreviews(repository: CardRepository, privacy: PrivacySettings) -> LinkPreviewFetcher {
+        let linkPreviews = LinkPreviewFetcher(
+            repository: repository,
+            thumbnails: ThumbnailCache(directory: repository.thumbnailsDirectory),
+            maxPixelSize: DesignTokens.thumbnailMaxPixelSize
+        ) { privacy.fetchesLinkPreviews }
+        _ = Task {
+            try await linkPreviews.run()
+        }
+        return linkPreviews
+    }
+
+    private static func startCaptureEffects(
+        of monitor: PasteboardMonitor,
+        statusItem: StatusItemController,
+        linkPreviews: LinkPreviewFetcher
+    ) {
+        let sounds = SoundEffects()
+        _ = Task {
+            for await id in monitor.capturedCardIDs {
+                sounds.play(.capture)
+                statusItem.bounce()
+                linkPreviews.submit(id)
+            }
+        }
     }
 
     private static func capturePolicy(privacy: PrivacySettings, pause: CapturePause) -> CapturePolicy {

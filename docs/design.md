@@ -106,7 +106,7 @@ A Card is a rounded rectangle with an opaque fill (`controlBackgroundColor` or t
 | Color | Swatch filling the body, with the value overlaid on a small glass capsule for legibility | Value in the copied format (hex, rgb) |
 | Unknown | Generic `questionmark.square.dashed` symbol, short note that the item can still be pasted | Type identifier, if useful |
 
-Details such as rich text scaling, the contrast threshold and the link body without a preview follow [WD-32](roadmap.md#working-defaults-for-open-todos).
+Details such as rich text scaling, the contrast threshold and the link body without a preview follow [WD-32](roadmap.md#working-defaults-for-open-todos); link previews follow [WD-40](roadmap.md#working-defaults-for-open-todos).
 
 ### States
 

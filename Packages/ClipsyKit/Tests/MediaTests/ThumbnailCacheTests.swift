@@ -18,7 +18,7 @@ struct ThumbnailCacheTests {
         }
     }
 
-    private static func pngData(width: Int, height: Int) throws -> Data {
+    static func pngData(width: Int, height: Int) throws -> Data {
         let context = try #require(CGContext(
             data: nil,
             width: width,

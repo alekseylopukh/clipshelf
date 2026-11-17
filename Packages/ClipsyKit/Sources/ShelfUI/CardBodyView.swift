@@ -13,7 +13,7 @@ struct CardBodyView: View {
             case .text:
                 TextCardBody(card: card, isCodeLike: content.isCodeLike)
             case .link:
-                SymbolCardBody(symbol: card.kind.symbolName, caption: content.host.map { Text(verbatim: $0) })
+                LinkCardBody(card: card, content: content)
             case .color:
                 ColorCardBody(value: content.metadata.color, swatch: content.swatch)
             case .image:
@@ -115,6 +115,64 @@ private struct SymbolCardBody: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
+}
+
+private struct LinkCardBody: View {
+    let card: CardSummary
+    let content: CardContent
+
+    @State private var image: CGImage?
+    @Environment(\.cardMediaLoader) private var loader
+
+    private static let logger = Logger(subsystem: "app.gonar.clipsy", category: "Shelf")
+
+    var body: some View {
+        Group {
+            if let image {
+                VStack(alignment: .leading, spacing: DesignTokens.spacingMedium) {
+                    Color.clear
+                        .overlay {
+                            Image(decorative: image, scale: 1)
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                        }
+                        .clipShape(.rect(cornerRadius: DesignTokens.cardInnerCornerRadius))
+                    if let title = content.metadata.pageTitle {
+                        Text(verbatim: title)
+                            .font(.callout.weight(.semibold))
+                            .lineLimit(2)
+                    }
+                }
+            } else {
+                SymbolCardBody(
+                    symbol: card.kind.symbolName,
+                    caption: (content.metadata.pageTitle ?? content.host).map { Text(verbatim: $0) }
+                )
+            }
+        }
+        .task(id: LinkImageRequest(hash: card.contentHash, hasImage: content.metadata.pixelWidth != nil)) {
+            await loadImage()
+        }
+    }
+
+    private func loadImage() async {
+        guard let loader, let hash = card.contentHash, content.metadata.pixelWidth != nil else {
+            image = nil
+            return
+        }
+        do {
+            image = try await loader.linkImage(hash: hash, maxPixelSize: DesignTokens.thumbnailMaxPixelSize)
+        } catch is CancellationError {
+            return
+        } catch {
+            Self.logger.error("link image failed: \(String(describing: type(of: error)), privacy: .public)")
+        }
+    }
+}
+
+private struct LinkImageRequest: Hashable {
+    let hash: String?
+    let hasImage: Bool
 }
 
 private struct ImageCardBody: View {

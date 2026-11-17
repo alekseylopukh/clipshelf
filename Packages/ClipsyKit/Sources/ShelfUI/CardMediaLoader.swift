@@ -25,6 +25,12 @@ struct CardMediaLoader: Sendable {
         }
     }
 
+    /// link images are written by the link preview fetcher, never made here
+    @concurrent
+    func linkImage(hash: String, maxPixelSize: Int) async throws -> CGImage? {
+        try await thumbnails.thumbnail(forHash: hash, maxPixelSize: maxPixelSize) { [] }
+    }
+
     @concurrent
     func fileIcons(of card: CardSummary, pixelSize: CGFloat) async throws -> [FileIcon] {
         let urls = try await card.openableURLs(in: representations(card.id)).prefix(Self.maximumFileIcons)

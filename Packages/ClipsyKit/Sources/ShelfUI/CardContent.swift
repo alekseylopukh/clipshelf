@@ -32,7 +32,7 @@ struct CardContent {
         case .text:
             card.preview?.split(whereSeparator: \.isNewline).first.map(String.init)
         case .link:
-            metadata.url
+            metadata.pageTitle ?? metadata.url
         case .file:
             metadata.fileNames?.formatted(.list(type: .and))
         case .color:

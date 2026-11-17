@@ -150,7 +150,7 @@ card_search  FTS5(title, body, url, file_names, ocr_text, app_name,
 Rules:
 - **content_hash:** SHA-256 over the sorted `(uti, data)` pairs after dropping volatile types (source markers, our own marker type, Office OLE link types). The same text copied from two apps dedupes; rich and plain versions of the same text do not.
 - **History vs. Board:** a Card is in History when `last_copied_at` is set, on a Board when `board_id` is set, or both. A Card with neither is deleted. A Card is on at most one Board; adding it to another Board moves it.
-- **Search index** is written by app code in the same transaction as the Card (the body comes from payloads, so SQL triggers cannot build it). OCR text updates the row later.
+- **Search index** is written by app code in the same transaction as the Card (the body comes from payloads, so SQL triggers cannot build it). OCR text updates the row later, and a link's page title replaces its body when the preview arrives ([WD-40](roadmap.md#working-defaults-for-open-todos)).
 - **Settings** (retention, ignore lists, toggles, shortcuts) live in `UserDefaults`, not in the database.
 - **Files** are stored by reference (`public.file-url` representation), not copied, per [product.md §4.1](product.md#41-capture) (including its open bookmark question).
 

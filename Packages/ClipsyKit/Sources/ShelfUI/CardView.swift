@@ -214,6 +214,16 @@ private struct CardPreview: View {
     CardPreview(card: CardSummary.previewCards[2])
 }
 
+#Preview("Link with page title") {
+    CardPreview(card: CardSummary(
+        id: 10,
+        kind: .link,
+        preview: "https://developer.apple.com/design/human-interface-guidelines/materials",
+        metadata: #"{"pageTitle":"Materials","url":"https://developer.apple.com/design/human-interface-guidelines/materials"}"#,
+        createdAt: .now
+    ))
+}
+
 #Preview("Color") {
     CardPreview(card: CardSummary.previewCards[3])
 }

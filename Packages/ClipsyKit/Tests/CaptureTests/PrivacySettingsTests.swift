@@ -21,6 +21,7 @@ final class PrivacySettingsTests {
         #expect(settings.ignoredBundleIDs == [CapturePolicy.applePasswordsBundleID])
         #expect(settings.showsShelfInScreenCapture == false)
         #expect(settings.recognizesTextInImages)
+        #expect(settings.fetchesLinkPreviews == false)
         #expect(settings.capturePolicy == CapturePolicy())
     }
 
@@ -56,6 +57,7 @@ final class PrivacySettingsTests {
         settings.ignoresConcealed = false
         settings.showsShelfInScreenCapture = true
         settings.recognizesTextInImages = false
+        settings.fetchesLinkPreviews = true
 
         let relaunched = PrivacySettings(defaults: defaults)
 
@@ -64,6 +66,7 @@ final class PrivacySettingsTests {
         #expect(relaunched.ignoresTransient)
         #expect(relaunched.showsShelfInScreenCapture)
         #expect(relaunched.recognizesTextInImages == false)
+        #expect(relaunched.fetchesLinkPreviews)
     }
 
     @Test func `removing the preset is remembered`() {

@@ -36,6 +36,14 @@ public struct ThumbnailCache: Sendable {
         return nil
     }
 
+    /// returns nil when `data` is not a decodable image
+    @concurrent
+    public func store(_ data: Data, forHash hash: String, maxPixelSize: Int) async throws -> CGImage? {
+        guard let image = Self.downsample(data, maxPixelSize: maxPixelSize) else { return nil }
+        try write(image, to: fileURL(for: hash))
+        return image
+    }
+
     func fileURL(for hash: String) -> URL {
         directory.appending(path: "\(hash).png", directoryHint: .notDirectory)
     }

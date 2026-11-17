@@ -505,6 +505,12 @@
     "Clipsy doesn’t keep anything copied in these apps. Browser extensions of password managers may not mark copied passwords as concealed; to keep them out of your history, add your browser." : {
       "comment" : "Explanation under the Ignored Apps list in Settings"
     },
+    "Fetch link previews" : {
+      "comment" : "Privacy setting that loads the title and image of copied web links"
+    },
+    "Clipsy loads each web link you copy to show the page’s title and image. Loading a page can use up a one-time link or let the site track the visit." : {
+      "comment" : "Explanation under the Fetch link previews setting"
+    },
     "Show the Shelf in screenshots and screen sharing" : {
       "comment" : "Privacy setting that lets screenshots and screen sharing capture the Shelf"
     },
