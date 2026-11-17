@@ -22,6 +22,8 @@ Every package added later gets a row here.
 | [groue/GRDB.swift](https://github.com/groue/GRDB.swift) | 7.12.0 | SQLite, FTS5, migrations (`Store`) | MIT, © Gwendal Roué |
 | [sindresorhus/KeyboardShortcuts](https://github.com/sindresorhus/KeyboardShortcuts) | 2.4.0 | Global hotkeys, recorder (`ShelfUI`, re-exported to the app) | MIT, © Sindre Sorhus |
 
+`App/Credits.rtf` repeats the notices of the packages and adapted code that ship in the app, for the About panel. Update it with this file.
+
 ## Adapted code
 
 Code adapted from other projects. Each file keeps a header line naming its source.

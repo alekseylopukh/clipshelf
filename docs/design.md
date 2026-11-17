@@ -235,7 +235,7 @@ Menu contents: the items and pause durations are set in [product.md §6](product
 | Help | Clipsy Help (opens the project docs), Report an Issue |
 | Quit | Quit Clipsy (⌘Q) |
 
-> TODO: pick the final symbol after checking which clipboard symbols ship in SF Symbols for macOS 26.
+Decided (T6.4): `clipboard` normally and `pause.circle` while paused, swapped with the `.replace` content transition. SF Symbols on macOS 26 has no clipboard pause badge.
 
 ---
 

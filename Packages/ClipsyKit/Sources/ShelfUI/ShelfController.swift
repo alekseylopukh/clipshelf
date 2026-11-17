@@ -24,6 +24,7 @@ public final class ShelfController {
     private let deletion: CardDeletion
     private let representations: PasteCoordinator.RepresentationLoading
     private let renameCard: Rename
+    private let togglePause: () -> Void
     private let actions = CardActions()
     private let defaults: UserDefaults
     private var resizeStart: (mouseY: CGFloat, height: CGFloat)?
@@ -34,6 +35,7 @@ public final class ShelfController {
         deletion: CardDeletion,
         representations: @escaping PasteCoordinator.RepresentationLoading,
         rename: @escaping Rename,
+        togglePause: @escaping () -> Void,
         defaults: UserDefaults = .standard
     ) {
         self.model = model
@@ -41,6 +43,7 @@ public final class ShelfController {
         self.deletion = deletion
         self.representations = representations
         renameCard = rename
+        self.togglePause = togglePause
         self.defaults = defaults
         let hostingView = NSHostingView(rootView: ShelfContainerView(
             presentation: presentation,
@@ -189,10 +192,7 @@ public final class ShelfController {
         if model.handleSelectionKey(keyCode: Int(event.keyCode), character: key, modifiers: modifiers) {
             return true
         }
-        if key == "z", modifiers == .command {
-            Task {
-                await undoDelete()
-            }
+        if modifiers == .command, handleCommandKey(key, isRepeat: event.isARepeat) {
             return true
         }
         guard let action = Self.pasteAction(keyCode: Int(event.keyCode), key: key, modifiers: modifiers) else {
@@ -327,6 +327,22 @@ public final class ShelfController {
 }
 
 private extension ShelfController {
+    func handleCommandKey(_ key: String?, isRepeat: Bool) -> Bool {
+        switch key {
+        case "t":
+            if !isRepeat {
+                togglePause()
+            }
+        case "z":
+            Task {
+                await undoDelete()
+            }
+        default:
+            return false
+        }
+        return true
+    }
+
     static func pasteAction(
         keyCode: Int,
         key: String?,

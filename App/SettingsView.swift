@@ -28,5 +28,6 @@ enum SettingsPane: String {
         SettingsView()
             .environment(RetentionSettings(repository: CardRepository(database: database)))
             .environment(PrivacySettings())
+            .environment(MenuBarSettings())
     }
 }

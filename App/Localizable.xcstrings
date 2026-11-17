@@ -12,7 +12,7 @@
       "comment" : "Button that dismisses a confirmation"
     },
     "Clipsy" : {
-
+      "comment" : "Accessibility label of the menu bar item"
     },
     "Clipsy can’t delete these cards." : {
       "comment" : "Title of the alert shown when deleting cards fails"
@@ -457,6 +457,36 @@
     },
     "%@ can’t be identified, so Clipsy can’t tell when you copy in them." : {
       "comment" : "Message of the alert shown when chosen apps have no bundle identifier; the placeholder is a list of app names"
+    },
+    "Show in menu bar" : {
+      "comment" : "Settings toggle that shows or hides the menu bar item"
+    },
+    "Click on menu bar icon opens the Shelf" : {
+      "comment" : "Settings toggle that makes a left click on the menu bar item open the shelf"
+    },
+    "Pause Capture" : {
+      "comment" : "Menu bar menu item that stops adding copies to History"
+    },
+    "Resume Capture" : {
+      "comment" : "Menu bar menu item that starts adding copies to History again"
+    },
+    "About Clipsy" : {
+      "comment" : "Menu bar menu item that shows the About panel"
+    },
+    "Clipsy Help" : {
+      "comment" : "Menu bar menu item that opens the project documentation"
+    },
+    "Report an Issue" : {
+      "comment" : "Menu bar menu item that opens the issue tracker"
+    },
+    "Capture Paused" : {
+      "comment" : "Accessibility description of the paused menu bar symbol"
+    },
+    "Capture paused" : {
+      "comment" : "VoiceOver announcement when capture is paused"
+    },
+    "Capture resumed" : {
+      "comment" : "VoiceOver announcement when capture is resumed"
     }
   },
   "version" : "1.0"

@@ -120,6 +120,31 @@ struct PasteboardMonitorTests {
         #expect(try await history().count == 2)
     }
 
+    @Test func `pause stops capture and resume restarts`() async throws {
+        defer { pasteboard.releaseGlobally() }
+        let pause = CapturePause()
+        let monitor = makeMonitor(policy: { CapturePolicy(isPaused: pause.isPaused) })
+        copy("before pause")
+        await monitor.poll()
+        await monitor.poll()
+
+        pause.isPaused = true
+        copy("while paused")
+        await monitor.poll()
+        await monitor.poll()
+        #expect(try await history().map(\.preview) == ["before pause"])
+
+        pause.isPaused = false
+        await monitor.poll()
+        await monitor.poll()
+        #expect(try await history().map(\.preview) == ["before pause"])
+
+        copy("after resume")
+        await monitor.poll()
+        await monitor.poll()
+        #expect(try await history().map(\.preview) == ["after resume", "before pause"])
+    }
+
     @Test func `paused produces nothing`() async throws {
         defer { pasteboard.releaseGlobally() }
         var policy = CapturePolicy(isPaused: true)

@@ -8,28 +8,26 @@ import SwiftUI
 
 @main
 struct ClipsyApp: App {
+    @NSApplicationDelegateAdaptor private var appDelegate: AppDelegate
     @State private var shelf: ShelfController
     @State private var retention: RetentionSettings
     @State private var privacy: PrivacySettings
+    @State private var menuBarSettings: MenuBarSettings
+    @State private var statusItem: StatusItemController
 
     init() {
         let repository = CardRepository(database: Self.openDatabase())
         let writer = PasteboardWriter()
         let privacy = PrivacySettings()
         _privacy = State(initialValue: privacy)
+        let pause = CapturePause()
         let monitor = PasteboardMonitor(
             isOwnWrite: { writer.isOwnWrite($0) },
-            policy: { privacy.capturePolicy },
+            policy: { Self.capturePolicy(privacy: privacy, pause: pause) },
             repository: repository
         )
         _ = Task {
             try await monitor.run()
-        }
-        let sounds = SoundEffects()
-        _ = Task {
-            for await _ in monitor.capturedCardIDs {
-                sounds.play(.capture)
-            }
         }
         let retention = RetentionSettings(repository: repository)
         _ = Task {
@@ -45,7 +43,8 @@ struct ClipsyApp: App {
                 restore: { try await repository.restore($0) }
             ),
             representations: { try await repository.representations(of: $0) },
-            rename: { try await repository.rename(card: $0, to: $1) }
+            rename: { try await repository.rename(card: $0, to: $1) },
+            togglePause: { pause.isPaused.toggle() }
         )
         _shelf = State(initialValue: shelf)
         _ = Task {
@@ -56,30 +55,43 @@ struct ClipsyApp: App {
         KeyboardShortcuts.onKeyUp(for: .toggleShelf) {
             shelf.toggle()
         }
+
+        let menuBarSettings = MenuBarSettings()
+        _menuBarSettings = State(initialValue: menuBarSettings)
+        let statusItem = StatusItemController(pause: pause, settings: menuBarSettings) {
+            shelf.show()
+        }
+        _statusItem = State(initialValue: statusItem)
+        _ = Task {
+            await statusItem.run()
+        }
+        let sounds = SoundEffects()
+        _ = Task {
+            for await _ in monitor.capturedCardIDs {
+                sounds.play(.capture)
+                statusItem.bounce()
+            }
+        }
+        appDelegate.onReopen = {
+            if !menuBarSettings.isItemShown {
+                SettingsWindow.open()
+            }
+        }
     }
 
     var body: some Scene {
-        MenuBarExtra("Clipsy", systemImage: "list.clipboard") {
-            Button("Open Shelf") {
-                shelf.show()
-            }
-            Divider()
-            SettingsLink {
-                Text("Settings…")
-            }
-            .keyboardShortcut(",")
-            Divider()
-            Button("Quit Clipsy") {
-                NSApplication.shared.terminate(nil)
-            }
-            .keyboardShortcut("q")
-        }
-
         Settings {
             SettingsView()
                 .environment(retention)
                 .environment(privacy)
+                .environment(menuBarSettings)
         }
+    }
+
+    private static func capturePolicy(privacy: PrivacySettings, pause: CapturePause) -> CapturePolicy {
+        var policy = privacy.capturePolicy
+        policy.isPaused = pause.isPaused
+        return policy
     }
 
     /// migrations must finish before any UI shows (architecture §3.4), so this runs synchronously at launch

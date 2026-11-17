@@ -5,6 +5,7 @@ import SwiftUI
 
 struct GeneralSettingsView: View {
     @Environment(RetentionSettings.self) private var retention
+    @Environment(MenuBarSettings.self) private var menuBarSettings
     @Environment(\.appearsActive) private var appearsActive
     @AppStorage(PasteSettings.soundEffectsKey) private var playsSounds = false
     @AppStorage(PasteSettings.behaviorKey) private var pasteBehavior = PasteBehavior.pasteIntoActiveApp
@@ -17,6 +18,7 @@ struct GeneralSettingsView: View {
     @State private var failure: Failure?
 
     var body: some View {
+        @Bindable var menuBarSettings = menuBarSettings
         Form {
             Section {
                 Toggle("Open at login", isOn: Binding(get: { isOpenAtLoginOn }, set: setOpenAtLogin))
@@ -30,6 +32,9 @@ struct GeneralSettingsView: View {
                         Text("Allow Clipsy in System Settings › General › Login Items.")
                     }
                 }
+                Toggle("Show in menu bar", isOn: $menuBarSettings.isItemShown)
+                Toggle("Click on menu bar icon opens the Shelf", isOn: $menuBarSettings.clickOpensShelf)
+                    .disabled(!menuBarSettings.isItemShown)
                 Toggle("Sound effects", isOn: $playsSounds)
             }
 
