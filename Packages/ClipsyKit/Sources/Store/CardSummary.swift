@@ -11,6 +11,28 @@ public struct CardSummary: Sendable, Equatable, Identifiable {
     public var createdAt: Date
     public var lastCopiedAt: Date?
     public var boardID: Int64?
+
+    public init(
+        id: Int64,
+        kind: CardKind,
+        title: String? = nil,
+        preview: String? = nil,
+        metadata: String? = nil,
+        sourceApp: SourceApp? = nil,
+        createdAt: Date,
+        lastCopiedAt: Date? = nil,
+        boardID: Int64? = nil
+    ) {
+        self.id = id
+        self.kind = kind
+        self.title = title
+        self.preview = preview
+        self.metadata = metadata
+        self.sourceApp = sourceApp
+        self.createdAt = createdAt
+        self.lastCopiedAt = lastCopiedAt
+        self.boardID = boardID
+    }
 }
 
 extension CardSummary: FetchableRecord {

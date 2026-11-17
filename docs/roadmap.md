@@ -20,7 +20,7 @@ Not maintainer decisions. They are the doc's current text or the simplest choice
 | WD-6 | Paste from shelf moves card to top | No |
 | WD-7 | Edit makes a card identical to another | Save is refused with an inline error; the editor stays open |
 | WD-8 | Plain-text modifier when plain is the default | No effect (no inverse modifier) |
-| WD-9 | Boards | Palette from [design §4](design.md#board-colors), no "no color"; new cards go to the front; the shelf reopens on the last tab |
+| WD-9 | Boards | Palette from [design §4](design.md#board-colors), no "no color"; new cards go to the front; the shelf reopens on the last tab; opening the shelf or switching tabs selects the tab's first card; ⇧-arrows and ⇧-click select the range from the anchor card |
 | WD-10 | Search scope | Global (History and all boards) |
 | WD-11 | Undo scope | Delete only |
 | WD-12 | Delete on a board | Removes from the board only |
@@ -229,6 +229,7 @@ What exists:
 - Deliverable: `@Observable ShelfModel` fed by store observation: current tab, cards, single and multi selection (← → ⌘↑ ⌘↓ ⇧← ⇧→ ⌘-click ⇧-click ⌘A), newest selected on open, last tab remembered
 - Acceptance: tests `arrowsMoveSelection`, `shiftArrowExtends`, `commandClickToggles`, `selectAllSelectsCurrentList`, `selectionSurvivesInsertAtFront`, `openSelectsNewest`
 - Size: M
+- Status: done
 
 ### T3.5 Card view: chrome, text, link, color, unknown
 - Module(s): ShelfUI, DesignSystem
@@ -252,7 +253,7 @@ What exists:
 - Module(s): ShelfUI
 - Depends on: T3.5
 - Spec: [design §4](design.md#4-top-bar), [empty states](design.md#empty-states), [product §4.9](product.md#49-search-and-filters)
-- Deliverable: glass top bar with search field, History and board capsules, New Board button, More menu; ⌘← ⌘→ switch tabs (customizable shortcuts read locally, not registered globally); Esc clears search then closes; empty states for History, board, no results, paused
+- Deliverable: glass top bar with search field, History and board capsules, New Board button, More menu; `ShelfModel` falls back to History when its remembered board no longer exists; ⌘← ⌘→ switch tabs (customizable shortcuts read locally, not registered globally); Esc clears search then closes; empty states for History, board, no results, paused
 - Acceptance: tests `escClearsSearchFirst`, `tabShortcutsSwitchTabs` on the model
 - Human check: keyboard-only pass: Tab cycles search, tabs, cards with visible focus
 - Size: M
