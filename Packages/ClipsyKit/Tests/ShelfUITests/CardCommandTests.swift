@@ -21,13 +21,13 @@ struct CardCommandTests {
     @Test func `text card in history has every applicable item`() {
         let menu = CardCommand.menu(for: [Self.card(1, .text)], in: .history)
 
-        #expect(menu == [[.paste, .pasteAsPlainText], [.copy, .copyAsPlainText], [.delete]])
+        #expect(menu == [[.paste, .pasteAsPlainText], [.copy, .copyAsPlainText], [.rename], [.delete]])
     }
 
     @Test func `file card on a board can be opened and removed`() {
         let menu = CardCommand.menu(for: [Self.card(1, .file)], in: .board(id: 1))
 
-        #expect(menu == [[.paste], [.copy], [.open], [.removeFromBoard]])
+        #expect(menu == [[.paste], [.copy], [.open], [.rename], [.removeFromBoard]])
     }
 
     @Test func `no cards means no menu`() {

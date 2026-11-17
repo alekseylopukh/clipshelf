@@ -47,6 +47,9 @@ private struct CardCommandButton: View {
         case .open:
             Button("Open", action: action)
                 .keyboardShortcut("o")
+        case .rename:
+            Button("Rename…", action: action)
+                .keyboardShortcut("r")
         case .removeFromBoard:
             Button("Remove from Board", action: action)
                 .keyboardShortcut(.delete, modifiers: [])

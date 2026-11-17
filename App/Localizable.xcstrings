@@ -26,6 +26,9 @@
     "Clipsy can’t paste this card." : {
       "comment" : "Title of the alert shown when a card's contents cannot be read for pasting"
     },
+    "Clipsy can’t rename this card." : {
+      "comment" : "Title of the alert shown when renaming a card fails"
+    },
     "Clipsy can’t restore the deleted cards." : {
       "comment" : "Title of the alert shown when undoing a delete fails"
     },
@@ -123,6 +126,9 @@
     "Remove" : {
       "comment" : "Button that confirms removing cards from a board, and button and accessibility action that removes a card from the Sequence"
     },
+    "Rename…" : {
+      "comment" : "Context menu item that opens a popover to give the selected card a custom title"
+    },
     "Reverse Order" : {
       "comment" : "Sequence panel menu toggle that adds new cards at the head instead of the end",
       "extractionState" : "manual"
@@ -146,6 +152,9 @@
     "Text" : {
       "comment" : "Card type name",
       "extractionState" : "manual"
+    },
+    "Title" : {
+      "comment" : "Label and placeholder of the field that renames a card"
     },
     "To paste directly, Clipsy needs Accessibility permission in Privacy & Security settings. Until then, Clipsy copies the card and you can press ⌘V to paste it." : {
       "comment" : "Body of the alert shown on the first paste without Accessibility permission"

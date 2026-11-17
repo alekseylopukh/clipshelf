@@ -175,7 +175,7 @@ public extension CardRepository {
         return previous < middle && middle < next ? middle : nil
     }
 
-    private static func requireChange(in connection: Database, table: String, id: Int64) throws {
+    internal static func requireChange(in connection: Database, table: String, id: Int64) throws {
         guard connection.changesCount > 0 else { throw notFound(table: table, id: id) }
     }
 

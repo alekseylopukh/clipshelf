@@ -42,6 +42,7 @@ Not maintainer decisions. They are the doc's current text or the simplest choice
 | WD-28 | Quick Paste details ([product §4.6](product.md#46-quick-paste)) | Badges show only while the modifier is held; a card counts as visible when at least half of it is in view; digits are matched by key position (number row and keypad), so they work on any layout; a stored modifier that is not allowed, or a plain-text modifier equal to the Quick Paste one, falls back to the default; Return and double-click keep ⇧ until T6.2 makes them read the plain-text modifier setting |
 | WD-29 | Sequence panel ([design §6](design.md#6-sequence)) | First shown at the top-right of the display under the pointer, then wherever the user moved it (AppKit frame autosave); hidden from screen sharing like the Shelf until the screenshot setting exists; rows are a fixed two-line height, up to 6 visible before scrolling; the next marker is an accent dot; the trailing symbol shows the card type; ⌘Z, ⌫ and Esc work while the panel is key, which happens only when the user clicks into it |
 | WD-30 | General pane details ([product §6 General](product.md#general), [§4.4](product.md#44-retention)) | The retention slider commits when the drag ends (keyboard steps commit at once); confirmation is asked only when lowering the limit and some History card, on a board or not, is older than the new limit; raising it never purges; the hourly purge uses `ContinuousClock`, so time asleep counts; the Accessibility row's "Open System Settings…" calls the same prompt as WD-27; a login item waiting for approval shows as on, with a button that opens Login Items; Show in menu bar and the click toggle come with T6.4, the storage summary with T7.2 |
+| WD-31 | Rename details ([product §4.10](product.md#410-editing-v1)) | Rename trims whitespace; Return saves, Esc or clicking outside discards |
 
 ## Rules for every task
 
@@ -477,16 +478,19 @@ What exists:
 - Module(s): Store, ShelfUI
 - Depends on: T5.1
 - Spec: [product §4.10](product.md#410-editing-v1), [design edit sheet](design.md#edit-sheet)
-- Deliverable: ⌘R or click on the title opens a rename popover; empty title clears it; search row updated. Duplicate is not part of this task (see "Needs the maintainer")
+- Deliverable: ⌘R or click on the title opens a rename popover; empty title clears it; search row updated. Duplicate is not part of this task (see "Needs the maintainer"). WD-31
 - Acceptance: tests `emptyTitleClears`, `renameUpdatesSearchRow`
+- Note: the card view (T3.5) was not on this branch yet, so the popover ships as the `cardRenamePopover(for:)` modifier; T8.4 applies it to the card and makes the header title a button that sends `CardCommand.rename`
 - Size: S
+- Status: done
 
 ### T8.4 Text editor and New Text Card
 - Module(s): Store, ShelfUI
 - Depends on: T8.3
 - Spec: [product §4.10](product.md#410-editing-v1), [design edit sheet](design.md#edit-sheet), WD-7
-- Deliverable: ⌘E sheet with rich text editing (B/I/U/S), live counts; save replaces content in place and recomputes hash and search row; ⌘N creates a card in History or the current board
+- Deliverable: apply T8.3's `cardRenamePopover(for:)` to each card and make the header title a button that sends `CardCommand.rename`, if T3.5 did not; ⌘E sheet with rich text editing (B/I/U/S), live counts; save replaces content in place and recomputes hash and search row; ⌘N creates a card in History or the current board
 - Acceptance: tests `editKeepsPositionAndBoard`, `editRecomputesHash`, `editToExistingHashIsRefused`, `newCardGoesToCurrentBoard`
+- Human check: in the running app, ⌘R and a click on the title open T8.3's rename popover, its field takes typing while the Shelf stays open, Return saves and the Shelf keeps keyboard focus afterwards; light and dark
 - Human check: edits never change the system clipboard
 - Size: M
 

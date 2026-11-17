@@ -35,7 +35,8 @@ struct ClipsyApp: App {
                 delete: { try await repository.delete(cards: $0, in: $1) },
                 restore: { try await repository.restore($0) }
             ),
-            representations: { try await repository.representations(of: $0) }
+            representations: { try await repository.representations(of: $0) },
+            rename: { try await repository.rename(card: $0, to: $1) }
         )
         _shelf = State(initialValue: shelf)
         KeyboardShortcuts.onKeyUp(for: .toggleShelf) {

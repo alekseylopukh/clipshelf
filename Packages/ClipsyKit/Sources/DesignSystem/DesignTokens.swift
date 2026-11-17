@@ -35,6 +35,7 @@ public enum DesignTokens {
     public static let boardDotSize: CGFloat = 8
     public static let boardDotOutlineWidth: CGFloat = 1
     public static let badgeSize: CGFloat = 20
+    public static let renameFieldWidth: CGFloat = 220
 
     public static func selectionRingWidth(for contrast: ColorSchemeContrast) -> CGFloat {
         contrast == .increased ? 4 : 3

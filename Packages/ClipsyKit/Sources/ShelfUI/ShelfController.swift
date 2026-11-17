@@ -8,18 +8,22 @@ import SwiftUI
 
 @MainActor
 public final class ShelfController {
+    public typealias Rename = @Sendable (Int64, String) async throws -> Void
+
     public private(set) var targetApplication: NSRunningApplication?
 
     private static let heightKey = "ShelfHeight"
     private static let logger = Logger(subsystem: "app.gonar.clipsy", category: "Shelf")
+    private static let commandKeys: [String: CardCommand] = ["o": .open, "r": .rename]
 
-    private let panel = ShelfPanel()
+    let panel = ShelfPanel()
     private let presentation = ShelfPresentation()
     private let calculator = ShelfFrameCalculator()
     private let model: ShelfModel
     private let paster: PasteCoordinator
     private let deletion: CardDeletion
     private let representations: PasteCoordinator.RepresentationLoading
+    private let renameCard: Rename
     private let actions = CardActions()
     private let defaults: UserDefaults
     private var resizeStart: (mouseY: CGFloat, height: CGFloat)?
@@ -29,12 +33,14 @@ public final class ShelfController {
         paster: PasteCoordinator,
         deletion: CardDeletion,
         representations: @escaping PasteCoordinator.RepresentationLoading,
+        rename: @escaping Rename,
         defaults: UserDefaults = .standard
     ) {
         self.model = model
         self.paster = paster
         self.deletion = deletion
         self.representations = representations
+        renameCard = rename
         self.defaults = defaults
         let hostingView = NSHostingView(rootView: ShelfContainerView(
             presentation: presentation,
@@ -52,6 +58,11 @@ public final class ShelfController {
         panel.onKeyDown = { [weak self] event in self?.handleKeyDown(event) ?? false }
         panel.onFlagsChanged = { [weak self] event in self?.updateQuickPasteModifier(event.modifierFlags) }
         actions.perform = { [weak self] command, ids in self?.perform(command, on: ids) }
+        actions.rename = { [weak self] id, title in
+            Task {
+                await self?.rename(id, to: title)
+            }
+        }
     }
 
     public var isShown: Bool {
@@ -89,6 +100,7 @@ public final class ShelfController {
         guard isShown else { return }
         resizeStart = nil
         model.setQuickPasteModifierHeld(false)
+        actions.renamingCardID = nil
         deletion.discardUndo()
         withAnimation(reduceMotion ? .default : .snappy) {
             presentation.isVisible = false
@@ -138,6 +150,9 @@ public final class ShelfController {
             Task {
                 await open(cardID)
             }
+        case .rename:
+            guard ids.count == 1 else { return }
+            actions.renamingCardID = ids.first
         case .removeFromBoard, .delete:
             Task {
                 await delete(ids)
@@ -165,8 +180,10 @@ public final class ShelfController {
             }
             return true
         }
-        if key == "o", modifiers == .command {
-            perform(.open, on: model.selectedCards.map(\.id))
+        if modifiers == .command, let command = key.flatMap({ Self.commandKeys[$0] }) {
+            if !event.isARepeat {
+                perform(command, on: model.selectedCards.map(\.id))
+            }
             return true
         }
         if key == "z", modifiers == .command {
@@ -242,37 +259,16 @@ public final class ShelfController {
         }
     }
 
-    /// a sheet on the panel, because an app-modal alert would take key status and close the shelf
-    private func confirmDeletion(of count: Int, in list: CardList) async -> Bool {
-        let alert = NSAlert()
-        alert.alertStyle = .warning
-        switch list {
-        case .history:
-            alert.messageText = String(
-                localized: "Delete \(count) cards?",
-                comment: "Title of the confirmation shown before deleting several cards from History"
-            )
-            alert.addButton(withTitle: String(
-                localized: "Delete",
-                comment: "Context menu item and confirmation button that delete the selected cards"
-            ))
-        case .board:
-            alert.messageText = String(
-                localized: "Remove \(count) cards from this board?",
-                comment: "Title of the confirmation shown before removing several cards from a board"
-            )
-            alert.addButton(withTitle: String(
-                localized: "Remove",
-                comment: "Button that confirms removing cards from a board"
+    private func rename(_ cardID: Int64, to title: String) async {
+        do {
+            try await renameCard(cardID, title)
+        } catch {
+            Self.logger.error("rename failed: \(String(describing: type(of: error)), privacy: .public)")
+            await presentError(error, title: String(
+                localized: "Clipsy can’t rename this card.",
+                comment: "Title of the alert shown when renaming a card fails"
             ))
         }
-        alert.informativeText = String(
-            localized: "You can undo this until the shelf closes.",
-            comment: "Informative text of the confirmation shown before deleting several cards"
-        )
-        alert.buttons.first?.hasDestructiveAction = true
-        alert.addButton(withTitle: String(localized: "Cancel", comment: "Button that dismisses a confirmation"))
-        return await alert.beginSheetModal(for: panel) == .alertFirstButtonReturn
     }
 
     private func presentError(_ error: any Error, title: String) async {
@@ -291,6 +287,7 @@ public final class ShelfController {
     private func hideImmediately() {
         resizeStart = nil
         model.setQuickPasteModifierHeld(false)
+        actions.renamingCardID = nil
         deletion.discardUndo()
         presentation.isVisible = false
         panel.orderOut(nil)
