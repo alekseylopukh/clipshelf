@@ -60,7 +60,7 @@ Placement uses the display's visible frame, so an auto-hidden Dock is not avoide
 ### Behavior as the user sees it
 
 - Opens with the global shortcut (see [product.md](product.md)) or from the menu bar extra. The frontmost app keeps its focus and text cursor; the Shelf takes keyboard input without activating Clipsy's menu bar.
-- Closes on Esc, on the shortcut again, after a paste, or when the user clicks outside it. It stays open while its own sheets, menus, Quick Look or editors are showing.
+- Closes on Esc, on the shortcut again, after a paste, or when the user clicks outside it. It stays open while one of its sheets (such as an editor) is attached, or while it or one of its child windows (a popover, the Quick Look preview) has keyboard focus, and closes when focus leaves both (see [product.md §4.13](product.md#413-shelf-window-behavior)).
 - Hidden from screenshots and screen sharing by default (setting in Privacy).
 - One Card is always selected while the Shelf has items; on open, the newest Card in the current view is selected.
 
@@ -183,9 +183,13 @@ Inside a Board, Delete is hidden and Remove from Board takes its place, because 
 
 ### Quick Look
 
-- Space toggles a preview anchored to the selected Card, as an `NSPopover` with a glass background.
-- Files and images use `QLPreviewView`. Text, rich text, links and colors use our own read-only SwiftUI views (selectable text, link metadata with the full URL, large swatch with all color formats).
+- Space toggles a preview anchored to the Card under the keyboard cursor, as an `NSPopover` with the system's glass background. Esc closes the preview before it clears the search or closes the Shelf.
+- Files use `QLPreviewView`; a file that was moved or deleted shows "File Not Found" with its name. Several files show a list of their names with Quick Look thumbnails.
+- Images use our own image view (decoded at up to 2048 px, checkerboard behind transparency): `QLPreviewView` needs a file, and image Cards keep their data in the store, so a temporary copy would put clipboard data outside it.
+- Text, rich text, links and colors use our own read-only SwiftUI views: selectable text (rich text keeps the Card's styling rules), the link's title or host with the full URL, and a large swatch with Hex, RGB and HSL values. Details follow [WD-49](roadmap.md#working-defaults-for-open-todos).
 - Arrow keys move the selection and the preview follows.
+
+Prototype result (T8.1): the popover uses `.applicationDefined` behavior, is anchored to an invisible view behind the cursor Card, and hands key status back to the Shelf after it opens and after it closes while key, so Space, arrows and Esc keep reaching the Shelf. When a click in the preview (selecting text, scrolling a PDF) makes the popover key, it forwards every key without ⌘ to the Shelf, Esc included, and keeps ⌘ shortcuts so ⌘C copies the selected text. The Shelf stays open while the popover or another child window is key and closes when focus leaves both; the popover's own loss of key status runs the same check as the panel's. This builds and the previews render offscreen in light and dark, but the live behavior inside the non-activating panel was not run by the agent; it is a human check of T8.1.
 
 > TODO: compare against `QLPreviewPanel` (the Finder-style floating panel) in practice; the popover is chosen because it works inside a non-activating panel, but the system panel may feel more native.
 
@@ -355,7 +359,7 @@ Step 3 and the Privacy pane row read `NSPasteboard.general.accessBehavior` (chec
 | Board color dot | `Circle().fill(Color(nsColor: .systemBlue))` etc. |
 | Empty states | `ContentUnavailableView` |
 | Context menu | `NSMenu` / SwiftUI `.contextMenu` with `Label` items (SF Symbols), `Divider` between sections, destructive role on Delete |
-| Quick Look | `NSPopover` containing `QLPreviewView` (files, images) or SwiftUI previews |
+| Quick Look | `NSPopover` containing `QLPreviewView` (files) or SwiftUI previews (images, text, links, colors) |
 | Edit sheet | `.sheet` with `Form`, `ColorPicker`, standard toolbar; the text editor is an `NSTextView` in `NSViewRepresentable`, because RTF in and out needs AppKit font attributes that SwiftUI's `TextEditor` does not keep |
 | New/Edit Board | Sheet with `TextField` and a swatch row |
 | Sequence panel | Separate `NSPanel` (utility, non-activating) hosting SwiftUI; header in `GlassEffectContainer`; rows in `List` with `.onMove` and `.onDelete` |

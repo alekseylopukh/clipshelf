@@ -17,6 +17,22 @@ extension ShelfController {
         }
     }
 
+    func perform(_ command: CardCommand, on cardID: Int64) {
+        switch command {
+        case .quickLook where model.cursorID == cardID:
+            preview.toggle()
+        case .quickLook:
+            model.select(cardID)
+            preview.request()
+        case .showInList:
+            model.showInList(cardID)
+        case .rename:
+            actions.renamingCardID = cardID
+        default:
+            break
+        }
+    }
+
     func requestPopUp(for command: CardCommand, on ids: [Int64]) {
         let kind: CardPopUp.Kind = switch command {
         case .openWith: .openWith

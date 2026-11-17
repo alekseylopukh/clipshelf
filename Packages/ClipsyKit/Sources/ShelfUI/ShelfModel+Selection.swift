@@ -25,6 +25,10 @@ extension ShelfModel {
         cards.filter { selection.contains($0.id) }
     }
 
+    var cursorCard: CardSummary? {
+        cards.first { $0.id == cursorID }
+    }
+
     func neighbor(afterRemoving ids: Set<Int64>) -> Int64? {
         guard let last = cards.lastIndex(where: { ids.contains($0.id) }) else { return nil }
         if let next = cards[(last + 1)...].first(where: { !ids.contains($0.id) }) {

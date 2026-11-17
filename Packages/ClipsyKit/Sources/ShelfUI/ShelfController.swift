@@ -40,6 +40,7 @@ public final class ShelfController {
     let replaceText: ReplaceText
     let addText: AddText
     let actions = CardActions()
+    let preview: CardPreviewPopover
     private let defaults: UserDefaults
     private var resizeStart: (mouseY: CGFloat, height: CGFloat)?
 
@@ -66,6 +67,9 @@ public final class ShelfController {
         self.replaceText = replaceText
         self.addText = addText
         self.defaults = defaults
+        let richTextLoader = RichTextLoader(representations: representations)
+        let mediaLoader = CardMediaLoader(representations: representations, thumbnails: thumbnails)
+        preview = CardPreviewPopover(model: model, richTextLoader: richTextLoader, mediaLoader: mediaLoader)
         let hostingView = NSHostingView(rootView: ShelfContainerView(
             presentation: presentation,
             model: model,
@@ -73,8 +77,8 @@ public final class ShelfController {
             onResize: { [weak self] in self?.resize() },
             onResizeEnded: { [weak self] in self?.endResize() }
         ).environment(actions).environment(boardEditor)
-            .environment(\.richTextLoader, RichTextLoader(representations: representations))
-            .environment(\.cardMediaLoader, CardMediaLoader(representations: representations, thumbnails: thumbnails)))
+            .environment(\.richTextLoader, richTextLoader)
+            .environment(\.cardMediaLoader, mediaLoader))
         hostingView.sizingOptions = []
         hostingView.autoresizingMask = [.width, .height]
         let contentView = NSView()
@@ -103,6 +107,12 @@ public final class ShelfController {
         commands.newTextCard = { [weak self] in self?.beginNewTextCard() }
         boardEditor.confirmDeletion = { [weak self] board in await self?.confirmDeletion(of: board) ?? false }
         boardEditor.reportError = { [weak self] error, title in await self?.presentError(error, title: title) }
+        actions.attachPreviewAnchor = { [weak self] view in self?.preview.attach(view) }
+        actions.detachPreviewAnchor = { [weak self] view in self?.preview.detach(view) }
+        preview.returnKeyToShelf = { [weak self] in self?.returnKeyToPanel() }
+        preview.onResignKey = { [weak self] in self?.closeOnFocusLoss() }
+        preview.onKeyDown = { [weak self] event in self?.handlePreviewKeyDown(event) ?? false }
+        preview.sharingType = { [weak self] in self?.panel.sharingType ?? .none }
     }
 
     public var isShown: Bool {
@@ -145,6 +155,7 @@ public final class ShelfController {
         resizeStart = nil
         model.setQuickPasteModifierHeld(false)
         actions.endEditing()
+        preview.dismiss()
         boardEditor.cancel()
         deletion.discardUndo()
         withAnimation(reduceMotion ? .default : .snappy) {
@@ -186,12 +197,9 @@ public final class ShelfController {
             pasteOrCopy(command, on: ids)
         case .open, .showInFinder:
             openOrReveal(command, on: ids)
-        case .showInList:
+        case .quickLook, .showInList, .rename:
             guard ids.count == 1, let cardID = ids.first else { return }
-            model.showInList(cardID)
-        case .rename:
-            guard ids.count == 1 else { return }
-            actions.renamingCardID = ids.first
+            perform(command, on: cardID)
         case .edit:
             edit(ids)
         case .addToBoard, .openWith, .share:
@@ -229,10 +237,7 @@ public final class ShelfController {
         }
         let modifiers = event.modifierFlags.intersection([.shift, .control, .option, .command])
         let key = event.charactersIgnoringModifiers?.lowercased()
-        if Int(event.keyCode) == kVK_Delete, modifiers.isEmpty {
-            if !event.isARepeat {
-                perform(.delete, on: model.selectedCards.map(\.id))
-            }
+        if modifiers.isEmpty, handleUnmodifiedKey(event) {
             return true
         }
         if let key, handleCardCommandKey(key, modifiers: modifiers, isRepeat: event.isARepeat) {
@@ -305,11 +310,6 @@ public final class ShelfController {
         defaults.object(forKey: Self.heightKey) == nil
             ? DesignTokens.shelfDefaultHeight
             : defaults.double(forKey: Self.heightKey)
-    }
-
-    private func closeOnFocusLoss() {
-        guard panel.attachedSheet == nil, panel.childWindows?.isEmpty ?? true else { return }
-        hide()
     }
 
     private func resize() {
@@ -415,7 +415,50 @@ private extension ShelfController {
     }
 
     func cancel() {
-        if !model.clearSearch() {
+        if preview.isShown {
+            preview.dismiss()
+        } else if !model.clearSearch() {
+            hide()
+        }
+    }
+
+    func handleUnmodifiedKey(_ event: NSEvent) -> Bool {
+        switch Int(event.keyCode) {
+        case kVK_Space:
+            if !event.isARepeat {
+                preview.toggle()
+            }
+        case kVK_Delete:
+            if !event.isARepeat {
+                perform(.delete, on: model.selectedCards.map(\.id))
+            }
+        default:
+            return false
+        }
+        return true
+    }
+
+    func returnKeyToPanel() {
+        guard isShown else { return }
+        panel.makeKey()
+    }
+
+    func handlePreviewKeyDown(_ event: NSEvent) -> Bool {
+        if Int(event.keyCode) == kVK_Escape {
+            cancel()
+            return true
+        }
+        guard !event.modifierFlags.contains(.command) else { return false }
+        return handleKeyDown(event)
+    }
+
+    func closeOnFocusLoss() {
+        // the window that takes key status is known only after resignKey returns
+        // swiftlint:disable:next no_dispatch_queue
+        DispatchQueue.main.async { [weak self] in
+            guard let self, isShown, panel.attachedSheet == nil, !panel.isKeyWindow,
+                  panel.childWindows?.contains(where: \.isKeyWindow) != true
+            else { return }
             hide()
         }
     }
@@ -439,6 +482,7 @@ public extension ShelfController {
         resizeStart = nil
         model.setQuickPasteModifierHeld(false)
         actions.endEditing()
+        preview.dismiss()
         boardEditor.cancel()
         deletion.discardUndo()
         presentation.isVisible = false

@@ -1,4 +1,5 @@
 import AppKit
+import DesignSystem
 import Store
 import SwiftUI
 
@@ -27,10 +28,26 @@ enum RichTextPreview {
         NSPasteboard.PasteboardType.rtf.rawValue, NSPasteboard.PasteboardType.rtfd.rawValue
     ]
 
+    @MainActor
+    static func cardFillLuminance(colorScheme: ColorScheme, contrast: ColorSchemeContrast) -> Luminance? {
+        let name: NSAppearance.Name = switch (colorScheme, contrast) {
+        case (.dark, .increased): .accessibilityHighContrastDarkAqua
+        case (.dark, _): .darkAqua
+        case (_, .increased): .accessibilityHighContrastAqua
+        default: .aqua
+        }
+        var luminance: Luminance?
+        NSAppearance(named: name)?.performAsCurrentDrawingAppearance {
+            luminance = Luminance(DesignTokens.cardFill)
+        }
+        return luminance
+    }
+
     static func attributedString(
         from representations: [Representation],
         bodySize: CGFloat,
-        background: Luminance
+        background: Luminance,
+        maximumLength: Int = maximumLength
     ) -> AttributedString? {
         guard let representation = representations.first(where: { richTypes.contains($0.uti) }),
               let document = representation.uti == NSPasteboard.PasteboardType.rtf.rawValue

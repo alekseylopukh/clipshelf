@@ -49,6 +49,11 @@ struct CardView: View {
         )
         .onHover { isHovered = $0 }
         .onGeometryChange(for: CGSize.self, of: \.size) { size = $0 }
+        .background {
+            if model.cursorID == card.id {
+                CardPreviewAnchor()
+            }
+        }
         .gesture(TapGesture(count: 2).onEnded { actions.pasteOnDoubleClick([card.id]) })
         .simultaneousGesture(TapGesture().onEnded { click() })
         .contextMenu {

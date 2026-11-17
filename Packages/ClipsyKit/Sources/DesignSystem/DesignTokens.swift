@@ -46,6 +46,13 @@ public enum DesignTokens {
     public static let fileStackOffset: CGFloat = 16
     public static let menuIconSize: CGFloat = 16
 
+    public static let previewWidth: CGFloat = 520
+    public static let previewHeight: CGFloat = 400
+    public static let previewImageMaxPixelSize = 2048
+    public static let previewTextMaximumLength = 20000
+    public static let previewSwatchHeight: CGFloat = 200
+    public static let previewFileRowIconSize: CGFloat = 32
+
     public static let sequencePanelWidth: CGFloat = 280
     public static let sequencePanelScreenInset: CGFloat = 16
     public static let sequencePanelCornerRadius: CGFloat = 18

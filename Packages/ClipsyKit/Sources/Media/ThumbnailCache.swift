@@ -48,7 +48,7 @@ public struct ThumbnailCache: Sendable {
         directory.appending(path: "\(hash).png", directoryHint: .notDirectory)
     }
 
-    private static func downsample(_ data: Data, maxPixelSize: Int) -> CGImage? {
+    public static func downsample(_ data: Data, maxPixelSize: Int) -> CGImage? {
         let sourceOptions = [kCGImageSourceShouldCache: false] as CFDictionary
         guard let source = CGImageSourceCreateWithData(data as CFData, sourceOptions) else { return nil }
         let options = [

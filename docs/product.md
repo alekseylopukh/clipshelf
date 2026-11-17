@@ -69,7 +69,7 @@ Clipsy is a clipboard manager for macOS 26 and later. It keeps a history of ever
 | Empty states | Distinct states for empty History, empty board, no search results. | MVP |
 | Multi-select | Select several cards and act on all of them (§4.12). | MVP |
 | Context menu | All card actions in a native menu. | MVP |
-| Preview | Space opens a larger preview anchored to the card (Quick Look for files and images). | v1 |
+| Preview | Space or Quick Look in the card's context menu opens a larger preview anchored to the card (Quick Look for files, our own view for images, text, links and colors). | v1 |
 | Open | Open a link in the default browser or a file in its default app; also "Open With" and "Show in Finder". | MVP (Open), v1 (rest) |
 | Show in list | From a search result, jump to the card's place in History or its board with surrounding cards visible. Single selection only. | v1 |
 | Rename | Give a card a custom title. | v1 |
@@ -325,7 +325,7 @@ Working default [WD-28](roadmap.md#working-defaults-for-open-todos): badges appe
 - Joins the active Space and appears above full-screen apps without switching Spaces.
 - Never activates Clipsy or steals frontmost status from the target app, but takes keyboard focus so the shortcuts work.
 - Closes on: Esc (when search is empty), a second press of the global shortcut, a successful paste or copy from the shelf, and focus loss.
-- **Focus loss:** clicking another app or window, or switching apps, closes the shelf. Closing is suspended while one of our own sheets, menus, popovers, the preview, the editor or the color panel is open.
+- **Focus loss:** clicking another app or window, or switching apps, closes the shelf. The shelf stays open while one of our own sheets (such as the editor) is attached, or while the shelf or one of its child windows (a popover, the preview) has keyboard focus; it closes when focus leaves both ([WD-49](roadmap.md#working-defaults-for-open-todos)). A window that is neither, such as the system color panel, must become a child window of the shelf to keep it open.
   Working default [WD-13](roadmap.md#working-defaults-for-open-todos): there is no option to keep the shelf open after paste.
 - Height is resizable by dragging the top edge and is remembered: one height for all displays ([WD-13](roadmap.md#working-defaults-for-open-todos)).
 - Excluded from screen sharing and screenshots unless "Show the Shelf in screenshots and screen sharing" is on.
@@ -444,7 +444,7 @@ Content and defaults only; layout and exact label wording are in [design.md §8]
 | Recognize text in images | on / off (on device) | on |
 | Clipboard access status | allowed / asks / not allowed, button to open System Settings; hidden until macOS has asked about Clipsy | — |
 
-> TODO: whether file thumbnails need a toggle (they read file contents through Quick Look).
+> TODO: whether file thumbnails need a toggle (they read file contents through Quick Look). Working default: no toggle ([WD-49](roadmap.md#working-defaults-for-open-todos)).
 
 ### Menu bar menu
 

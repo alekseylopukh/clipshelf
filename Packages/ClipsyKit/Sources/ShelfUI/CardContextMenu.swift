@@ -72,6 +72,9 @@ struct CardCommandButton: View {
         case .showInFinder:
             Button("Show in Finder", action: action)
                 .keyboardShortcut("r", modifiers: [.shift, .command])
+        case .quickLook:
+            Button("Quick Look", systemImage: "eye", action: action)
+                .keyboardShortcut(.space, modifiers: [])
         case .showInList:
             Button("Show in List", action: action)
                 .keyboardShortcut("g")

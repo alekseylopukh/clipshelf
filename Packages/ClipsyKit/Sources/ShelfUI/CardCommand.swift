@@ -8,6 +8,7 @@ public enum CardCommand: Hashable, Sendable {
     case open
     case openWith
     case showInFinder
+    case quickLook
     case showInList
     case rename
     case edit
@@ -40,7 +41,7 @@ public enum CardCommand: Hashable, Sendable {
             hasPlainText ? [.paste, .pasteAsPlainText] : [.paste],
             hasPlainText ? [.copy, .copyAsPlainText] : [.copy],
             open,
-            (isSearchResult ? [.showInList] : []) + (card.kind == .text ? [.edit, .rename] : [.rename]),
+            [.quickLook] + (isSearchResult ? [.showInList] : []) + (card.kind == .text ? [.edit, .rename] : [.rename]),
             [.addToBoard, .addToSequence],
             share,
             [removal]

@@ -69,19 +69,9 @@ private struct TextCardBody: View {
     }
 
     private func loadRichText() async {
-        guard let loader else { return }
-        let name: NSAppearance.Name = switch (colorScheme, contrast) {
-        case (.dark, .increased): .accessibilityHighContrastDarkAqua
-        case (.dark, _): .darkAqua
-        case (_, .increased): .accessibilityHighContrastAqua
-        default: .aqua
-        }
-        let appearance = NSAppearance(named: name)
-        var background: RichTextPreview.Luminance?
-        appearance?.performAsCurrentDrawingAppearance {
-            background = RichTextPreview.Luminance(DesignTokens.cardFill)
-        }
-        guard let background else { return }
+        guard let loader,
+              let background = RichTextPreview.cardFillLuminance(colorScheme: colorScheme, contrast: contrast)
+        else { return }
         do {
             richText = try await loader.preview(
                 of: card.id,
@@ -96,7 +86,7 @@ private struct TextCardBody: View {
     }
 }
 
-private struct RichTextRequest: Hashable {
+struct RichTextRequest: Hashable {
     let cardID: Int64
     let colorScheme: ColorScheme
     let contrast: ColorSchemeContrast
@@ -230,7 +220,7 @@ private struct FileCardBody: View {
     let card: CardSummary
     let fileCount: Int
 
-    @State private var icons: [CardMediaLoader.FileIcon] = []
+    @State private var thumbnails: [CardMediaLoader.FileThumbnail] = []
     @Environment(\.cardMediaLoader) private var loader
     @Environment(\.displayScale) private var displayScale
 
@@ -242,14 +232,15 @@ private struct FileCardBody: View {
 
     var body: some View {
         Group {
-            if icons.isEmpty {
+            if thumbnails.isEmpty {
                 SymbolCardBody(symbol: fileCount > 1 ? "doc.on.doc" : card.kind.symbolName, caption: nil)
             } else {
                 ZStack {
-                    ForEach(icons.reversed()) { icon in
-                        FanPosition(index: icon.position, count: icons.count) {
-                            Image(decorative: icon.image, scale: displayScale)
+                    ForEach(thumbnails.reversed()) { thumbnail in
+                        FanPosition(index: thumbnail.position, count: thumbnails.count) {
+                            Image(decorative: thumbnail.image, scale: displayScale)
                                 .resizable()
+                                .aspectRatio(contentMode: .fit)
                                 .frame(width: iconSize, height: iconSize)
                         }
                     }
@@ -258,18 +249,18 @@ private struct FileCardBody: View {
             }
         }
         .task(id: FileIconRequest(cardID: card.id, displayScale: displayScale)) {
-            await loadIcons()
+            await loadThumbnails()
         }
     }
 
-    private func loadIcons() async {
+    private func loadThumbnails() async {
         guard let loader else { return }
         do {
-            icons = try await loader.fileIcons(of: card, pixelSize: iconSize * displayScale)
+            thumbnails = try await loader.fileThumbnails(of: card, pixelSize: iconSize * displayScale)
         } catch is CancellationError {
             return
         } catch {
-            Self.logger.error("file icons failed: \(String(describing: type(of: error)), privacy: .public)")
+            Self.logger.error("file thumbnails failed: \(String(describing: type(of: error)), privacy: .public)")
         }
     }
 }
@@ -292,7 +283,7 @@ private struct FanPosition<Content: View>: View {
     }
 }
 
-private extension CGImage {
+extension CGImage {
     var hasAlpha: Bool {
         [.none, .noneSkipFirst, .noneSkipLast].contains(alphaInfo) == false
     }

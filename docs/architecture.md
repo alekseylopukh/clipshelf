@@ -93,7 +93,7 @@ Local-only. No sync fields, no UUIDs, no tombstones: integer row IDs are enough.
 ~/Library/Application Support/Clipsy/      (0700)
   clipsy.sqlite (+ -wal, -shm)
   Payloads/<aa>/<sha256>                       content-addressed representation data
-  Thumbnails/<sha256>.png                      keyed by card content hash
+  Thumbnails/<sha256>.png                      image Cards, keyed by card content hash
   Backups/Damaged Store <date time>/           a damaged store moved aside at launch (§3.4)
 ```
 
@@ -160,6 +160,7 @@ Rules:
 
 - Representations of 4 KB or more go to `Payloads/`, named by SHA-256 of their bytes. Identical payloads across Cards share one file.
 - Write order: write to a temp file, rename into place, then insert rows. A crash leaves an orphan file (collected later), never a row that points to a missing file.
+- File Cards get Quick Look thumbnails (`Media.FileThumbnailer`), held in memory per file path, size and modification date and never written to `Thumbnails/`: the file can change on disk, and Quick Look keeps its own cache.
 - Garbage collection runs after retention cleanup: delete files in `Payloads/` and `Thumbnails/` with no referencing row. Payload files are matched against `representation.payload_hash`, thumbnails against the hex `content_hash` of every Card.
 - Decided (2026-11-17): garbage collection never races with capture. It runs on the database writer, which also runs the insert that stores a capture's payload files, so a file written before its row is inserted is never collected.
 - Size cap: representations above the cap are dropped per type; if nothing is left, the capture is skipped. The cap is set in [product.md §4.1](product.md#41-capture).
@@ -394,7 +395,7 @@ Before copying code from a GPL-3.0 project, check whether it is "only" or "or la
 These need a test on real hardware or a maintainer decision. The rest of this document is settled or follows a working default in [roadmap.md](roadmap.md#working-defaults-for-open-todos).
 
 > TODO: pasteboard-privacy enforcement on macOS 26/27 and whether polling `changeCount` or reading `types` triggers the alert (§5). Test on a clean user account.
-> TODO: Quick Look popover (`NSPopover` + `QLPreviewView`, [design.md §5](design.md#quick-look)) inside a non-activating panel; prototype early.
+> TODO: Quick Look popover (`NSPopover` + `QLPreviewView`) inside a non-activating panel: prototyped in T8.1 ([design.md §5](design.md#quick-look)); the live behavior is still a human check of T8.1.
 > TODO: Universal Clipboard: whether Handoff reads promised Sequence data eagerly (§4.4); remote copies are captured and our pastes are not kept local until then ([WD-2](roadmap.md#working-defaults-for-open-todos), [WD-21](roadmap.md#working-defaults-for-open-todos)).
 > TODO: total History size cap (§3.3).
 > TODO: editing a Card into a `content_hash` that already exists (§3.2); working default [WD-7](roadmap.md#working-defaults-for-open-todos) refuses the save.

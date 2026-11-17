@@ -1,5 +1,4 @@
-import CoreGraphics
-import Foundation
+import AppKit
 import Observation
 
 @MainActor
@@ -17,6 +16,8 @@ final class CardActions {
     @ObservationIgnored var pasteOnDoubleClick: ([Int64]) -> Void = { _ in }
     @ObservationIgnored var openWith: (URL, Int64) -> Void = { _, _ in }
     @ObservationIgnored var beginDrag: (CardDrag) -> Void = { _ in }
+    @ObservationIgnored var attachPreviewAnchor: (NSView) -> Void = { _ in }
+    @ObservationIgnored var detachPreviewAnchor: (NSView) -> Void = { _ in }
 
     func endEditing() {
         renamingCardID = nil

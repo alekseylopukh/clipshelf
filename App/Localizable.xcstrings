@@ -681,6 +681,26 @@
       "comment" : "Body of a card whose type is unknown",
       "extractionState" : "manual"
     },
+    "No Preview" : {
+      "comment" : "Title of the preview of a card that Clipsy cannot show",
+      "extractionState" : "manual"
+    },
+    "File Not Found" : {
+      "comment" : "Title of the preview of a file card whose file was moved or deleted",
+      "extractionState" : "manual"
+    },
+    "Hex" : {
+      "comment" : "Label of a color's hexadecimal value in the preview",
+      "extractionState" : "manual"
+    },
+    "RGB" : {
+      "comment" : "Label of a color's red, green and blue value in the preview",
+      "extractionState" : "manual"
+    },
+    "HSL" : {
+      "comment" : "Label of a color's hue, saturation and lightness value in the preview",
+      "extractionState" : "manual"
+    },
     "Privacy" : {
       "comment" : "Settings tab for privacy options"
     },
@@ -926,6 +946,9 @@
     },
     "Share…" : {
       "comment" : "Card context menu item that opens the system share picker for the selected cards"
+    },
+    "Quick Look" : {
+      "comment" : "Card context menu item and VoiceOver action that opens the card's preview"
     },
     "Clipsy can’t show this file in Finder." : {
       "comment" : "Title of the alert shown when a file card's files cannot be shown in Finder"
