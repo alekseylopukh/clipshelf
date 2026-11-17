@@ -70,6 +70,24 @@ final class ShelfModelSearchTests {
         #expect(model.query == "in")
     }
 
+    @Test func `search for text replaces the query and focuses the field`() {
+        let model = makeModel(cards: [1])
+        model.tokens = [.kind(.link)]
+        model.query = "old"
+
+        model.search(for: "new")
+
+        #expect(model.query == "new")
+        #expect(model.tokens.isEmpty)
+        #expect(model.isSearchFieldFocused)
+        model.searchFieldFocusDidChange(true)
+        #expect(model.searchSelection == TextSelection(insertionPoint: model.query.endIndex))
+
+        model.search(for: "again")
+        #expect(model.query == "again")
+        #expect(model.searchSelection == TextSelection(insertionPoint: model.query.endIndex))
+    }
+
     @Test(arguments: [" ", "\u{1B}", "\u{F702}", "\t"])
     func `non-typing keys do not start search`(characters: String) {
         let model = makeModel(cards: [1])

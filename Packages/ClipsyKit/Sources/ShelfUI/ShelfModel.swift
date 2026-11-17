@@ -50,7 +50,7 @@ public final class ShelfModel {
 
     var searchSelection: TextSelection?
     var isSearchFieldFocused = false
-    private var requestedSearchSelection: TextSelection?
+    var requestedSearchSelection: TextSelection?
     private var listCards: [CardSummary] = []
     private var hasLoadedList = false
     private var hasLoadedBoards = false

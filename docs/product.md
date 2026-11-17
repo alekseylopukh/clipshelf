@@ -134,7 +134,16 @@ Clipsy is a clipboard manager for macOS 26 and later. It keeps a history of ever
 | URL scheme | Our own scheme to open the shelf, search, create a text card, open settings. | v1 |
 | System Spotlight | Index board cards in Spotlight, opt-in. | later |
 
-> TODO: URL scheme name and grammar.
+Decided (2026-11-17): the scheme is `clipsy`. Grammar (designed in T12.2):
+
+| URL | Action |
+|---|---|
+| `clipsy://open` | Opens the Shelf on its current tab. |
+| `clipsy://search?q=<text>` | Opens the Shelf and searches for `<text>`, replacing any search and filters. Without `q`, it focuses the empty search field. |
+| `clipsy://new?text=<text>` | Opens the Shelf and the New Text Card editor for the current tab, filled with `<text>`. The card is saved only when the user saves it, so a link cannot add cards on its own. If the editor is already open, it is left as it is. |
+| `clipsy://settings` | Opens Settings. |
+
+The scheme and the route are case-insensitive. Values are percent-encoded; `+` is not read as a space. Unknown query items are ignored. Any other route, or a URL with a path, is ignored and logged without its contents.
 
 ## 4. Behavior rules
 
@@ -471,4 +480,3 @@ These still need a test on real hardware, data from vendors, or the task that se
 - > TODO: Delete on a board vs History (§4.11).
 - > TODO: whether file thumbnails need a toggle (§6).
 - > TODO: drag-out formats for several cards and for images (file vs image data) ([WD-14](roadmap.md#working-defaults-for-open-todos)).
-- > TODO: URL scheme name and grammar (§3.7).

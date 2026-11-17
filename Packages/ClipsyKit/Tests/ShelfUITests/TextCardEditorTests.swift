@@ -40,6 +40,16 @@ struct TextCardEditorTests {
         #expect(saves.calls.first?.1 == [Representation(itemIndex: 0, uti: Self.plain, data: Data("Hello".utf8))])
     }
 
+    @Test func `new card prefilled from a link saves its text to the tab`() async {
+        let (editor, _) = editor(.new(.history), text: "Hi there")
+        #expect(editor.initialText.string == "Hi there")
+
+        #expect(await editor.save())
+
+        #expect(saves.calls.map(\.0) == [.new(.history)])
+        #expect(saves.calls.first?.1 == [Representation(itemIndex: 0, uti: Self.plain, data: Data("Hi there".utf8))])
+    }
+
     @Test func `plain text stays plain and styled text gains rtf`() async throws {
         let (editor, textView) = editor(.card(1), text: "Hello world")
         #expect(await editor.save())

@@ -1,5 +1,6 @@
 import Foundation
 import Store
+import SwiftUI
 
 extension ShelfModel {
     public func observeApps() async {
@@ -11,6 +12,18 @@ extension ShelfModel {
             return
         } catch {
             Self.logger.error("app observation failed: \(String(describing: type(of: error)), privacy: .public)")
+        }
+    }
+
+    func search(for text: String) {
+        _ = clearSearch()
+        query = text
+        let selection = TextSelection(insertionPoint: query.endIndex)
+        if isSearchFieldFocused {
+            searchSelection = selection
+        } else {
+            requestedSearchSelection = selection
+            isSearchFieldFocused = true
         }
     }
 

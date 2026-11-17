@@ -722,13 +722,14 @@ What exists:
 - Status: done
 
 ### T12.2 URL scheme
-- Module(s): App
+- Module(s): App, ShelfUI
 - Depends on: T6.4, T8.4
 - Spec: [product §3.7](product.md#37-integrations)
 - Deliverable: scheme to open the shelf, search, create a text card, open settings
 - Acceptance: tests `parsesEachRoute`, `rejectsUnknownRoute`
-- Human check: blocked until the maintainer sets the scheme name and grammar (product.md TODO)
+- Human check: with Clipsy running, `open clipsy://open`, `open "clipsy://search?q=test"`, `open "clipsy://new?text=Hello"` and `open clipsy://settings` each do what [product §3.7](product.md#37-integrations) says, and none of them shows the Welcome window; repeat `clipsy://open` with Clipsy quit to check a cold launch
 - Size: S
+- Status: done
 
 ## M13. Release readiness
 
@@ -775,8 +776,10 @@ What exists:
 
 Found while writing this roadmap. Tasks that hit one stop and ask.
 
+Decided:
+- **URL scheme** (T12.2): the maintainer approved the `clipsy` scheme and the grammar in [product §3.7](product.md#37-integrations) on 2026-11-17.
+
 - **Duplicate vs. unique hash:** `card.content_hash` is `UNIQUE` ([architecture §3.2](architecture.md#32-schema)), so the v1 Duplicate feature ([product §3.2](product.md#32-shelf-and-cards)) cannot create a copy. Decide the rule, then schedule Duplicate after T8.3.
-- **URL scheme** name and grammar (T12.2).
 - **Appcast URL, Sparkle keys, signing and notarization secrets** (T13.1, T13.3).
 - **Linking package products into the app** without editing `project.pbxproj` (WD-20): if a third-party module must be imported by the app target directly, the link is a one-time Xcode action.
 

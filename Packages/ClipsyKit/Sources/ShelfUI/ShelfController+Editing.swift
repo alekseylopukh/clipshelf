@@ -30,6 +30,22 @@ extension ShelfController {
         actions.textEditor = makeTextEditor(for: .new(model.tab))
     }
 
+    public func showSearch(for text: String) {
+        show()
+        model.search(for: text)
+    }
+
+    public func showNewTextCard(text: String) {
+        show()
+        guard actions.textEditor == nil else { return }
+        let plainText = Representation(
+            itemIndex: 0,
+            uti: NSPasteboard.PasteboardType.string.rawValue,
+            data: Data(text.utf8)
+        )
+        actions.textEditor = makeTextEditor(for: .new(model.tab), representations: [plainText])
+    }
+
     func edit(_ ids: [Int64]) {
         guard ids.count == 1, let card = model.cards.first(where: { $0.id == ids.first }) else { return }
         let id = card.id

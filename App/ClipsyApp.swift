@@ -82,11 +82,7 @@ struct ClipsyApp: App {
             await statusItem.run()
         }
         Self.startCaptureEffects(of: monitor, statusItem: statusItem, linkPreviews: linkPreviews, sequence: sequence)
-        appDelegate.onReopen = {
-            if !menuBarSettings.isItemShown {
-                SettingsWindow.open()
-            }
-        }
+        Self.handleEvents(of: appDelegate, shelf: shelf, menuBarSettings: menuBarSettings)
     }
 
     var body: some Scene {
@@ -135,6 +131,19 @@ struct ClipsyApp: App {
                 .error("the updater failed to start: \(String(describing: type(of: error)), privacy: .public)")
         }
         return updater
+    }
+
+    private static func handleEvents(
+        of appDelegate: AppDelegate,
+        shelf: ShelfController,
+        menuBarSettings: MenuBarSettings
+    ) {
+        appDelegate.onReopen = {
+            if !menuBarSettings.isItemShown {
+                SettingsWindow.open()
+            }
+        }
+        appDelegate.onOpenURLs = { open($0, shelf: shelf) }
     }
 
     private static func apply(
