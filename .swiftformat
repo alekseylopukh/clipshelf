@@ -1,0 +1,15 @@
+--swiftversion 6.2
+--minversion 0.62
+--indent 4
+--maxwidth 120
+--wraparguments before-first
+--wrapparameters before-first
+--wrapcollections before-first
+--closingparen balanced
+--commas inline
+--self remove
+--importgrouping testable-last
+--stripunusedargs closure-only
+--header ignore
+--disable redundantReturn
+--exclude .build,DerivedData,build,research
