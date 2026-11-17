@@ -5,6 +5,7 @@ import SwiftUI
 struct CardStrip: View {
     let model: ShelfModel
 
+    @State private var layout = CardLayout.regular
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -13,7 +14,7 @@ struct CardStrip: View {
                 ScrollView(.horizontal) {
                     LazyHStack(spacing: DesignTokens.cardSpacing) {
                         ForEach(model.cards) { card in
-                            CardView(card: card, model: model, now: context.date)
+                            CardView(card: card, model: model, now: context.date, layout: layout)
                                 .transition(.scale(scale: DesignTokens.shelfOpenScale).combined(with: .opacity))
                         }
                     }
@@ -21,6 +22,13 @@ struct CardStrip: View {
                     .animation(reduceMotion ? nil : .default, value: model.cards)
                 }
                 .contentMargins(DesignTokens.shelfPadding, for: .scrollContent)
+                .onGeometryChange(for: CardLayout.self) { geometry in
+                    CardLayout(stripHeight: geometry.size.height)
+                } action: { newLayout in
+                    withAnimation(reduceMotion ? nil : .default) {
+                        layout = newLayout
+                    }
+                }
                 .onScrollTargetVisibilityChange(idType: Int64.self, threshold: 0.5) { ids in
                     model.setVisibleCards(ids)
                 }

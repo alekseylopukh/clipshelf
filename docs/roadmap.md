@@ -533,6 +533,7 @@ What exists:
 - Acceptance: test `compactBelowThreshold`
 - Human check: drag height across the threshold in light and dark
 - Size: S
+- Status: done
 
 ### T8.8 Sounds
 - Module(s): App, Pasting

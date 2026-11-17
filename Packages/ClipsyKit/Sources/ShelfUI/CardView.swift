@@ -7,41 +7,50 @@ struct CardView: View {
     let card: CardSummary
     let model: ShelfModel
     let now: Date
+    let layout: CardLayout
     private let content: CardContent
 
     @State private var isHovered = false
     @Environment(CardActions.self) private var actions
 
-    init(card: CardSummary, model: ShelfModel, now: Date) {
+    init(card: CardSummary, model: ShelfModel, now: Date, layout: CardLayout) {
         self.card = card
         self.model = model
         self.now = now
+        self.layout = layout
         content = CardContent(card)
     }
 
     var body: some View {
         let isSelected = model.selection.contains(card.id)
-        CardSurface(card: card, content: content, now: now, isSelected: isSelected, isHovered: isHovered)
-            .onHover { isHovered = $0 }
-            .gesture(TapGesture(count: 2).onEnded { paste() })
-            .simultaneousGesture(TapGesture().onEnded { click() })
-            .contextMenu {
-                CardContextMenu(cards: isSelected ? model.selectedCards : [card], list: model.tab)
-            }
-            .draggable(CardReference(cardID: card.id))
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel(accessibilityLabel)
-            .accessibilityValue(accessibilityValue)
-            .accessibilityAddTraits(isSelected ? .isSelected : [])
-            .accessibilityAction { model.select(card.id) }
-            .accessibilityActions {
-                ForEach(CardCommand.menu(for: [card], in: model.tab).flatMap(\.self), id: \.self) { command in
-                    CardCommandButton(command: command, targetAppName: actions.targetAppName) {
-                        actions.perform(command, [card.id])
-                    }
+        CardSurface(
+            card: card,
+            content: content,
+            now: now,
+            layout: layout,
+            isSelected: isSelected,
+            isHovered: isHovered
+        )
+        .onHover { isHovered = $0 }
+        .gesture(TapGesture(count: 2).onEnded { paste() })
+        .simultaneousGesture(TapGesture().onEnded { click() })
+        .contextMenu {
+            CardContextMenu(cards: isSelected ? model.selectedCards : [card], list: model.tab)
+        }
+        .draggable(CardReference(cardID: card.id))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(accessibilityLabel)
+        .accessibilityValue(accessibilityValue)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .accessibilityAction { model.select(card.id) }
+        .accessibilityActions {
+            ForEach(CardCommand.menu(for: [card], in: model.tab).flatMap(\.self), id: \.self) { command in
+                CardCommandButton(command: command, targetAppName: actions.targetAppName) {
+                    actions.perform(command, [card.id])
                 }
             }
-            .quickPasteBadge(model.quickPasteNumber(for: card.id))
+        }
+        .quickPasteBadge(model.quickPasteNumber(for: card.id))
     }
 
     private var accessibilityValue: Text {
@@ -90,6 +99,7 @@ private struct CardSurface: View {
     let card: CardSummary
     let content: CardContent
     let now: Date
+    let layout: CardLayout
     let isSelected: Bool
     let isHovered: Bool
 
@@ -102,10 +112,15 @@ private struct CardSurface: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: DesignTokens.spacingMedium) {
-            CardHeader(card: card, now: now)
+        VStack(
+            alignment: .leading,
+            spacing: layout == .compact ? DesignTokens.spacingSmall : DesignTokens.spacingMedium
+        ) {
+            CardHeader(card: card, now: now, layout: layout)
             CardBodyView(card: card, content: content)
-            CardFooter(kind: card.kind, content: content)
+            if layout == .regular {
+                CardFooter(kind: card.kind, content: content)
+            }
         }
         .padding(DesignTokens.cardContentInsets)
         .frame(maxHeight: .infinity)
@@ -147,11 +162,14 @@ private struct SelectionRing: View {
 private struct CardPreview: View {
     let card: CardSummary
     var isSelected = false
+    var layout = CardLayout.regular
     @State private var model = ShelfModel { _ in AsyncThrowingStream { $0.finish() } }
 
     var body: some View {
-        CardView(card: card, model: model, now: .now)
-            .frame(height: DesignTokens.cardSide)
+        let compactHeight = DesignTokens.shelfMinimumHeight - DesignTokens.shelfResizeHandleHeight
+            - 2 * DesignTokens.shelfPadding
+        CardView(card: card, model: model, now: .now, layout: layout)
+            .frame(height: layout == .compact ? compactHeight : DesignTokens.cardSide)
             .padding(DesignTokens.shelfPadding)
             .environment(CardActions())
             .environment(\.richTextLoader, RichTextLoader { _ in
@@ -176,6 +194,10 @@ private struct CardPreview: View {
 
 #Preview("Plain text") {
     CardPreview(card: CardSummary.previewCards[0], isSelected: true)
+}
+
+#Preview("Compact") {
+    CardPreview(card: CardSummary.previewCards[0], isSelected: true, layout: .compact)
 }
 
 #Preview("Rich text") {

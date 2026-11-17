@@ -51,7 +51,7 @@ Values marked "proposed" are starting points to tune on real hardware, not measu
 | Corners | Corner radius concentric with the display corners (proposed: match the system window radius for the inset used). Inner elements use concentric radii. |
 | Width | Full width of the visible frame minus the insets. |
 | Height | User-resizable by dragging the top edge; one remembered height for all displays ([WD-13](roadmap.md#working-defaults-for-open-todos)). Range: from one compact row (160 pt) to 40% of the visible height; default 300 pt ([WD-22](roadmap.md#working-defaults-for-open-todos)). |
-| Compact mode | Below a height threshold (proposed: when a regular Card would be under ~150 pt tall) Cards switch to a condensed layout: header collapses to an icon and time, body fills the rest. |
+| Compact mode | When a regular Card would be under 150 pt tall ([WD-15](roadmap.md#working-defaults-for-open-todos)), Cards switch to a condensed layout: the header collapses to the app icon and time, the footer is hidden and the body fills the rest. |
 | Display | Opens on the display that holds the pointer. Moves with the user to the active Space and appears over full-screen apps. |
 
 > TODO: support left/right/top edges (vertical layout) as a later option, not in v1.
