@@ -87,6 +87,7 @@ What exists:
 - Deliverable: `PayloadStore`: inline below 4 KB, otherwise SHA-256-named file in `Payloads/<aa>/`, written to temp then renamed; read back; delete unreferenced files and thumbnails (`collectGarbage(referenced:)`)
 - Acceptance: tests `smallPayloadStaysInline`, `largePayloadIsContentAddressed`, `identicalPayloadsShareOneFile`, `garbageCollectionKeepsReferencedFiles`, `crashBeforeInsertLeavesOnlyOrphan`
 - Size: S
+- Status: done
 
 ### T1.5 Insert and re-copy cards
 - Module(s): Store
