@@ -92,6 +92,19 @@ public final class PasteboardMonitor {
         }
     }
 
+    /// records content dropped on a Clipsy window and reports it on `capturedCardIDs`; the drop is an explicit
+    /// action, so the capture policy does not apply. The pasteboard is read before the first suspension
+    public func recordDrop(from pasteboard: some PasteboardReading) async throws {
+        guard let sourceApp = frontmostApp.frontmostApp,
+              let snapshot = PasteboardSnapshot(pasteboard: pasteboard)
+        else {
+            return
+        }
+        let card = await Self.makeCard(from: snapshot, sourceApp: sourceApp)
+        let id = try await repository.record(card)
+        continuation.yield(id)
+    }
+
     @concurrent
     private nonisolated static func secretSkipReason(
         for snapshot: PasteboardSnapshot,

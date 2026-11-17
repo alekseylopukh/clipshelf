@@ -94,6 +94,24 @@ final class ShortcutSettingsTests {
         #expect(settings.notice(for: next) == .conflict(shortcut: taken, usedBy: "Open"))
     }
 
+    @Test func `start sequence may take the copy as plain text combination`() {
+        let settings = ShortcutSettings(
+            recorders: [.init(name: .startSequence, title: "Start Sequence"), .init(name: next, title: "Next")],
+            store: store,
+            defaults: defaults
+        )
+        let copyAsPlainText = KeyboardShortcuts.Shortcut(.c, modifiers: [.command, .shift])
+
+        store.setShortcut(copyAsPlainText, for: .startSequence)
+        settings.recorderDidChange(.startSequence, to: copyAsPlainText)
+        store.setShortcut(copyAsPlainText, for: next)
+        settings.recorderDidChange(next, to: copyAsPlainText)
+
+        #expect(settings.shortcut(for: .startSequence) == copyAsPlainText)
+        #expect(settings.notice(for: .startSequence) == nil)
+        #expect(settings.notice(for: next) == .conflict(shortcut: copyAsPlainText, usedBy: "Start Sequence"))
+    }
+
     @Test func `conflict notice clears when its owner moves`() {
         let settings = makeSettings()
         let taken = KeyboardShortcuts.Shortcut(.v, modifiers: [.command, .shift])

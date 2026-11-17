@@ -31,6 +31,10 @@ public final class PasteboardWriter {
         changeCount == ownWriteChangeCount
     }
 
+    var holdsLastWrite: Bool {
+        pasteboard.changeCount == ownWriteChangeCount
+    }
+
     private func write(
         _ representations: [Representation],
         plainTextOnly: Bool,

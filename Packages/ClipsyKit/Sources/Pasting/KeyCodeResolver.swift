@@ -43,7 +43,16 @@ public enum KeyCodeResolver {
 
     /// the key code that types ⌘V on the current ASCII-capable layout; the ANSI position when it cannot be resolved
     public static func commandVKeyCode() -> CGKeyCode {
+        commandKeyCode(for: "v") ?? CGKeyCode(kVK_ANSI_V)
+    }
+
+    /// the key code that types ⌘C on the current ASCII-capable layout; the ANSI position when it cannot be resolved
+    public static func commandCKeyCode() -> CGKeyCode {
+        commandKeyCode(for: "c") ?? CGKeyCode(kVK_ANSI_C)
+    }
+
+    private static func commandKeyCode(for character: Character) -> CGKeyCode? {
         let source = TISCopyCurrentASCIICapableKeyboardLayoutInputSource().takeRetainedValue()
-        return keyCode(for: "v", in: source, command: true) ?? CGKeyCode(kVK_ANSI_V)
+        return keyCode(for: character, in: source, command: true)
     }
 }

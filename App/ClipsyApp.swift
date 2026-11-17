@@ -41,26 +41,39 @@ struct ClipsyApp: App {
 
         let linkPreviews = Self.startLinkPreviews(repository: repository, privacy: privacy)
 
-        let shelf = Self.makeShelf(repository: repository, writer: writer, pause: pause)
+        let paster = PasteCoordinator(writer: writer) { try await repository.representations(of: $0) }
+        let sequence = Self.runSequence(writer: writer, paster: paster, repository: repository)
+        let shelf = Self.makeShelf(repository: repository, paster: paster, sequence: sequence)
         shelf.commands.isCapturePaused = { pause.isPaused }
         shelf.commands.setCapturePaused = { pause.isPaused = $0 }
         shelf.commands.openSettings = { SettingsWindow.open() }
+        shelf.commands.startSequence = { sequence.start(shelfSelection: shelf.selectedCardIDs) }
         _shelf = State(initialValue: shelf)
         Self.apply(privacy, to: shelf, textRecognition: TextRecognitionQueue(repository: repository))
+        Self.runSequencePanel(
+            sequence: sequence,
+            repository: repository,
+            monitor: monitor,
+            privacy: privacy,
+            shelf: shelf
+        )
         KeyboardShortcuts.onKeyUp(for: .toggleShelf) {
             shelf.toggle()
         }
 
         let menuBarSettings = MenuBarSettings()
         _menuBarSettings = State(initialValue: menuBarSettings)
-        let statusItem = StatusItemController(pause: pause, settings: menuBarSettings) {
-            shelf.show()
-        }
+        let statusItem = StatusItemController(
+            pause: pause,
+            settings: menuBarSettings,
+            openShelf: { shelf.show() },
+            startSequence: { sequence.start(shelfSelection: shelf.selectedCardIDs) }
+        )
         _statusItem = State(initialValue: statusItem)
         _ = Task {
             await statusItem.run()
         }
-        Self.startCaptureEffects(of: monitor, statusItem: statusItem, linkPreviews: linkPreviews)
+        Self.startCaptureEffects(of: monitor, statusItem: statusItem, linkPreviews: linkPreviews, sequence: sequence)
         appDelegate.onReopen = {
             if !menuBarSettings.isItemShown {
                 SettingsWindow.open()
@@ -126,21 +139,22 @@ struct ClipsyApp: App {
 
     private static func makeShelf(
         repository: CardRepository,
-        writer: PasteboardWriter,
-        pause: CapturePause
+        paster: PasteCoordinator,
+        sequence: SequenceCoordinator
     ) -> ShelfController {
         ShelfController(
             model: ShelfModel(
                 observe: { repository.observeCards(in: $0) },
                 observeBoards: { repository.observeBoards() }
             ),
-            paster: PasteCoordinator(writer: writer) { try await repository.representations(of: $0) },
+            paster: paster,
             deletion: CardDeletion(
                 delete: { try await repository.delete(cards: $0, in: $1) },
                 restore: { try await repository.restore($0) }
             ),
             representations: { try await repository.representations(of: $0) },
             rename: { try await repository.rename(card: $0, to: $1) },
+            addToSequence: { sequence.add($0) },
             thumbnails: ThumbnailCache(directory: repository.thumbnailsDirectory)
         )
     }
@@ -160,7 +174,8 @@ struct ClipsyApp: App {
     private static func startCaptureEffects(
         of monitor: PasteboardMonitor,
         statusItem: StatusItemController,
-        linkPreviews: LinkPreviewFetcher
+        linkPreviews: LinkPreviewFetcher,
+        sequence: SequenceCoordinator
     ) {
         let sounds = SoundEffects()
         _ = Task {
@@ -168,8 +183,61 @@ struct ClipsyApp: App {
                 sounds.play(.capture)
                 statusItem.bounce()
                 linkPreviews.submit(id)
+                sequence.didCapture(id)
             }
         }
+    }
+
+    private static func runSequencePanel(
+        sequence: SequenceCoordinator,
+        repository: CardRepository,
+        monitor: PasteboardMonitor,
+        privacy: PrivacySettings,
+        shelf: ShelfController
+    ) {
+        let model = SequencePanelModel(
+            sequence: sequence.sequence,
+            loadCards: { try await repository.cards(withIDs: $0) },
+            onPasteAll: { cardIDs in
+                Task {
+                    await sequence.pasteAll(cardIDs) { shelf.hideImmediately() }
+                }
+            }
+        )
+        let panel = SequencePanelController(model: model) {
+            try await monitor.recordDrop(from: $0)
+        }
+        _ = Task {
+            await panel.run()
+        }
+        _ = Task {
+            for await isShown in Observations({ privacy.showsShelfInScreenCapture }) {
+                panel.isShownInScreenCapture = isShown
+            }
+        }
+        KeyboardShortcuts.onKeyUp(for: .startSequence) {
+            sequence.start(shelfSelection: shelf.selectedCardIDs)
+        }
+        KeyboardShortcuts.onKeyUp(for: .pasteAllSequence) {
+            model.pasteAll()
+        }
+    }
+
+    private static func runSequence(
+        writer: PasteboardWriter,
+        paster: PasteCoordinator,
+        repository: CardRepository
+    ) -> SequenceCoordinator {
+        let sequence = SequenceCoordinator(
+            detector: SequencePasteDetector(mechanism: .dataProvider, writer: writer),
+            paster: paster,
+            representations: { try await repository.representations(of: $0) },
+            loadCards: { try await repository.cards(withIDs: $0) }
+        )
+        _ = Task {
+            try await sequence.run()
+        }
+        return sequence
     }
 
     private static func capturePolicy(privacy: PrivacySettings, pause: CapturePause) -> CapturePolicy {

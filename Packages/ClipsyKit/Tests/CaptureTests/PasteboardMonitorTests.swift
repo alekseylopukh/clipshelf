@@ -192,4 +192,19 @@ struct PasteboardMonitorTests {
         await monitor.poll()
         #expect(try await history().map(\.preview) == ["API_TOKEN=hunter3"])
     }
+
+    @Test func `dropped content is recorded and reported even while paused`() async throws {
+        defer { pasteboard.releaseGlobally() }
+        var policy = CapturePolicy()
+        policy.isPaused = true
+        let monitor = makeMonitor(policy: { policy })
+        copy("dropped")
+
+        try await monitor.recordDrop(from: pasteboard)
+
+        let cards = try await history()
+        #expect(cards.map(\.preview) == ["dropped"])
+        var ids = monitor.capturedCardIDs.makeAsyncIterator()
+        #expect(await ids.next() == cards.first?.id)
+    }
 }

@@ -48,7 +48,8 @@ struct CardView: View {
                 CardCommandButton(
                     command: command,
                     targetAppName: actions.targetAppName,
-                    plainTextModifiers: actions.plainTextModifier.eventModifiers
+                    plainTextModifiers: actions.plainTextModifier.eventModifiers,
+                    isCopyAsPlainTextShortcutTaken: actions.isCopyAsPlainTextShortcutTaken
                 ) {
                     actions.perform(command, [card.id])
                 }

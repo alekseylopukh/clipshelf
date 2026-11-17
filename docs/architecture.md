@@ -215,7 +215,7 @@ While the Shelf is key, Cmd+1…9 runs the paste flow on the Nth Card counted fr
 4. "Paste all": text Cards joined with `\n`, one paste.
 5. Sequence state (ordered Card IDs, direction, undo stack) lives in memory in `Pasting.PasteSequence`; the plain-text flag is kept in `UserDefaults` so it persists across Sequences. Cards stay in History. Details: WD-26 in [roadmap.md](roadmap.md).
 
-Paste detection lives in `Pasting.SequencePasteDetector`. The caller publishes the head entry with its representations and the plain-text flag, calls `PasteSequence.didPaste` for each entry ID the detector reports, and then publishes the new head. Two mechanisms exist; the app uses (a).
+Paste detection lives in `Pasting.SequencePasteDetector`. `Pasting.SequenceCoordinator` publishes the head entry with its representations and the plain-text flag, calls `PasteSequence.didPaste` for each entry ID the detector reports, and then publishes the new head. Two mechanisms exist; the app uses (a).
 - (a) Lazy data provider (default, no permission). `PasteboardWriter.writeLazily` promises every type through `NSPasteboardItemDataProvider`; only our marker type is written eagerly, so Capture skips the write without reading data. The first data request for the published head counts as its paste. Requests for its other types, and requests after `stop()`, report nothing. Edit > Paste from the menu counts as well as ⌘V.
 - (b) Fallback: global key-down monitor (`PasteKeyMonitor`, needs Accessibility). The head is written eagerly; a key-down of the layout's ⌘V key (`KeyCodeResolver`) with ⌘ and without ⌃ counts as the paste (⇧ and ⌥ still paste, as in Paste and Match Style). It cannot see Edit > Paste clicks, and ⌘V in an app that ignores it still advances.
 

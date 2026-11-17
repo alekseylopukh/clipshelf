@@ -52,6 +52,11 @@ public final class SequencePasteDetector {
         }
     }
 
+    /// whether `entryID` is still published and on the pasteboard, unpasted
+    public func holdsPublication(of entryID: PasteSequence.Entry.ID) -> Bool {
+        published?.entryID == entryID && writer.holdsLastWrite
+    }
+
     /// stops reporting pastes; the last published entry stays on the pasteboard
     public func stop() {
         published = nil

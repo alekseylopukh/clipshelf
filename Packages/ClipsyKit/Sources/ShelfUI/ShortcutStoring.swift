@@ -30,6 +30,6 @@ public struct KeyboardShortcutsStore: ShortcutStoring {
 
     private static func syncRegistrations() {
         KeyboardShortcuts.disable(KeyboardShortcuts.Name.shelfOnly)
-        KeyboardShortcuts.enable(.toggleShelf)
+        KeyboardShortcuts.enable(KeyboardShortcuts.Name.global)
     }
 }

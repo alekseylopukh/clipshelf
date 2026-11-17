@@ -62,7 +62,7 @@ public final class SequencePanelModel {
         }
     }
 
-    func pasteAll() {
+    public func pasteAll() {
         let cardIDs = sequence.pasteAll()
         guard cardIDs.isEmpty == false else { return }
         onPasteAll(cardIDs)

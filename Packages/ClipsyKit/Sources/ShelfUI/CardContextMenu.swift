@@ -1,3 +1,4 @@
+import KeyboardShortcuts
 import Store
 import SwiftUI
 
@@ -14,7 +15,8 @@ struct CardContextMenu: View {
                     CardCommandButton(
                         command: command,
                         targetAppName: actions.targetAppName,
-                        plainTextModifiers: actions.plainTextModifier.eventModifiers
+                        plainTextModifiers: actions.plainTextModifier.eventModifiers,
+                        isCopyAsPlainTextShortcutTaken: actions.isCopyAsPlainTextShortcutTaken
                     ) {
                         actions.perform(command, cards.map(\.id))
                     }
@@ -28,6 +30,7 @@ struct CardCommandButton: View {
     let command: CardCommand
     let targetAppName: String?
     let plainTextModifiers: EventModifiers
+    let isCopyAsPlainTextShortcutTaken: Bool
     let action: () -> Void
 
     var body: some View {
@@ -47,7 +50,7 @@ struct CardCommandButton: View {
             Button("Copy", systemImage: "doc.on.doc", action: action)
                 .keyboardShortcut("c")
         case .copyAsPlainText:
-            if plainTextModifiers == .command {
+            if plainTextModifiers == .command || isCopyAsPlainTextShortcutTaken {
                 Button("Copy as Plain Text", action: action)
             } else {
                 Button("Copy as Plain Text", action: action)
@@ -59,6 +62,9 @@ struct CardCommandButton: View {
         case .rename:
             Button("Rename…", action: action)
                 .keyboardShortcut("r")
+        case .addToSequence:
+            Button("Add to Sequence", systemImage: "list.number", action: action)
+                .globalKeyboardShortcut(.startSequence)
         case .removeFromBoard:
             Button("Remove from Board", action: action)
                 .keyboardShortcut(.delete, modifiers: [])

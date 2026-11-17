@@ -25,6 +25,10 @@ final class PasteCoordinatorTests {
         func postCommandV() {
             log.events.append("keystroke")
         }
+
+        func postCommandC() {
+            log.events.append("copy keystroke")
+        }
     }
 
     private struct FakeAlert: AccessibilityAlertPresenting {

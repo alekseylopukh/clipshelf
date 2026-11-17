@@ -5,6 +5,7 @@ import CoreGraphics
 @MainActor
 public protocol PasteKeystrokePosting {
     func postCommandV()
+    func postCommandC()
 }
 
 @MainActor
@@ -15,17 +16,25 @@ public struct PasteKeystroke: PasteKeystrokePosting {
     public init() {}
 
     public func postCommandV() {
+        post(keyCode: KeyCodeResolver.commandVKeyCode())
+    }
+
+    public func postCommandC() {
+        post(keyCode: KeyCodeResolver.commandCKeyCode())
+    }
+
+    private func post(keyCode: CGKeyCode) {
         let source = CGEventSource(stateID: .combinedSessionState)
         source?.setLocalEventsFilterDuringSuppressionState(
             [.permitLocalMouseEvents, .permitSystemDefinedEvents],
             state: .eventSuppressionStateSuppressionInterval
         )
-        for event in Self.commandVEvents(keyCode: KeyCodeResolver.commandVKeyCode(), source: source) {
+        for event in Self.commandEvents(keyCode: keyCode, source: source) {
             event.post(tap: .cgSessionEventTap)
         }
     }
 
-    static func commandVEvents(keyCode: CGKeyCode, source: CGEventSource?) -> [CGEvent] {
+    static func commandEvents(keyCode: CGKeyCode, source: CGEventSource?) -> [CGEvent] {
         [true, false].compactMap { keyDown in
             let event = CGEvent(keyboardEventSource: source, virtualKey: keyCode, keyDown: keyDown)
             event?.flags = [.maskCommand, leftCommandDeviceFlag]

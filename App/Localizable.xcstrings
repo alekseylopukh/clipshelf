@@ -10,7 +10,7 @@
       "extractionState" : "manual"
     },
     "Start Sequence" : {
-      "comment" : "Shelf More menu item that opens the Sequence panel",
+      "comment" : "Shelf More menu item, menu bar menu item and shortcut recorder label that open the Sequence panel",
       "extractionState" : "manual"
     },
     "Pause Capture" : {
@@ -690,6 +690,18 @@
     },
     "macOS asks before Clipsy reads what you copy in other apps. Allow it in Privacy & Security › Paste from Other Apps." : {
       "comment" : "Status text of the clipboard access row in Settings when macOS asks before each read"
+    },
+    "Paste All Sequence Cards" : {
+      "comment" : "Shortcut recorder label in the Shortcuts settings pane"
+    },
+    "Add to Sequence" : {
+      "comment" : "Card context menu item that adds the selected cards to the Sequence"
+    },
+    "Clipsy can’t paste the Sequence." : {
+      "comment" : "Title of the alert shown when Paste All cannot read the Sequence cards"
+    },
+    "Clipsy can’t add the dropped content." : {
+      "comment" : "Title of the alert shown when content dropped on the Sequence panel cannot be saved"
     }
   },
   "version" : "1.0"

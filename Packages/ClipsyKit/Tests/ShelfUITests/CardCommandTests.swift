@@ -10,24 +10,32 @@ struct CardCommandTests {
 
     @Test(arguments: [CardList.history, .board(id: 1)])
     func `multi selection menu has only batch items`(list: CardList) {
-        let batch: Set<CardCommand> = [.paste, .pasteAsPlainText, .copy, .removeFromBoard, .delete]
+        let batch: Set<CardCommand> = [.paste, .pasteAsPlainText, .copy, .addToSequence, .removeFromBoard, .delete]
 
         let menu = CardCommand.menu(for: [Self.card(1, .text), Self.card(2, .link)], in: list)
 
         #expect(Set(menu.joined()).isSubset(of: batch))
-        #expect(menu == [[.paste, .pasteAsPlainText], [.copy], [list == .history ? .delete : .removeFromBoard]])
+        #expect(menu == [
+            [.paste, .pasteAsPlainText], [.copy], [.addToSequence], [list == .history ? .delete : .removeFromBoard]
+        ])
     }
 
     @Test func `text card in history has every applicable item`() {
         let menu = CardCommand.menu(for: [Self.card(1, .text)], in: .history)
 
-        #expect(menu == [[.paste, .pasteAsPlainText], [.copy, .copyAsPlainText], [.rename], [.delete]])
+        #expect(menu == [
+            [.paste, .pasteAsPlainText],
+            [.copy, .copyAsPlainText],
+            [.rename],
+            [.addToSequence],
+            [.delete]
+        ])
     }
 
     @Test func `file card on a board can be opened and removed`() {
         let menu = CardCommand.menu(for: [Self.card(1, .file)], in: .board(id: 1))
 
-        #expect(menu == [[.paste], [.copy], [.open], [.rename], [.removeFromBoard]])
+        #expect(menu == [[.paste], [.copy], [.open], [.rename], [.addToSequence], [.removeFromBoard]])
     }
 
     @Test func `no cards means no menu`() {

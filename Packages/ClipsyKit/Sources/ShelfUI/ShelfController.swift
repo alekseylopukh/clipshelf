@@ -27,6 +27,7 @@ public final class ShelfController {
     private let deletion: CardDeletion
     private let representations: PasteCoordinator.RepresentationLoading
     private let renameCard: Rename
+    private let addToSequence: ([Int64]) -> Void
     private let actions = CardActions()
     private let defaults: UserDefaults
     private var resizeStart: (mouseY: CGFloat, height: CGFloat)?
@@ -37,6 +38,7 @@ public final class ShelfController {
         deletion: CardDeletion,
         representations: @escaping PasteCoordinator.RepresentationLoading,
         rename: @escaping Rename,
+        addToSequence: @escaping ([Int64]) -> Void,
         thumbnails: ThumbnailCache,
         defaults: UserDefaults = .standard
     ) {
@@ -45,6 +47,7 @@ public final class ShelfController {
         self.deletion = deletion
         self.representations = representations
         renameCard = rename
+        self.addToSequence = addToSequence
         self.defaults = defaults
         let hostingView = NSHostingView(rootView: ShelfContainerView(
             presentation: presentation,
@@ -94,7 +97,10 @@ public final class ShelfController {
         let frontmost = NSWorkspace.shared.frontmostApplication
         targetApplication = frontmost == NSRunningApplication.current ? nil : frontmost
         actions.targetAppName = targetApplication?.localizedName
-        actions.plainTextModifier = QuickPasteModifiers(defaults: defaults).plainText
+        let plainText = QuickPasteModifiers(defaults: defaults).plainText
+        actions.plainTextModifier = plainText
+        actions.isCopyAsPlainTextShortcutTaken = KeyboardShortcuts.getShortcut(for: .startSequence)
+            == KeyboardShortcuts.Shortcut(.c, modifiers: plainText.flags.union(.command))
         panel.setFrame(calculator.frame(height: storedHeight, in: screen.visibleFrame), display: false)
         model.didOpen()
         updateQuickPasteModifier(NSEvent.modifierFlags)
@@ -161,6 +167,8 @@ public final class ShelfController {
         case .rename:
             guard ids.count == 1 else { return }
             actions.renamingCardID = ids.first
+        case .addToSequence:
+            addToSequence(model.cards.map(\.id).filter { ids.contains($0) })
         case .removeFromBoard, .delete:
             Task {
                 await delete(ids)
@@ -290,16 +298,6 @@ public final class ShelfController {
         }
     }
 
-    /// orders the panel out at once, because a keystroke posted while it is key would land in the shelf
-    private func hideImmediately() {
-        resizeStart = nil
-        model.setQuickPasteModifierHeld(false)
-        actions.renamingCardID = nil
-        deletion.discardUndo()
-        presentation.isVisible = false
-        panel.orderOut(nil)
-    }
-
     private func updateQuickPasteModifier(_ modifierFlags: NSEvent.ModifierFlags) {
         model.setQuickPasteModifierHeld(QuickPasteModifiers(defaults: defaults).isQuickPasteHeld(in: modifierFlags))
     }
@@ -367,6 +365,21 @@ private extension ShelfController {
 }
 
 public extension ShelfController {
+    /// the selected cards in shelf order; nil while the shelf is hidden
+    var selectedCardIDs: [Int64]? {
+        isShown ? model.selectedCards.map(\.id) : nil
+    }
+
+    /// orders the panel out at once, because a keystroke posted while it is key would land in the shelf
+    func hideImmediately() {
+        resizeStart = nil
+        model.setQuickPasteModifierHeld(false)
+        actions.renamingCardID = nil
+        deletion.discardUndo()
+        presentation.isVisible = false
+        panel.orderOut(nil)
+    }
+
     var isShownInScreenCapture: Bool {
         get { panel.sharingType != .none }
         set { panel.sharingType = newValue ? .readOnly : .none }

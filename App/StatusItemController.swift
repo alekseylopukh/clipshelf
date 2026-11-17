@@ -12,12 +12,19 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     private let pause: CapturePause
     private let settings: MenuBarSettings
     private let openShelf: () -> Void
+    private let startSequence: () -> Void
     private var isShowingPaused: Bool
 
-    init(pause: CapturePause, settings: MenuBarSettings, openShelf: @escaping () -> Void) {
+    init(
+        pause: CapturePause,
+        settings: MenuBarSettings,
+        openShelf: @escaping () -> Void,
+        startSequence: @escaping () -> Void
+    ) {
         self.pause = pause
         self.settings = settings
         self.openShelf = openShelf
+        self.startSequence = startSequence
         isShowingPaused = pause.isPaused
         super.init()
         menu.delegate = self
@@ -61,6 +68,9 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         let openShelfItem = item(String(localized: "Open Shelf"), action: #selector(openShelfChosen))
         openShelfItem.setShortcut(for: .toggleShelf)
         menu.addItem(openShelfItem)
+        let startSequenceItem = item(String(localized: "Start Sequence"), action: #selector(startSequenceChosen))
+        startSequenceItem.setShortcut(for: .startSequence)
+        menu.addItem(startSequenceItem)
         menu.addItem(.separator())
         menu.addItem(pause.isPaused
             ? item(String(localized: "Resume Capture"), action: #selector(togglePause))
@@ -127,6 +137,10 @@ final class StatusItemController: NSObject, NSMenuDelegate {
 
     @objc private func openShelfChosen() {
         openShelf()
+    }
+
+    @objc private func startSequenceChosen() {
+        startSequence()
     }
 
     @objc private func togglePause() {

@@ -31,6 +31,14 @@ public final class ShortcutSettings {
                 localized: "Open Shelf",
                 comment: "Shortcut recorder label in the Shortcuts settings pane"
             )),
+            Recorder(name: .startSequence, title: String(
+                localized: "Start Sequence",
+                comment: "Shortcut recorder label in the Shortcuts settings pane"
+            )),
+            Recorder(name: .pasteAllSequence, title: String(
+                localized: "Paste All Sequence Cards",
+                comment: "Shortcut recorder label in the Shortcuts settings pane"
+            )),
             Recorder(name: .previousBoard, title: String(
                 localized: "Previous Board",
                 comment: "Shortcut recorder label in the Shortcuts settings pane"
@@ -138,6 +146,10 @@ public final class ShortcutSettings {
     private func owner(of shortcut: KeyboardShortcuts.Shortcut, except name: KeyboardShortcuts.Name) -> String? {
         if let recorder = recorders.first(where: { $0.name != name && shortcuts[$0.name.rawValue] == shortcut }) {
             return recorder.title
+        }
+        let copyAsPlainText = KeyboardShortcuts.Shortcut(.c, modifiers: modifiers.plainText.flags.union(.command))
+        if name == .startSequence, shortcut == copyAsPlainText {
+            return nil
         }
         return shelfShortcuts.first { $0.shortcut == shortcut }?.title
     }

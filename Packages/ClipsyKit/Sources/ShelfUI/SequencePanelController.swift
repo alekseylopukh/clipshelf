@@ -1,24 +1,32 @@
 import AppKit
 import DesignSystem
 import Observation
+import os
 import SwiftUI
 
 @MainActor
 public final class SequencePanelController {
+    public typealias DropRecording = @MainActor (NSPasteboard) async throws -> Void
+
     private static let frameName = "SequencePanel"
+    private static let logger = Logger(subsystem: "app.gonar.clipsy", category: "Sequence")
 
     private let panel = SequencePanel()
     private let model: SequencePanelModel
+    private let recordDrop: DropRecording
     private var hasPosition: Bool
 
-    public init(model: SequencePanelModel) {
+    /// `recordDrop` captures content dropped from other apps; the capture then joins the open Sequence
+    public init(model: SequencePanelModel, recordDrop: @escaping DropRecording) {
         self.model = model
+        self.recordDrop = recordDrop
         let hostingView = NSHostingView(rootView: SequencePanelView(model: model))
         hostingView.sizingOptions = [.intrinsicContentSize]
         panel.contentView = hostingView
         panel.onCancel = { model.sequence.close() }
         hasPosition = panel.setFrameUsingName(Self.frameName)
         panel.setFrameAutosaveName(Self.frameName)
+        panel.onDrop = { [weak self] pasteboard in self?.drop(pasteboard) }
     }
 
     public var isShownInScreenCapture: Bool {
@@ -34,6 +42,25 @@ public final class SequencePanelController {
                 show()
             } else {
                 await hide()
+            }
+        }
+    }
+
+    private func drop(_ pasteboard: NSPasteboard) {
+        // immediate, so the drag pasteboard is read before the drop returns
+        Task.immediate {
+            do {
+                try await recordDrop(pasteboard)
+            } catch {
+                Self.logger.error("recording a drop failed: \(String(describing: type(of: error)), privacy: .public)")
+                let alert = NSAlert(error: error)
+                alert.messageText = String(
+                    localized: "Clipsy can’t add the dropped content.",
+                    comment: "Title of the alert shown when content dropped on the Sequence panel cannot be saved"
+                )
+                alert.informativeText = error.localizedDescription
+                NSApplication.shared.activate()
+                alert.runModal()
             }
         }
     }

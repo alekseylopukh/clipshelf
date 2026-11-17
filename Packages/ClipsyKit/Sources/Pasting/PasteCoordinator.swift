@@ -37,15 +37,19 @@ public final class PasteCoordinator {
         sounds = SoundEffects(player: sound, defaults: defaults)
     }
 
-    /// `hideShelf` must take the shelf off screen synchronously, so the keystroke reaches the target
+    /// `hideShelf` must take the shelf off screen synchronously, so the keystroke reaches the target;
+    /// several cards are pasted oldest first unless `keepsOrder`
     public func perform(
         _ action: Action,
         cards: [CardSummary],
         plainModifier: Bool,
+        keepsOrder: Bool = false,
         target: (any PasteTarget)?,
         hideShelf: () -> Void
     ) async throws {
-        let representations = try await combinedRepresentations(of: cards)
+        let ordered = keepsOrder ? cards : cards
+            .sorted { ($0.lastCopiedAt ?? $0.createdAt, $0.id) < ($1.lastCopiedAt ?? $1.createdAt, $1.id) }
+        let representations = try await combinedRepresentations(of: ordered)
         writer.write(representations, plainTextOnly: plainModifier || defaults.pastesPlainTextByDefault)
         hideShelf()
         sounds.play(.paste)
@@ -60,9 +64,7 @@ public final class PasteCoordinator {
         keystroke.postCommandV()
     }
 
-    private func combinedRepresentations(of cards: [CardSummary]) async throws -> [Representation] {
-        let ordered = cards
-            .sorted { ($0.lastCopiedAt ?? $0.createdAt, $0.id) < ($1.lastCopiedAt ?? $1.createdAt, $1.id) }
+    private func combinedRepresentations(of ordered: [CardSummary]) async throws -> [Representation] {
         if ordered.count == 1 {
             return try await representations(ordered[0].id)
         }
