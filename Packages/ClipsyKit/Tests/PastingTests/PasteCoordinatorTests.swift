@@ -37,6 +37,14 @@ final class PasteCoordinatorTests {
         }
     }
 
+    private struct FakeSoundPlayer: SoundPlaying {
+        let log: EventLog
+
+        func play(_ effect: SoundEffect) {
+            log.events.append("sound \(effect.rawValue)")
+        }
+    }
+
     private final class FakeTarget: PasteTarget {
         let log: EventLog
         var isActive: Bool
@@ -87,6 +95,7 @@ final class PasteCoordinatorTests {
             trust: FakeTrust(log: log, isTrusted: trusted),
             keystroke: FakeKeystroke(log: log),
             alert: FakeAlert(log: log, response: alertResponse),
+            sound: FakeSoundPlayer(log: log),
             defaults: defaults
         )
     }
@@ -153,6 +162,16 @@ final class PasteCoordinatorTests {
 
         #expect(writtenTypes.isEmpty == false)
         #expect(log.events == ["hide"])
+    }
+
+    @Test func `sounds on plays the paste sound after paste and copy`() async throws {
+        defaults.set(true, forKey: PasteSettings.soundEffectsKey)
+        let coordinator = makeCoordinator()
+
+        try await paste(with: coordinator)
+        try await paste(with: coordinator, .copy)
+
+        #expect(log.events == ["hide", "sound CardPasted", "keystroke", "hide", "sound CardPasted"])
     }
 
     @Test func `shift forces plain`() async throws {

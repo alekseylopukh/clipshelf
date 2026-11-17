@@ -25,6 +25,12 @@ struct ClipsyApp: App {
         _ = Task {
             try await monitor.run()
         }
+        let sounds = SoundEffects()
+        _ = Task {
+            for await _ in monitor.capturedCardIDs {
+                sounds.play(.capture)
+            }
+        }
         let retention = RetentionSettings(repository: repository)
         _ = Task {
             try await retention.runPurgeSchedule()

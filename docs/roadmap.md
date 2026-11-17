@@ -45,6 +45,7 @@ Not maintainer decisions. They are the doc's current text or the simplest choice
 | WD-31 | Rename details ([product §4.10](product.md#410-editing-v1)) | Rename trims whitespace; Return saves, Esc or clicking outside discards |
 | WD-32 | Card details ([design §3](design.md#3-cards)) | Cards are square and as tall as the strip; the header shows the time of the last copy; a link without a preview shows the `link` symbol with the host name under it, and the footer shows the URL truncated at the head; rich text is scaled so its most common font size becomes the body size, keeps underline and strikethrough, drops background colors, and a text color under 4.5:1 contrast on the card fill falls back to the label color; rich text wins over the code-like font; code-like text is decided by a line heuristic (`CodeLikeText`); right-clicking an unselected card acts on that card without changing the selection, as in Finder; ⌃-click does not select; image and file cards show their type symbol until T3.6 |
 | WD-33 | Privacy pane details ([product §6 Privacy](product.md#privacy), [design §8 Privacy](design.md#privacy)) | Ignored Apps keep the order they were added in, adding an app twice does nothing, and removing the Passwords preset is remembered; ⌫ removes the selected apps; the picker opens in /Applications and allows several apps; an app without a bundle ID is refused with an alert, because rule 3 skips it anyway (WD-23); an app that is no longer installed shows its bundle ID and a generic icon; the screenshot toggle sets the Shelf's and the Sequence panel's `sharingType` to `.readOnly` or `.none` at once; Fetch link previews, Recognize text in images and the clipboard access row come with T9.2, T9.1 and T6.5 |
+| WD-34 | Sounds ([product §3.2](product.md#32-shelf-and-cards), [§4.5](product.md#45-paste-mechanics)) | Our own synthesized sounds in `App/Sounds` (regenerate with `scripts/generate-sounds.py`): a short high tick when a card is captured, a soft falling pop after a paste or copy from the shelf; played at system output volume through `NSSound`; a sound already playing is not restarted; the toggle takes effect at once; the capture sound plays from the app's single consumer of `PasteboardMonitor.capturedCardIDs`, which T6.4's bounce should share |
 
 ## Rules for every task
 
@@ -529,13 +530,14 @@ What exists:
 - Size: S
 
 ### T8.8 Sounds
-- Module(s): App, ShelfUI
+- Module(s): App, Pasting
 - Depends on: T6.1
 - Spec: [product §3.2](product.md#32-shelf-and-cards), [§4.5](product.md#45-paste-mechanics) step 7
 - Deliverable: capture and paste sounds when enabled; our own assets or system sounds, with origin recorded in THIRD_PARTY_NOTICES.md if third-party
 - Acceptance: test `soundsOffPlaysNothing` with a fake player
 - Human check: maintainer approves the sounds
 - Size: S
+- Status: done
 
 ## M9. Media (v1)
 

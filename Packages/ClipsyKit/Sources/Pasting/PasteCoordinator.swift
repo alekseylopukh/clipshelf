@@ -16,6 +16,7 @@ public final class PasteCoordinator {
     private let keystroke: any PasteKeystrokePosting
     private let alert: any AccessibilityAlertPresenting
     private let defaults: UserDefaults
+    private let sounds: SoundEffects
     private var hasAskedForAccessibility = false
 
     public init(
@@ -24,6 +25,7 @@ public final class PasteCoordinator {
         trust: any AccessibilityTrust = SystemAccessibilityTrust(),
         keystroke: any PasteKeystrokePosting = PasteKeystroke(),
         alert: any AccessibilityAlertPresenting = AccessibilityAlert(),
+        sound: any SoundPlaying = BundledSoundPlayer(),
         defaults: UserDefaults = .standard
     ) {
         self.writer = writer
@@ -32,6 +34,7 @@ public final class PasteCoordinator {
         self.keystroke = keystroke
         self.alert = alert
         self.defaults = defaults
+        sounds = SoundEffects(player: sound, defaults: defaults)
     }
 
     /// `hideShelf` must take the shelf off screen synchronously, so the keystroke reaches the target
@@ -45,6 +48,7 @@ public final class PasteCoordinator {
         let representations = try await combinedRepresentations(of: cards)
         writer.write(representations, plainTextOnly: plainModifier || defaults.pastesPlainTextByDefault)
         hideShelf()
+        sounds.play(.paste)
         guard action == .paste, defaults.pasteBehavior == .pasteIntoActiveApp else { return }
         guard trust.isTrusted else {
             await askForAccessibilityIfNeeded(target: target)
