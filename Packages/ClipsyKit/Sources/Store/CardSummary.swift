@@ -11,6 +11,8 @@ public struct CardSummary: Sendable, Equatable, Identifiable {
     public var createdAt: Date
     public var lastCopiedAt: Date?
     public var boardID: Int64?
+    /// lowercase hex; nil only for summaries built outside the store
+    public var contentHash: String?
 
     public init(
         id: Int64,
@@ -21,7 +23,8 @@ public struct CardSummary: Sendable, Equatable, Identifiable {
         sourceApp: SourceApp? = nil,
         createdAt: Date,
         lastCopiedAt: Date? = nil,
-        boardID: Int64? = nil
+        boardID: Int64? = nil,
+        contentHash: String? = nil
     ) {
         self.id = id
         self.kind = kind
@@ -32,13 +35,14 @@ public struct CardSummary: Sendable, Equatable, Identifiable {
         self.createdAt = createdAt
         self.lastCopiedAt = lastCopiedAt
         self.boardID = boardID
+        self.contentHash = contentHash
     }
 }
 
 extension CardSummary: FetchableRecord {
     static let selection = """
     SELECT card.id, card.kind, card.title, card.preview_text, card.metadata,
-           card.created_at, card.last_copied_at, card.board_id,
+           card.created_at, card.last_copied_at, card.board_id, lower(hex(card.content_hash)) AS content_hash,
            source_app.bundle_id, source_app.name AS app_name
     FROM card LEFT JOIN source_app ON source_app.id = card.source_app_id
     """
@@ -61,5 +65,6 @@ extension CardSummary: FetchableRecord {
         createdAt = Date(timeIntervalSince1970: row["created_at"])
         lastCopiedAt = (row["last_copied_at"] as Double?).map(Date.init(timeIntervalSince1970:))
         boardID = row["board_id"]
+        contentHash = row["content_hash"]
     }
 }

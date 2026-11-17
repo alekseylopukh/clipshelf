@@ -30,6 +30,14 @@ struct CardQueriesTests {
         #expect(first.boardID == nil)
     }
 
+    @Test func `summary carries the thumbnail key`() async throws {
+        try await record("Image", hash: 0xAB, at: 100)
+
+        let card = try #require(try await repository.cards(in: .history).first)
+
+        #expect(card.contentHash == "ab")
+    }
+
     @Test func `board is by position`() async throws {
         let last = try await record("A", hash: 1, at: 100)
         let first = try await record("B", hash: 2, at: 200)

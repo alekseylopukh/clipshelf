@@ -30,6 +30,12 @@ public enum DesignTokens {
     public static let cardFill = NSColor.controlBackgroundColor
     public static let cardFadeHeight: CGFloat = 24
     public static let colorValueInsets = EdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10)
+    public static let thumbnailMaxPixelSize = 800
+    public static let checkerboardSquareSize: CGFloat = 6
+    public static let fileIconSize: CGFloat = 96
+    public static let fileStackIconSize: CGFloat = 80
+    public static let fileStackAngle: Double = 8
+    public static let fileStackOffset: CGFloat = 16
 
     public static let sequencePanelWidth: CGFloat = 280
     public static let sequencePanelScreenInset: CGFloat = 16

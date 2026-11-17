@@ -1,5 +1,6 @@
 import AppKit
 import Capture
+import Media
 import os
 import Pasting
 import ShelfUI
@@ -44,7 +45,8 @@ struct ClipsyApp: App {
             ),
             representations: { try await repository.representations(of: $0) },
             rename: { try await repository.rename(card: $0, to: $1) },
-            togglePause: { pause.isPaused.toggle() }
+            togglePause: { pause.isPaused.toggle() },
+            thumbnails: ThumbnailCache(directory: repository.thumbnailsDirectory)
         )
         _shelf = State(initialValue: shelf)
         _ = Task {

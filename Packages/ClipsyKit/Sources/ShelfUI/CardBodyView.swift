@@ -16,8 +16,10 @@ struct CardBodyView: View {
                 SymbolCardBody(symbol: card.kind.symbolName, caption: content.host.map { Text(verbatim: $0) })
             case .color:
                 ColorCardBody(value: content.metadata.color, swatch: content.swatch)
-            case .image, .file:
-                SymbolCardBody(symbol: card.kind.symbolName, caption: nil)
+            case .image:
+                ImageCardBody(card: card)
+            case .file:
+                FileCardBody(card: card, fileCount: content.metadata.fileNames?.count ?? 1)
             case .unknown:
                 SymbolCardBody(
                     symbol: card.kind.symbolName,
@@ -112,6 +114,124 @@ private struct SymbolCardBody: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+private struct ImageCardBody: View {
+    let card: CardSummary
+
+    @State private var thumbnail: CGImage?
+    @Environment(\.cardMediaLoader) private var loader
+
+    private static let logger = Logger(subsystem: "app.gonar.clipsy", category: "Shelf")
+
+    var body: some View {
+        Group {
+            if let thumbnail {
+                Image(decorative: thumbnail, scale: 1)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .background {
+                        if thumbnail.hasAlpha {
+                            Checkerboard()
+                        }
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(.fill.quaternary)
+            } else {
+                SymbolCardBody(symbol: card.kind.symbolName, caption: nil)
+            }
+        }
+        .task(id: card.contentHash) {
+            await loadThumbnail()
+        }
+    }
+
+    private func loadThumbnail() async {
+        guard let loader, let hash = card.contentHash else { return }
+        do {
+            thumbnail = try await loader.thumbnail(
+                of: card,
+                hash: hash,
+                maxPixelSize: DesignTokens.thumbnailMaxPixelSize
+            )
+        } catch is CancellationError {
+            return
+        } catch {
+            Self.logger.error("thumbnail failed: \(String(describing: type(of: error)), privacy: .public)")
+        }
+    }
+}
+
+private struct FileCardBody: View {
+    let card: CardSummary
+    let fileCount: Int
+
+    @State private var icons: [CardMediaLoader.FileIcon] = []
+    @Environment(\.cardMediaLoader) private var loader
+    @Environment(\.displayScale) private var displayScale
+
+    private static let logger = Logger(subsystem: "app.gonar.clipsy", category: "Shelf")
+
+    private var iconSize: CGFloat {
+        fileCount > 1 ? DesignTokens.fileStackIconSize : DesignTokens.fileIconSize
+    }
+
+    var body: some View {
+        Group {
+            if icons.isEmpty {
+                SymbolCardBody(symbol: fileCount > 1 ? "doc.on.doc" : card.kind.symbolName, caption: nil)
+            } else {
+                ZStack {
+                    ForEach(icons.reversed()) { icon in
+                        FanPosition(index: icon.position, count: icons.count) {
+                            Image(decorative: icon.image, scale: displayScale)
+                                .resizable()
+                                .frame(width: iconSize, height: iconSize)
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+        .task(id: FileIconRequest(cardID: card.id, displayScale: displayScale)) {
+            await loadIcons()
+        }
+    }
+
+    private func loadIcons() async {
+        guard let loader else { return }
+        do {
+            icons = try await loader.fileIcons(of: card, pixelSize: iconSize * displayScale)
+        } catch is CancellationError {
+            return
+        } catch {
+            Self.logger.error("file icons failed: \(String(describing: type(of: error)), privacy: .public)")
+        }
+    }
+}
+
+private struct FileIconRequest: Hashable {
+    let cardID: Int64
+    let displayScale: CGFloat
+}
+
+private struct FanPosition<Content: View>: View {
+    let index: Int
+    let count: Int
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        let step = Double(index) - Double(count - 1) / 2
+        content
+            .rotationEffect(.degrees(step * DesignTokens.fileStackAngle))
+            .offset(x: step * DesignTokens.fileStackOffset)
+    }
+}
+
+private extension CGImage {
+    var hasAlpha: Bool {
+        [.none, .noneSkipFirst, .noneSkipLast].contains(alphaInfo) == false
     }
 }
 

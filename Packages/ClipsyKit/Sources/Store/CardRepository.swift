@@ -10,6 +10,10 @@ public struct CardRepository: Sendable {
         payloads = PayloadStore(directory: database.directory)
     }
 
+    public var thumbnailsDirectory: URL {
+        payloads.thumbnailsDirectory
+    }
+
     @discardableResult
     @concurrent
     public func record(_ card: NewCard, at date: Date = .now) async throws -> Int64 {

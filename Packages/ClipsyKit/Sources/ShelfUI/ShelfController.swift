@@ -1,6 +1,7 @@
 import AppKit
 import Carbon.HIToolbox
 import DesignSystem
+import Media
 import os
 import Pasting
 import Store
@@ -36,6 +37,7 @@ public final class ShelfController {
         representations: @escaping PasteCoordinator.RepresentationLoading,
         rename: @escaping Rename,
         togglePause: @escaping () -> Void,
+        thumbnails: ThumbnailCache,
         defaults: UserDefaults = .standard
     ) {
         self.model = model
@@ -50,7 +52,8 @@ public final class ShelfController {
             model: model,
             onResize: { [weak self] in self?.resize() },
             onResizeEnded: { [weak self] in self?.endResize() }
-        ).environment(actions).environment(\.richTextLoader, RichTextLoader(representations: representations)))
+        ).environment(actions).environment(\.richTextLoader, RichTextLoader(representations: representations))
+            .environment(\.cardMediaLoader, CardMediaLoader(representations: representations, thumbnails: thumbnails)))
         hostingView.sizingOptions = []
         hostingView.autoresizingMask = [.width, .height]
         let contentView = NSView()
