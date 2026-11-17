@@ -29,11 +29,13 @@ struct ShelfTopBar: View {
                 }
                 .scrollIndicators(.hidden)
                 .scrollClipDisabled()
-                Button("New Board", systemImage: "plus") {
+                Button {
                     commands.newBoard?()
+                } label: {
+                    TopBarIcon(title: "New Board", systemImage: "plus")
                 }
-                .labelStyle(.iconOnly)
                 .buttonStyle(.glass)
+                .buttonBorderShape(.circle)
                 .disabled(commands.newBoard == nil)
                 ShelfMoreMenu(commands: commands)
             }
@@ -58,11 +60,13 @@ private struct ShelfFiltersButton: View {
 
     var body: some View {
         @Bindable var model = model
-        Button("Filters", systemImage: "line.3.horizontal.decrease") {
+        Button {
             model.isFilterBrowserPresented.toggle()
+        } label: {
+            TopBarIcon(title: "Filters", systemImage: "line.3.horizontal.decrease")
         }
-        .labelStyle(.iconOnly)
         .buttonStyle(.glass)
+        .buttonBorderShape(.circle)
         .popover(isPresented: $model.isFilterBrowserPresented, arrowEdge: .top) {
             FilterBrowser(model: model)
         }
@@ -125,8 +129,7 @@ private struct ShelfSearchField: View {
             }
         }
         .padding(.horizontal, DesignTokens.spacingLarge)
-        .padding(.vertical, DesignTokens.spacingMedium)
-        .frame(minWidth: DesignTokens.searchFieldWidth)
+        .frame(minWidth: DesignTokens.searchFieldWidth, minHeight: DesignTokens.topBarControlHeight)
         .fixedSize(horizontal: true, vertical: false)
         .glassEffect(.regular.interactive(), in: .capsule)
     }
@@ -221,12 +224,24 @@ private struct ShelfMoreMenu: View {
                 commands.openSettings?()
             }
         } label: {
-            Label("More", systemImage: "ellipsis")
-                .labelStyle(.iconOnly)
+            TopBarIcon(title: "More", systemImage: "ellipsis")
         }
         .menuIndicator(.hidden)
         .buttonStyle(.glass)
+        .buttonBorderShape(.circle)
         .fixedSize()
+    }
+}
+
+/// a fixed glyph box keeps icon-only glass buttons as tall as the text capsules
+private struct TopBarIcon: View {
+    let title: LocalizedStringKey
+    let systemImage: String
+
+    var body: some View {
+        Label(title, systemImage: systemImage)
+            .labelStyle(.iconOnly)
+            .frame(width: DesignTokens.topBarIconSize, height: DesignTokens.topBarIconSize)
     }
 }
 

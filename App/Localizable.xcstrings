@@ -685,7 +685,7 @@
         }
       }
     },
-    "%lld × %lld" : {
+    "%@ × %@" : {
       "comment" : "Card footer: pixel width and height of an image card",
       "extractionState" : "manual"
     },

@@ -203,10 +203,19 @@ private struct CardSurface: View {
                 CardFooter(kind: card.kind, content: content)
             }
         }
-        .padding(DesignTokens.cardContentInsets)
+        .padding(DesignTokens.cardContentInset)
         .frame(maxHeight: .infinity)
-        .aspectRatio(1, contentMode: .fit)
-        .background(Color(nsColor: DesignTokens.cardFill), in: shape)
+        .aspectRatio(layout == .compact ? DesignTokens.compactCardAspectRatio : 1, contentMode: .fit)
+        .background {
+            shape
+                .fill(Color(nsColor: DesignTokens.cardFill))
+                .shadow(
+                    color: isHovered || isSelected ? DesignTokens.cardLiftShadowColor : .clear,
+                    radius: DesignTokens.cardLiftShadowRadius,
+                    y: DesignTokens.cardLiftShadowOffset
+                )
+        }
+        .containerShape(shape)
         .overlay {
             shape.strokeBorder(Color(nsColor: .separatorColor), lineWidth: pixelLength)
         }
@@ -218,11 +227,6 @@ private struct CardSurface: View {
         .contentShape(.dragPreview, shape)
         .contentShape(shape)
         .scaleEffect(isSelected ? DesignTokens.cardLiftScale : 1)
-        .shadow(
-            color: isHovered || isSelected ? DesignTokens.cardLiftShadowColor : .clear,
-            radius: DesignTokens.cardLiftShadowRadius,
-            y: DesignTokens.cardLiftShadowOffset
-        )
         .animation(reduceMotion ? nil : .default, value: isSelected)
         .animation(reduceMotion ? nil : .default, value: isHovered)
     }
@@ -260,8 +264,8 @@ private struct CardPreview: View {
     )
 
     var body: some View {
-        let compactHeight = DesignTokens.shelfMinimumHeight - DesignTokens.shelfResizeHandleHeight
-            - 2 * DesignTokens.shelfPadding
+        let compactHeight = DesignTokens.shelfMinimumHeight - DesignTokens.topBarControlHeight
+            - 3 * DesignTokens.shelfPadding
         CardView(card: card, model: model, now: .now, layout: layout)
             .frame(height: layout == .compact ? compactHeight : DesignTokens.cardSide)
             .padding(DesignTokens.shelfPadding)

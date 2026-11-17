@@ -19,9 +19,8 @@ struct ShelfContainerView: View {
         ZStack {
             if presentation.isVisible {
                 VStack(spacing: 0) {
-                    ShelfResizeHandle(onResize: onResize, onResizeEnded: onResizeEnded)
                     ShelfTopBar(model: model, commands: commands)
-                        .padding(.horizontal, DesignTokens.shelfPadding)
+                        .padding([.horizontal, .top], DesignTokens.shelfPadding)
                     ZStack {
                         CardStrip(model: model)
                         if let emptyState = model.emptyState(isCapturePaused: commands.isCapturePaused()) {
@@ -29,8 +28,15 @@ struct ShelfContainerView: View {
                         }
                     }
                 }
+                .overlay(alignment: .top) {
+                    ShelfResizeHandle(onResize: onResize, onResizeEnded: onResizeEnded)
+                }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .glassEffect(.regular, in: .rect(cornerRadius: DesignTokens.shelfCornerRadius))
+                .clipShape(.rect(cornerRadius: DesignTokens.shelfCornerRadius))
+                .background {
+                    Color.clear
+                        .glassEffect(.regular, in: .rect(cornerRadius: DesignTokens.shelfCornerRadius))
+                }
                 .transition(reduceMotion ? .opacity : Self.riseTransition)
             }
         }

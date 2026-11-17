@@ -47,12 +47,42 @@ An optional faint tint (8–12% opacity) of the source app's icon color behind t
 | Aspect | Design |
 |---|---|
 | Edge | Bottom of the screen, centered horizontally. Bottom only in v1. |
-| Inset | Floats like the Dock: inset from the bottom and side edges of the visible frame (proposed 8–12 pt), with a soft system shadow. Never covers the menu bar. Respects the Dock: placed above it when the Dock is at the bottom and visible. |
-| Corners | Corner radius concentric with the display corners (proposed: match the system window radius for the inset used). Inner elements use concentric radii. |
+| Inset | Floats like the Dock: inset 8 pt from the bottom and side edges of the visible frame, with a soft system shadow. Never covers the menu bar. Respects the Dock: placed above it when the Dock is at the bottom and visible. |
+| Corners | 36 pt, concentric with the Cards at the 16 pt inner padding. Inner elements use concentric radii; see [Metrics](#metrics). |
 | Width | Full width of the visible frame minus the insets. |
 | Height | User-resizable by dragging the top edge; one remembered height for all displays ([WD-13](roadmap.md#working-defaults-for-open-todos)). Range: from one compact row (160 pt) to 40% of the visible height; default 300 pt ([WD-22](roadmap.md#working-defaults-for-open-todos)). |
-| Compact mode | When a regular Card would be under 150 pt tall ([WD-15](roadmap.md#working-defaults-for-open-todos)), Cards switch to a condensed layout: the header collapses to the app icon and time, the footer is hidden and the body fills the rest. |
+| Compact mode | When a regular Card would be under 150 pt tall ([WD-15](roadmap.md#working-defaults-for-open-todos)), Cards switch to a condensed layout: the header collapses to a 20 pt app icon and the time, the footer is hidden and the body fills the rest. Compact Cards are 4:3 instead of square so the time fits next to the icon. |
 | Display | Opens on the display that holds the pointer. Moves with the user to the active Space and appears over full-screen apps. |
+
+### Metrics
+
+One radius system and an 8 pt grid (12 pt is the one half step, inside Cards). Every value lives in `DesignTokens`.
+
+| Metric | Value | Rule |
+|---|---|---|
+| Screen inset | 8 pt | `shelfInset` |
+| Shelf padding | 16 pt | `shelfPadding`: top, sides and bottom; the gap between the top bar and the Cards is the same 16 pt |
+| Card gap | 16 pt | `cardSpacing` = `shelfPadding`, so gaps between Cards equal the outer insets |
+| Card radius | 20 pt | `cardCornerRadius` |
+| Shelf radius | 36 pt | `shelfCornerRadius` = Card radius + Shelf padding (concentric) |
+| Card content inset | 12 pt | `cardContentInset`, on all four sides |
+| Card inner radius | 8 pt | `cardInnerCornerRadius` = Card radius − content inset. Body previews (link image, color swatch, image) clip to `ConcentricRectangle` against the Card's `containerShape`, with this as the minimum |
+| Selection ring | 3 pt (4 pt with Increase Contrast), 2 pt gap | Radius = Card radius + gap + width, so the ring is concentric outside the Card |
+| Quick-paste badge | 20 pt, inset 10 pt | Inset = Card radius − badge radius, so the badge circle is concentric with the corner |
+| Top bar controls | 28 pt tall | Large control size; icon-only buttons are 28 pt circles (16 pt glyph box), the search field is a 28 pt capsule |
+| Header icon | 32 pt regular, 20 pt compact | 32 pt is a native app icon size, recognizable at a glance; its squircle corner (~7 pt) matches the 8 pt inner radius |
+| Header/body/footer spacing | 8 pt regular, 4 pt compact | `spacingMedium` / `spacingSmall` |
+| Text fade | 16 pt | `cardFadeHeight` |
+
+Liquid Glass on the Shelf is a background layer, not a wrapper: wrapping the Cards in `.glassEffect` gave their text the glass's adaptive (vibrant) foreground, which turned Card text dark on dark Cards. Content outside the panel shape is clipped to it, so a Card scrolled under a rounded corner does not poke out.
+
+### Snapshot harness
+
+`scripts/snapshots.sh [dir]` renders the Shelf offscreen to `.build/snapshots` (or `dir`): `shelf-{regular,compact}-{light,dark}.png`, 1920 pt wide at the backing scale. It runs the `ShelfSnapshotTests` suite in `ShelfUITests`, which is skipped unless `CLIPSY_SNAPSHOTS` names the output folder, so `scripts/build.sh test` never renders.
+
+- Fixture: eight made-up Cards (`SnapshotFixtures`: text, rich text, link with preview image, color, code, image, file, three files) and three Boards. Images and files are generated into a temporary folder; app icons come from system apps. No clipboard data is read.
+- It hosts `ShelfContainerView` in a borderless `NSWindow` that is never ordered in, so nothing appears on screen, and captures it with `cacheDisplay`.
+- Liquid Glass is composited by the window server and does not render offscreen. The harness draws a material stand-in for the Shelf, and glass buttons in the top bar show only their labels. Check glass in the running app.
 
 Left, right and top edges (vertical layout) are not part of v1; they are listed under Later in [roadmap.md](roadmap.md#later-not-scheduled).
 Placement uses the display's visible frame, so an auto-hidden Dock is not avoided ([WD-22](roadmap.md#working-defaults-for-open-todos)).
@@ -83,13 +113,13 @@ Durations: system spring defaults. We set no custom timing curves unless testing
 
 ### Anatomy
 
-A Card is a rounded rectangle with an opaque fill (`controlBackgroundColor` or the SwiftUI secondary background), a hairline `separatorColor` border, and the system Card shadow when lifted. Proposed aspect ratio: square in regular mode.
+A Card is a rounded rectangle with an opaque fill (`controlBackgroundColor` or the SwiftUI secondary background), a hairline `separatorColor` border, and the system Card shadow when lifted. Square in regular mode, 4:3 in compact mode. Metrics are in [§2 Metrics](#metrics).
 
 | Part | Contents | Style |
 |---|---|---|
-| Header | Source app icon (proposed 16–20 pt); title if the user renamed the Card, else the type label; relative time ("2 min ago") | Title `.headline`; type and time `.caption` in secondary label color; digits monospaced |
+| Header | Source app icon (32 pt, centered on the two text lines, like a two-line list row); title if the user renamed the Card, else the type label; relative time ("2 min ago") below it | Title or type label `.headline`, so every header has the same height; time `.caption` in secondary label color; digits monospaced |
 | Body | Type-specific preview (table below) | Clipped to the Card's inner radius |
-| Footer | Type-specific metadata | `.caption`, tertiary label color, single line, truncated |
+| Footer | Type-specific metadata | `.caption`, secondary label color (tertiary was too faint for 4.5:1), single line, truncated |
 | Board marker | When showing search results from all of History and Boards: the Board's colored dot next to the time | Board color, 6–8 pt dot (proposed) |
 
 ### Per-type layouts
@@ -100,7 +130,7 @@ A Card is a rounded rectangle with an opaque fill (`controlBackgroundColor` or t
 | Rich text | Rendered with its own fonts and colors, scaled to the system body size; colors that fail contrast on the Card fill fall back to label color | Character count |
 | Code-like text | Plain text heuristically detected as code gets SF Mono (`.monospaced()`); no syntax colors. Not a separate type | Line count |
 | Link | Link preview image (when previews are on) filling the top of the body; page title below in `.callout` semibold. Without a preview: large site favicon or `link` symbol, centered | Host name, head-truncated URL |
-| Image | Image aspect-fit on a neutral fill; checkerboard behind transparency | Pixel dimensions |
+| Image | Image aspect-fit on a neutral fill; checkerboard behind transparency | Pixel dimensions, without grouping separators ("1600 × 1000") |
 | File | Quick Look thumbnail or file icon, centered | File name, middle-truncated |
 | Multiple files | Up to three stacked thumbnails, slightly fanned | "N files" and total size |
 | Color | Swatch filling the body, with the value overlaid on a small glass capsule for legibility | Value in the copied format (hex, rgb) |
@@ -114,7 +144,7 @@ Details such as rich text scaling, the contrast threshold and the link body with
 |---|---|
 | Rest | Opaque fill, hairline border |
 | Hover | Slight lift (shadow strengthens); no color change |
-| Selected | Accent-colored ring at a concentric radius outside the Card (proposed 3 pt), slight lift (scale ~1.02) |
+| Selected | Accent-colored 3 pt ring, 2 pt outside the Card at a concentric radius, slight lift (scale 1.02) |
 | Multi-selected | Each selected Card gets the ring; a count ("3 selected") appears in the top bar |
 | Keyboard focus without selection change | Same as Selected; there is only one focus indicator |
 | Being dragged | System drag image; the source Card dims |
@@ -347,7 +377,7 @@ Step 3 and the Privacy pane row read `NSPasteboard.general.accessBehavior` (chec
 | Element | Component |
 |---|---|
 | Shelf window | `NSPanel` subclass, non-activating, full-size content view, resizable from the top edge, floating level, joins the active Space and full-screen Spaces; `sharingType = .none` unless the privacy toggle is on. Details in [architecture.md](architecture.md). |
-| Shelf background | `NSGlassEffectView` as the panel's content view (or SwiftUI `.glassEffect(.regular, in: .rect(cornerRadius:))` on the root view), concentric corner radius |
+| Shelf background | SwiftUI `.glassEffect(.regular, in: .rect(cornerRadius:))` on a background layer of the root view (see [§2 Metrics](#metrics)), concentric corner radius |
 | Shelf content | SwiftUI hosted in `NSHostingView` |
 | Card strip | Horizontal `ScrollView` + `LazyHStack` (or `NSCollectionView` if performance needs it) |
 | Card | SwiftUI view with opaque `background(.background.secondary)` fill and `separatorColor` stroke; no glass |

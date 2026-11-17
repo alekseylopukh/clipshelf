@@ -21,7 +21,10 @@ struct CardFooter: View {
                 }
             case .image:
                 if let width = content.metadata.pixelWidth, let height = content.metadata.pixelHeight {
-                    Text("\(width) × \(height)", comment: "Card footer: pixel width and height of an image card")
+                    Text(
+                        "\(width.formatted(.number.grouping(.never))) × \(height.formatted(.number.grouping(.never)))",
+                        comment: "Card footer: pixel width and height of an image card"
+                    )
                 }
             case .file:
                 if let names = content.metadata.fileNames, names.count > 1 {
@@ -49,7 +52,7 @@ struct CardFooter: View {
             }
         }
         .font(.caption)
-        .foregroundStyle(.tertiary)
+        .foregroundStyle(.secondary)
         .monospacedDigit()
         .lineLimit(1)
         .frame(maxWidth: .infinity, alignment: .leading)

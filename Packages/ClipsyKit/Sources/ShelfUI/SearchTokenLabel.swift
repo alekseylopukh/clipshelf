@@ -15,7 +15,11 @@ struct SearchTokenLabel: View {
             case let .kind(kind):
                 Image(systemName: kind.symbolName)
             case let .app(app):
-                AppIconView(bundleID: app.bundleID, fallbackSymbol: SearchToken.Category.app.symbolName)
+                AppIconView(
+                    bundleID: app.bundleID,
+                    fallbackSymbol: SearchToken.Category.app.symbolName,
+                    size: DesignTokens.menuIconSize
+                )
             case .date:
                 Image(systemName: SearchToken.Category.date.symbolName)
             case let .board(id):

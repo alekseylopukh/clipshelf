@@ -35,7 +35,7 @@ struct SequencePanelView: View {
                         model.sequence.entries.count,
                         DesignTokens.sequenceMaximumVisibleRows
                     )))
-                    .clipShape(.rect(cornerRadius: DesignTokens.cardCornerRadius))
+                    .clipShape(.rect(cornerRadius: DesignTokens.sequenceListCornerRadius))
                     .padding([.horizontal, .bottom], DesignTokens.spacingMedium)
                     .onDeleteCommand {
                         model.remove(selection)

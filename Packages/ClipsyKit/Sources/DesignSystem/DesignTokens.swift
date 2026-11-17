@@ -6,10 +6,12 @@ public enum DesignTokens {
     public static let spacingMedium: CGFloat = 8
     public static let spacingLarge: CGFloat = 12
 
-    public static let shelfInset: CGFloat = 10
-    public static let shelfPadding: CGFloat = 12
-    public static let shelfCornerRadius: CGFloat = 26
-    public static let cardCornerRadius: CGFloat = shelfCornerRadius - shelfPadding
+    public static let shelfInset: CGFloat = 8
+    public static let shelfPadding: CGFloat = 16
+    public static let shelfCornerRadius: CGFloat = cardCornerRadius + shelfPadding
+    public static let cardCornerRadius: CGFloat = 20
+    public static let topBarControlHeight: CGFloat = 28
+    public static let topBarIconSize: CGFloat = 16
     public static let shelfMinimumHeight: CGFloat = 160
     public static let shelfDefaultHeight: CGFloat = 300
     public static let shelfMaximumHeightFraction: CGFloat = 0.4
@@ -27,16 +29,19 @@ public enum DesignTokens {
 
     public static let cardSide: CGFloat = 220
     public static let compactCardHeightThreshold: CGFloat = 150
-    public static let cardSpacing: CGFloat = 12
-    public static let cardContentInsets = EdgeInsets(top: 8, leading: 10, bottom: 8, trailing: 10)
-    public static let cardHeaderIconSize: CGFloat = 18
+    public static let compactCardAspectRatio: CGFloat = 4 / 3
+    public static let cardSpacing: CGFloat = shelfPadding
+    public static let cardContentInset: CGFloat = 12
+    public static let cardHeaderIconSize: CGFloat = 32
+    public static let cardCompactHeaderIconSize: CGFloat = 20
+    public static let appIconSymbolInsetRatio: CGFloat = 0.15
     public static let cardLiftScale: CGFloat = 1.02
-    public static let cardInnerCornerRadius: CGFloat = cardCornerRadius - cardContentInsets.leading
+    public static let cardInnerCornerRadius: CGFloat = cardCornerRadius - cardContentInset
     public static let cardLiftShadowRadius: CGFloat = 8
     public static let cardLiftShadowOffset: CGFloat = 2
     public static let cardLiftShadowColor = Color.black.opacity(0.18)
     public static let cardFill = NSColor.controlBackgroundColor
-    public static let cardFadeHeight: CGFloat = 24
+    public static let cardFadeHeight: CGFloat = 16
     public static let colorValueInsets = EdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10)
     public static let thumbnailMaxPixelSize = 800
     public static let checkerboardSquareSize: CGFloat = 6
@@ -56,6 +61,7 @@ public enum DesignTokens {
     public static let sequencePanelWidth: CGFloat = 280
     public static let sequencePanelScreenInset: CGFloat = 16
     public static let sequencePanelCornerRadius: CGFloat = 18
+    public static let sequenceListCornerRadius: CGFloat = sequencePanelCornerRadius - spacingMedium
     public static let sequenceRowHeight: CGFloat = 44
     public static let sequenceRowInsets = EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8)
     public static let sequenceMaximumVisibleRows = 6
@@ -81,6 +87,7 @@ public enum DesignTokens {
     public static let boardSheetWidth: CGFloat = 400
     public static let boardSheetPadding: CGFloat = 20
     public static let badgeSize: CGFloat = 20
+    public static let badgeInset: CGFloat = cardCornerRadius - badgeSize / 2
     public static let renameFieldWidth: CGFloat = 220
     public static let textEditorWidth: CGFloat = 480
     public static let textEditorHeight: CGFloat = 320

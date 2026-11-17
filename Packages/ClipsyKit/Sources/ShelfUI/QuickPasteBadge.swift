@@ -25,7 +25,7 @@ struct QuickPasteBadgeModifier: ViewModifier {
                 ZStack {
                     if let number {
                         QuickPasteBadge(number: number)
-                            .padding(DesignTokens.spacingSmall)
+                            .padding(DesignTokens.badgeInset)
                             .transition(.opacity)
                     }
                 }

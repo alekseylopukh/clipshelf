@@ -31,7 +31,7 @@ struct CardBodyView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .clipShape(.rect(cornerRadius: DesignTokens.cardInnerCornerRadius))
+        .clipShape(.cardInner)
     }
 }
 
@@ -48,24 +48,26 @@ private struct TextCardBody: View {
     private static let logger = Logger(subsystem: "app.gonar.clipsy", category: "Shelf")
 
     var body: some View {
-        Group {
-            if let highlightedPreview {
-                Text(highlightedPreview)
-                    .font(isCodeLike ? .body.monospaced() : .body)
-            } else if let richText {
-                Text(richText)
-                    .font(.body)
-            } else {
-                Text(verbatim: card.preview ?? "")
-                    .font(isCodeLike ? .body.monospaced() : .body)
+        Color.clear
+            .overlay(alignment: .topLeading) {
+                Group {
+                    if let highlightedPreview {
+                        Text(highlightedPreview)
+                            .font(isCodeLike ? .body.monospaced() : .body)
+                    } else if let richText {
+                        Text(richText)
+                            .font(.body)
+                    } else {
+                        Text(verbatim: card.preview ?? "")
+                            .font(isCodeLike ? .body.monospaced() : .body)
+                    }
+                }
+                .fixedSize(horizontal: false, vertical: true)
             }
-        }
-        .fixedSize(horizontal: false, vertical: true)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .fadeTruncation()
-        .task(id: RichTextRequest(cardID: card.id, colorScheme: colorScheme, contrast: contrast)) {
-            await loadRichText()
-        }
+            .fadeTruncation()
+            .task(id: RichTextRequest(cardID: card.id, colorScheme: colorScheme, contrast: contrast)) {
+                await loadRichText()
+            }
     }
 
     private func loadRichText() async {
@@ -131,7 +133,7 @@ private struct LinkCardBody: View {
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)
                         }
-                        .clipShape(.rect(cornerRadius: DesignTokens.cardInnerCornerRadius))
+                        .clipShape(.cardInner)
                     if let title = content.metadata.pageTitle {
                         Text(verbatim: title)
                             .font(.callout.weight(.semibold))

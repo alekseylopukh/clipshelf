@@ -13,23 +13,26 @@ struct CardHeader: View {
 
     var body: some View {
         HStack(spacing: DesignTokens.spacingMedium) {
-            AppIconView(bundleID: card.sourceApp?.bundleID, fallbackSymbol: card.kind.symbolName)
+            AppIconView(
+                bundleID: card.sourceApp?.bundleID,
+                fallbackSymbol: card.kind.symbolName,
+                size: layout == .regular ? DesignTokens.cardHeaderIconSize : DesignTokens.cardCompactHeaderIconSize
+            )
             VStack(alignment: .leading, spacing: 0) {
                 if layout == .regular {
                     Button {
                         actions.perform(.rename, [card.id])
                     } label: {
-                        if let highlightedTitle {
-                            Text(highlightedTitle)
-                                .font(.headline)
-                        } else if let title = card.title, title.isEmpty == false {
-                            Text(title)
-                                .font(.headline)
-                        } else {
-                            Text(card.kind.name)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                        Group {
+                            if let highlightedTitle {
+                                Text(highlightedTitle)
+                            } else if let title = card.title, title.isEmpty == false {
+                                Text(title)
+                            } else {
+                                Text(card.kind.name)
+                            }
                         }
+                        .font(.headline)
                     }
                     .buttonStyle(.plain)
                 }
@@ -49,6 +52,7 @@ struct CardHeader: View {
             }
             .lineLimit(1)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 

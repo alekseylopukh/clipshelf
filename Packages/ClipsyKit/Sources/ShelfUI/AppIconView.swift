@@ -6,6 +6,7 @@ import Synchronization
 struct AppIconView: View {
     let bundleID: String?
     let fallbackSymbol: String
+    let size: CGFloat
 
     @State private var icon: CGImage?
     @State private var isMissing = false
@@ -18,22 +19,30 @@ struct AppIconView: View {
                     .resizable()
             } else if bundleID == nil || isMissing {
                 Image(systemName: fallbackSymbol)
+                    .resizable()
+                    .scaledToFit()
+                    .padding(size * DesignTokens.appIconSymbolInsetRatio)
                     .foregroundStyle(.secondary)
             }
         }
-        .frame(width: DesignTokens.cardHeaderIconSize, height: DesignTokens.cardHeaderIconSize)
+        .frame(width: size, height: size)
         .accessibilityHidden(true)
-        .task(id: bundleID) {
+        .task(id: AppIconRequest(bundleID: bundleID, pixelSize: size * displayScale)) {
             icon = nil
             isMissing = false
             guard let bundleID else { return }
             icon = await AppIconCache.shared.icon(
                 for: bundleID,
-                pixelSize: DesignTokens.cardHeaderIconSize * displayScale
+                pixelSize: size * displayScale
             )
             isMissing = icon == nil
         }
     }
+}
+
+private struct AppIconRequest: Hashable {
+    let bundleID: String?
+    let pixelSize: CGFloat
 }
 
 final class AppIconCache: Sendable {
