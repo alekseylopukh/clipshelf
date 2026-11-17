@@ -77,7 +77,7 @@ Concurrency (Swift 6 strict): the monitor and all UI are `@MainActor`. Reading p
 | Logging | `os.Logger` | System, no dependency; never interpolate clipboard content (§5) | swift-log: adds a dependency for nothing |
 | Tests | Swift Testing (`import Testing`) | Ships with Swift 6 toolchain | XCTest for UI tests only |
 
-> Decision needed: GRDB as the persistence layer (it is a third-party package, so [code-standards.md](engineering/code-standards.md#architecture) requires approval). Recommendation: yes. Tradeoff: one MIT dependency in exchange for FTS5 and explicit migrations; SwiftData is the zero-dependency path with worse search.
+> Decision needed: GRDB as the persistence layer (it is a third-party package, so [code-rules.md](../.claude/rules/code-rules.md#r1-architecture) requires approval). Recommendation: yes. Tradeoff: one MIT dependency in exchange for FTS5 and explicit migrations; SwiftData is the zero-dependency path with worse search.
 
 > Decision needed: KeyboardShortcuts vs. our own Carbon wrapper. Recommendation: KeyboardShortcuts; the recorder UI alone justifies it.
 
@@ -292,7 +292,7 @@ Dependency direction: `ShelfUI` → `DesignSystem`, `Pasting`, `Media`, `Store`;
 
 > TODO: confirm a GitHub-hosted runner image with the Xcode that has the macOS 26 SDK, and its label.
 
-Formatting and linting use SwiftFormat and SwiftLint, the pair most popular macOS apps use. The rules are in [docs/engineering/code-standards.md](engineering/code-standards.md).
+Formatting and linting use SwiftFormat and SwiftLint, the pair most popular macOS apps use. The rules are in [.claude/rules/code-rules.md](../.claude/rules/code-rules.md).
 
 ### 6.4 Release pipeline
 

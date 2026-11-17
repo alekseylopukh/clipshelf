@@ -1,6 +1,6 @@
 ---
 name: pre-commit-review
-description: Mandatory quality gate before every git commit in Clipshelf. Lints, builds, tests and reviews exactly the staged changes against docs/engineering/review-checklist.md, then approves the staged tree only if nothing blocking is found. Use whenever you are about to commit; the commit hook refuses commits whose staged tree was not approved.
+description: Mandatory quality gate before every git commit in Clipshelf. Lints, builds, tests and reviews exactly the staged changes against .claude/rules/code-rules.md, then approves the staged tree only if nothing blocking is found. Use whenever you are about to commit; the commit hook refuses commits whose staged tree was not approved.
 ---
 
 # Pre-commit review
@@ -26,4 +26,4 @@ The commit hook (`.claude/hooks/commit-gate.py`) blocks `git commit` until the s
 
 - Never run `approve.sh` without a PASS from the reviewer on the current staged tree.
 - Never bypass the gate. That means no `--no-verify`, no `-n`, no `git commit -a`, no editing the hook, and no writing the approval marker by hand.
-- Docs-only changes still go through the reviewer. It checks IP leaks, broken links and contradictions with the sources-of-truth table in CLAUDE.md.
+- Docs-only changes still go through the reviewer. It checks IP leaks, broken links and contradictions with the "Where things live" table in CLAUDE.md.

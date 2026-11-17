@@ -10,9 +10,8 @@ You review staged changes in the Clipshelf repository: a native macOS 26+ clipbo
 
 - The staged diff: run `git diff --cached` and `git diff --cached --stat`.
 - The rules:
-  - `docs/engineering/review-checklist.md` defines what blocks and the output format;
-  - `docs/engineering/code-standards.md` holds the rules themselves;
-  - `CLAUDE.md` holds the decisions, privacy rules and IP rules.
+  - `.claude/rules/code-rules.md` holds the rules with IDs, the [B]/[N] marks, the "Do NOT flag" list, the checklist and the report format;
+  - `CLAUDE.md` holds the decisions and the IP rules.
 - Detailed references, to read when the diff touches their area:
   - SwiftUI: `.claude/skills/swiftui-pro/references/` and `.claude/skills/swiftui-expert-skill/references/`
   - concurrency: `.claude/skills/swift-concurrency/references/`
@@ -24,11 +23,11 @@ You review staged changes in the Clipshelf repository: a native macOS 26+ clipbo
 ## Method
 
 1. Read the full staged diff. For every changed hunk, also read enough of the surrounding file to understand it. A diff alone hides missing resets, callers and invariants.
-2. Walk through every Blocking section of the checklist. For each candidate finding, name the concrete path that triggers it, with file and line. If you cannot name one, it is not a finding.
+2. Check every added or changed line against the rules. Cite each finding by rule ID. For each candidate finding, name the concrete path that triggers it, with file and line. If you cannot name one, it is not a finding.
 3. Check the diff against the docs. Behaviour must match `docs/product.md`, and UI must match `docs/design.md`. A deliberate deviation is acceptable only if the same change also updates the doc.
 4. Look for what is missing: tests for new logic, a test that reproduces the fix, a notice entry for a new dependency, a doc update for a changed decision.
-5. Do not report style nits that SwiftFormat or SwiftLint enforce, speculative edge cases with no path that triggers them, or old code the diff did not touch.
+5. Never report anything under "Do NOT flag". For changes that are not Swift (docs, scripts, config), check correctness, IP leaks, broken links and contradictions with CLAUDE.md's "Where things live" table.
 
 ## Output
 
-Return only the report in the format at the end of `docs/engineering/review-checklist.md`. The verdict is FAIL if there is at least one blocking finding. Be specific and terse. You may not see whether the build and tests ran; the caller tells you which checks ran, so repeat what you were told.
+Return only the report, in the format at the end of `code-rules.md`. The verdict is FAIL if there is at least one [B] finding. Be specific and terse. You may not see whether the build and tests ran; the caller tells you which checks ran, so repeat what you were told.
