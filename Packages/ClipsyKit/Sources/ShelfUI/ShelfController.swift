@@ -47,7 +47,7 @@ public final class ShelfController {
             model: model,
             onResize: { [weak self] in self?.resize() },
             onResizeEnded: { [weak self] in self?.endResize() }
-        ).environment(actions))
+        ).environment(actions).environment(\.richTextLoader, RichTextLoader(representations: representations)))
         hostingView.sizingOptions = []
         hostingView.autoresizingMask = [.width, .height]
         let contentView = NSView()
@@ -186,18 +186,16 @@ public final class ShelfController {
             }
             return true
         }
+        if model.handleSelectionKey(keyCode: Int(event.keyCode), character: key, modifiers: modifiers) {
+            return true
+        }
         if key == "z", modifiers == .command {
             Task {
                 await undoDelete()
             }
             return true
         }
-        let action: PasteCoordinator.Action
-        if [kVK_Return, kVK_ANSI_KeypadEnter].contains(Int(event.keyCode)), modifiers.isSubset(of: .shift) {
-            action = .paste
-        } else if key == "c", modifiers.subtracting(.shift) == .command {
-            action = .copy
-        } else {
+        guard let action = Self.pasteAction(keyCode: Int(event.keyCode), key: key, modifiers: modifiers) else {
             return false
         }
         let cards = model.cards.filter { model.selection.contains($0.id) }
@@ -325,5 +323,21 @@ public final class ShelfController {
         guard resizeStart != nil else { return }
         resizeStart = nil
         defaults.set(Double(panel.frame.height), forKey: Self.heightKey)
+    }
+}
+
+private extension ShelfController {
+    static func pasteAction(
+        keyCode: Int,
+        key: String?,
+        modifiers: NSEvent.ModifierFlags
+    ) -> PasteCoordinator.Action? {
+        if [kVK_Return, kVK_ANSI_KeypadEnter].contains(keyCode), modifiers.isSubset(of: .shift) {
+            return .paste
+        }
+        if key == "c", modifiers.subtracting(.shift) == .command {
+            return .copy
+        }
+        return nil
     }
 }

@@ -5,9 +5,7 @@ extension CardSummary {
     func openableURLs(in representations: [Representation]) -> [URL] {
         switch kind {
         case .link:
-            guard let json = metadata?.data(using: .utf8),
-                  let url = (try? JSONDecoder().decode(CardMetadata.self, from: json))?.url
-            else { return [] }
+            guard let url = decodedMetadata.url else { return [] }
             return URL(string: url).map { [$0] } ?? []
         case .file:
             return representations

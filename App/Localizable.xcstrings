@@ -277,6 +277,156 @@
     },
     "Clipsy can’t change the login item." : {
       "comment" : "Title of the alert shown when registering or unregistering the login item fails"
+    },
+    "%lld characters" : {
+      "comment" : "Card footer: number of characters in a text card",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld character"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld characters"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld lines" : {
+      "comment" : "Card footer: number of lines in a code-like text card",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld line"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld lines"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld files" : {
+      "comment" : "Card footer: number of files in a card",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld file"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld files"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld cards" : {
+      "comment" : "VoiceOver value of the card strip: the number of cards",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld card"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld cards"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld files, %@" : {
+      "comment" : "Card footer: number of files and their total size",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@files@, %@"
+          },
+          "substitutions" : {
+            "files" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg file"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg files"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld × %lld" : {
+      "comment" : "Card footer: pixel width and height of an image card",
+      "extractionState" : "manual"
+    },
+    "%@ from %@, %@" : {
+      "comment" : "VoiceOver label of a card: type, source app and relative time, e.g. Text from TextEdit, 2 minutes ago",
+      "extractionState" : "manual"
+    },
+    "%@, %@" : {
+      "comment" : "VoiceOver label of a card without a source app: type and relative time",
+      "extractionState" : "manual"
+    },
+    "Cards" : {
+      "comment" : "VoiceOver label of the card strip on the shelf",
+      "extractionState" : "manual"
+    },
+    "Clipsy can still paste this item." : {
+      "comment" : "Body of a card whose type is unknown",
+      "extractionState" : "manual"
     }
   },
   "version" : "1.0"

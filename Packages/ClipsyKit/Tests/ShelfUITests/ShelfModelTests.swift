@@ -1,3 +1,5 @@
+import AppKit
+import Carbon.HIToolbox
 import Foundation
 import Store
 import Synchronization
@@ -187,5 +189,28 @@ final class ShelfModelTests {
         model.toggleSelection(of: 5)
 
         #expect(model.selectedCards.map(\.id) == [5, 3])
+    }
+
+    @Test func `selection keys move, extend and select all`() {
+        let model = makeModel(cards: [5, 4, 3])
+        model.didOpen()
+
+        #expect(model.handleSelectionKey(keyCode: kVK_RightArrow, character: nil, modifiers: []))
+        #expect(model.selection == [4])
+        #expect(model.handleSelectionKey(keyCode: kVK_RightArrow, character: nil, modifiers: .shift))
+        #expect(model.selection == [4, 3])
+        #expect(model.handleSelectionKey(keyCode: kVK_UpArrow, character: nil, modifiers: .command))
+        #expect(model.selection == [5])
+        #expect(model.handleSelectionKey(keyCode: kVK_ANSI_A, character: "a", modifiers: .command))
+        #expect(model.selection == [5, 4, 3])
+    }
+
+    @Test func `other keys are left to the shelf`() {
+        let model = makeModel(cards: [5, 4])
+        model.didOpen()
+
+        #expect(model.handleSelectionKey(keyCode: kVK_LeftArrow, character: nil, modifiers: .command) == false)
+        #expect(model.handleSelectionKey(keyCode: kVK_ANSI_C, character: "c", modifiers: .command) == false)
+        #expect(model.selection == [5])
     }
 }

@@ -43,6 +43,7 @@ Not maintainer decisions. They are the doc's current text or the simplest choice
 | WD-29 | Sequence panel ([design §6](design.md#6-sequence)) | First shown at the top-right of the display under the pointer, then wherever the user moved it (AppKit frame autosave); hidden from screen sharing like the Shelf until the screenshot setting exists; rows are a fixed two-line height, up to 6 visible before scrolling; the next marker is an accent dot; the trailing symbol shows the card type; ⌘Z, ⌫ and Esc work while the panel is key, which happens only when the user clicks into it |
 | WD-30 | General pane details ([product §6 General](product.md#general), [§4.4](product.md#44-retention)) | The retention slider commits when the drag ends (keyboard steps commit at once); confirmation is asked only when lowering the limit and some History card, on a board or not, is older than the new limit; raising it never purges; the hourly purge uses `ContinuousClock`, so time asleep counts; the Accessibility row's "Open System Settings…" calls the same prompt as WD-27; a login item waiting for approval shows as on, with a button that opens Login Items; Show in menu bar and the click toggle come with T6.4, the storage summary with T7.2 |
 | WD-31 | Rename details ([product §4.10](product.md#410-editing-v1)) | Rename trims whitespace; Return saves, Esc or clicking outside discards |
+| WD-32 | Card details ([design §3](design.md#3-cards)) | Cards are square and as tall as the strip; the header shows the time of the last copy; a link without a preview shows the `link` symbol with the host name under it, and the footer shows the URL truncated at the head; rich text is scaled so its most common font size becomes the body size, keeps underline and strikethrough, drops background colors, and a text color under 4.5:1 contrast on the card fill falls back to the label color; rich text wins over the code-like font; code-like text is decided by a line heuristic (`CodeLikeText`); right-clicking an unselected card acts on that card without changing the selection, as in Finder; ⌃-click does not select; image and file cards show their type symbol until T3.6 |
 
 ## Rules for every task
 
@@ -250,7 +251,11 @@ What exists:
 - Deliverable: card strip (`ScrollView` + `LazyHStack`), header (app icon, title or type label, relative time), footer, selection ring, hover lift; bodies for plain and rich text, code-like text, link without preview, color, unknown; VoiceOver label, value and custom actions
 - Acceptance: `#Preview`s with mock data for each type; test for the code-like heuristic
 - Human check: light and dark, Increase Contrast, VoiceOver reads "Text from TextEdit, 2 minutes ago"
+- Human check: ← → ⇧← ⇧→ ⌘↑ ⌘↓ ⌘A move and extend the selection and the strip scrolls to follow it; click, ⌘-click, ⇧-click and double-click behave as in product §5
+- Human check: a rich text card copied from TextEdit or Pages shows its fonts and colors; dark text stays readable in dark mode
 - Size: M
+- Working default: WD-32. The shelf's arrow keys and ⌘A were not wired to `ShelfModel` yet, so this task adds them to `ShelfController`; the strip also wires the Quick Paste badges (T4.4), the context menu (T5.1, with WD-32's right-click rule instead of selecting first) and drag into the Sequence panel (`CardReference`, T11.4)
+- Status: done
 
 ### T3.6 Card view: image and file
 - Module(s): Media, ShelfUI

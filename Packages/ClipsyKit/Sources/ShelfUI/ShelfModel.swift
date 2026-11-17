@@ -1,3 +1,5 @@
+import AppKit
+import Carbon.HIToolbox
 import Foundation
 import Observation
 import os
@@ -22,7 +24,7 @@ public final class ShelfModel {
     private var quickPasteCardIDs: [Int64] = []
 
     private var anchorID: Int64?
-    private var cursorID: Int64?
+    private(set) var cursorID: Int64?
     private var selectsFirstOnLoad = true
 
     @ObservationIgnored private let observe: CardObservation
@@ -138,6 +140,24 @@ public final class ShelfModel {
 
     public func selectAll() {
         selection = Set(cards.map(\.id))
+    }
+
+    func handleSelectionKey(keyCode: Int, character: String?, modifiers: NSEvent.ModifierFlags) -> Bool {
+        switch (keyCode, modifiers) {
+        case (kVK_LeftArrow, []), (kVK_LeftArrow, .shift):
+            move(.previous, extending: modifiers == .shift)
+        case (kVK_RightArrow, []), (kVK_RightArrow, .shift):
+            move(.next, extending: modifiers == .shift)
+        case (kVK_UpArrow, .command):
+            selectFirst()
+        case (kVK_DownArrow, .command):
+            selectLast()
+        case (_, .command) where character == "a":
+            selectAll()
+        default:
+            return false
+        }
+        return true
     }
 
     var selectedCards: [CardSummary] {

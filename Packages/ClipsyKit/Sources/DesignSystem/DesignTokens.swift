@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 public enum DesignTokens {
@@ -22,6 +23,13 @@ public enum DesignTokens {
     public static let cardContentInsets = EdgeInsets(top: 8, leading: 10, bottom: 8, trailing: 10)
     public static let cardHeaderIconSize: CGFloat = 18
     public static let cardLiftScale: CGFloat = 1.02
+    public static let cardInnerCornerRadius: CGFloat = cardCornerRadius - cardContentInsets.leading
+    public static let cardLiftShadowRadius: CGFloat = 8
+    public static let cardLiftShadowOffset: CGFloat = 2
+    public static let cardLiftShadowColor = Color.black.opacity(0.18)
+    public static let cardFill = NSColor.controlBackgroundColor
+    public static let cardFadeHeight: CGFloat = 24
+    public static let colorValueInsets = EdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10)
 
     public static let sequencePanelWidth: CGFloat = 280
     public static let sequencePanelScreenInset: CGFloat = 16

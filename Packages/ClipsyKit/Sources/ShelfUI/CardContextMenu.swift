@@ -20,7 +20,7 @@ struct CardContextMenu: View {
     }
 }
 
-private struct CardCommandButton: View {
+struct CardCommandButton: View {
     let command: CardCommand
     let targetAppName: String?
     let action: () -> Void
