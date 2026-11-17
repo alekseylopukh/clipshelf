@@ -183,6 +183,7 @@ What exists:
 - Deliverable: `@MainActor` monitor polling change count via an injected clock and `FrontmostAppProviding`; own-write check through an injected closure; reading on main, hashing and DB write off main; last handled change count persisted through an injected store; emits captured card ids as an `AsyncStream` (for the menu bar effect and the Sequence)
 - Acceptance: tests with fakes: `changeProducesOneCard`, `multiStepWriteCoalesces`, `ownWriteIsIgnored`, `relaunchDoesNotRecapture`, `pausedProducesNothing`
 - Size: M
+- Status: done
 
 ### T2.6 Start capture in the app
 - Module(s): App
