@@ -19,3 +19,6 @@ build/
 *.dmg
 *.zip
 *.xcarchive
+
+# python
+__pycache__/

@@ -28,7 +28,7 @@ The git pre-commit hook lints staged Swift files. CI runs the same checks on eve
 
 ## Code quality
 
-- The rules are in [docs/engineering/code-standards.md](docs/engineering/code-standards.md). Review uses [docs/engineering/review-checklist.md](docs/engineering/review-checklist.md).
+- The rules and the review checklist are in [.claude/rules/code-rules.md](.claude/rules/code-rules.md). Reviews cite rule IDs such as `R2.3`.
 - Before opening a pull request, run `scripts/lint.sh`, build the app and run the tests.
 - Claude Code users get the same rules automatically through [CLAUDE.md](CLAUDE.md). A hook there blocks commits until the `pre-commit-review` skill passes.
 

@@ -1,11 +1,13 @@
 ---
 name: macos-native-ui
-description: Rules for building Clipshelf UI that looks and behaves like a first-party macOS 26/27 component, covering Liquid Glass, materials, the shelf panel, windows, menus, the Settings scene, the menu bar extra, SF Symbols, keyboard and accessibility. Use before writing or changing any SwiftUI or AppKit UI, and when reviewing UI code.
+description: How to build Clipshelf UI that looks and behaves like a first-party macOS 26/27 component, and how to verify it. Covers Liquid Glass, materials, the shelf panel, windows, menus, the Settings scene, the menu bar extra, SF Symbols, keyboard and accessibility. Use before writing or changing any SwiftUI or AppKit UI.
 ---
 
 # Native macOS UI for Clipshelf
 
 The goal is for a user to believe Apple shipped the shelf. When unsure, copy what a system app does (Spotlight, Finder, Mail, System Settings) instead of inventing something.
+
+The binding rules are R5 in `.claude/rules/code-rules.md`, and reviews cite those. This skill is the how-to behind them, plus the verification routine.
 
 ## Read first
 
