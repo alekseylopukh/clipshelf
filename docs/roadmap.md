@@ -189,6 +189,7 @@ What exists:
 - Deliverable: spacing, insets, radii, card size, ring width (+1 pt with Increase Contrast), badge size; `BoardColor` enum mapped to system colors
 - Acceptance: test `boardColorRoundTripsStoredName` for all seven colors
 - Size: S
+- Status: done
 
 ### T3.2 Shelf panel
 - Module(s): ShelfUI
