@@ -23,3 +23,10 @@ Open-source native macOS clipboard manager: a feature-level alternative to Paste
 - Never use "Paste", "Pinboard", "Paste Stack" or "Intelligent Clipboard" as names. Use our own terms: board, sequence, and so on.
 - Never copy Paste's icon, images, sounds, colors-as-brand, marketing or help text, UTIs (`com.wiheads.paste.*`) or schema names.
 - Functional UI labels ("Copy", "Paste as Plain Text") are fine. Write everything else fresh.
+
+## Git workflow
+
+- GitHub Flow. `main` is protected: every change goes through a pull request and is squash-merged. Force pushes and deletion are blocked.
+- Branch names are `<type>/<short-description>`. PR titles are Conventional Commits (`feat:`, `fix:`, `chore:` ...).
+- Releases are SemVer tags `vX.Y.Z` on `main`. Only the maintainer creates tags.
+- See CONTRIBUTING.md for details.
