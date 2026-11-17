@@ -34,6 +34,7 @@ Not maintainer decisions. They are the doc's current text or the simplest choice
 | WD-20 | Linking new modules into the app | One library product `ClipsyKit` lists every package target; the app links only it. If the app must import a third-party module directly and cannot, stop and ask the maintainer to link it in Xcode. |
 | WD-21 | Clipboard previous contents after paste | Not restored; no `currentHostOnly` |
 | WD-22 | Shelf size and Dock auto-hide ([design §2](design.md#placement-and-size)) | Minimum height 160 pt (one compact row), default 300 pt, maximum 40% of the visible height; placement uses the display's visible frame, so an auto-hidden Dock is not avoided |
+| WD-23 | Frontmost app without a bundle ID ([product §4.1](product.md#41-capture) rule 3) | Counts as no frontmost app, so the capture is skipped |
 
 ## Rules for every task
 
@@ -165,10 +166,11 @@ What exists:
 ### T2.4 Skip rules
 - Module(s): Capture
 - Depends on: T2.1
-- Spec: [product §4.1](product.md#41-capture) rule 2, Ignored Apps paragraph, [architecture §5](architecture.md#5-permissions-and-privacy)
+- Spec: [product §4.1](product.md#41-capture) rule 2, Ignored Apps paragraph, [architecture §5](architecture.md#5-permissions-and-privacy), WD-23
 - Deliverable: `CapturePolicy` value (paused, ignored bundle IDs, ignore concealed, ignore transient); `SkipReason` enum; evaluation in the documented order; concealed, transient, auto-generated and legacy types; password-manager bundle IDs each verified from the vendor app's Info.plist or official docs, otherwise left out with a `> TODO:` in product.md
 - Acceptance: parameterized test `eachRuleSkips`, test `rulesApplyInDocumentedOrder`, test `togglesOffLetContentThrough`
 - Size: M
+- Status: done
 
 ### T2.5 Pasteboard monitor and pipeline
 - Module(s): Capture
