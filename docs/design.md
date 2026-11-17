@@ -310,8 +310,10 @@ Rules:
 - Permission status is re-checked when the app becomes active; Settings rows update live.
 - No seeded Boards or sample Cards.
 
-> TODO: verify the macOS 15.4+ pasteboard privacy model on macOS 26: the exact `NSPasteboard` access-behavior API names, whether reading `changeCount` alone triggers a prompt, and the name of the System Settings pane, before writing step 3 copy.
-> TODO: verify the System Settings deep-link URLs for Accessibility and pasteboard access on macOS 26.
+Step 3 and the Privacy pane row read `NSPasteboard.general.accessBehavior` (checked against the macOS 26 SDK). The step and the row appear only once macOS has asked about Clipsy (`.ask`, `.alwaysAllow` or `.alwaysDeny`); `.default` means the system never asked, so there is nothing to set. The pane is System Settings › Privacy & Security › Paste from Other Apps, and its button opens `x-apple.systempreferences:com.apple.preference.security?Privacy_Pasteboard` (the anchor is in the macOS 27.2 System Settings; the copy names the pane in case the anchor does not resolve). The Accessibility button calls the system prompt instead of a URL (WD-27).
+
+> TODO: whether reading `changeCount` alone triggers the pasteboard prompt on macOS 26 (see [product.md §4.1](product.md#41-capture)).
+> TODO: verify on macOS 26 that the `Privacy_Pasteboard` anchor opens the Paste from Other Apps list.
 
 ---
 

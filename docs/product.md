@@ -182,9 +182,9 @@ Decided (2026-11-17): the per-representation cap is 50 MB.
 **Universal Clipboard.**
 > TODO: whether content from another device (`com.apple.is-remote-clipboard`) is captured, and how it is attributed.
 
-**Pasteboard access.** At launch and after wake, read the app's pasteboard access behavior. If it is "ask" or "deny", show a one-time explanation with an "Open System Settings…" button. Use pattern detection, not data reads, where only the type is needed.
+**Pasteboard access.** At launch and after wake, read the app's pasteboard access behavior. If it is "ask" or "deny", show a one-time explanation with an "Open System Settings…" button: at most once per launch, with a "Don't ask again" checkbox, and not at the launch that shows onboarding. Use pattern detection, not data reads, where only the type is needed.
 > TODO: whether polling the change count alone triggers the system prompt on macOS 26.
-> TODO: whether macOS 26 has a supported URL that opens the Accessibility and pasteboard-access panes directly; if not, the button opens System Settings and the text says where to go.
+> TODO: the pasteboard-access button opens `x-apple.systempreferences:com.apple.preference.security?Privacy_Pasteboard` and the text names the pane ([design.md §9](design.md#9-onboarding-and-permissions)); verify the anchor on macOS 26.
 
 ### 4.2 Type detection
 
@@ -411,7 +411,6 @@ Content and defaults only; layout and exact label wording are in [design.md §8]
 | Paste behavior | Paste into the active app / Copy to the clipboard only | Paste into the active app |
 | Paste without formatting by default | on / off | off |
 | Accessibility status | granted / not granted, button to open System Settings | — |
-| Pasteboard access status | shown only when access is not "allow" | — |
 
 ### Shortcuts
 
@@ -435,6 +434,7 @@ Content and defaults only; layout and exact label wording are in [design.md §8]
 | Fetch link previews | on / off, with a note that fetching may trigger one-time or tracking links | off |
 | Show the Shelf in screenshots and screen sharing | on / off | off |
 | Recognize text in images | on / off (on device) | on |
+| Clipboard access status | allowed / asks / not allowed, button to open System Settings; hidden until macOS has asked about Clipsy | — |
 
 > TODO: whether file thumbnails need a toggle (they read file contents through Quick Look).
 

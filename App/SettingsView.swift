@@ -33,6 +33,7 @@ enum SettingsPane: String {
         SettingsView()
             .environment(RetentionSettings(repository: CardRepository(database: database)))
             .environment(PrivacySettings())
+            .environment(PasteboardAccess(pasteboard: NSPasteboard.withUniqueName()))
             .environment(MenuBarSettings())
             .environment(ShortcutSettings(store: KeyboardShortcutsStore()))
     }

@@ -565,6 +565,63 @@
     },
     "Show in List" : {
       "comment" : "Name of a shelf shortcut in a conflict message"
+    },
+    "Not Allowed" : {
+      "comment" : "Status of a missing permission"
+    },
+    "Allow Clipsy to read what you copy?" : {
+      "comment" : "Title of the alert shown when macOS asks before or blocks Clipsy's clipboard access"
+    },
+    "macOS asks before Clipsy reads what you copy in other apps, or doesn’t let it read at all, so your history may miss items. Allow Clipsy in System Settings › Privacy & Security › Paste from Other Apps." : {
+      "comment" : "Body of the alert shown when macOS asks before or blocks Clipsy's clipboard access"
+    },
+    "Not Now" : {
+      "comment" : "Button that skips a permission request for now"
+    },
+    "Welcome to Clipsy" : {
+      "comment" : "Title of the onboarding window and of its first step"
+    },
+    "Everything you copy, one shortcut away." : {
+      "comment" : "Subtitle of the first onboarding step"
+    },
+    "Continue" : {
+      "comment" : "Button that moves to the next onboarding step"
+    },
+    "Paste Directly" : {
+      "comment" : "Title of the onboarding step about Accessibility permission"
+    },
+    "To paste into other apps, Clipsy needs Accessibility permission. Without it, Clipsy copies the card and you press ⌘V to paste it." : {
+      "comment" : "Explanation in the onboarding step about Accessibility permission"
+    },
+    "Clipboard Access" : {
+      "comment" : "Title of the onboarding step and label of the status row about the system clipboard permission"
+    },
+    "macOS asks before Clipsy reads what you copy in other apps, or doesn’t let it read at all. To keep your history complete, allow Clipsy in System Settings › Privacy & Security › Paste from Other Apps." : {
+      "comment" : "Explanation in the onboarding step about the system clipboard permission"
+    },
+    "You’re All Set" : {
+      "comment" : "Title of the last onboarding step"
+    },
+    "Press %@ to open the Shelf and try it." : {
+      "comment" : "Hint in the last onboarding step; the placeholder is the Open Shelf shortcut, such as ⇧⌘V"
+    },
+    "Set a shortcut in Settings to open the Shelf." : {
+      "comment" : "Hint in the last onboarding step when the Open Shelf shortcut is cleared"
+    },
+    "Done" : {
+      "comment" : "Button that closes the onboarding window"
+    },
+    "Clipsy can’t change this setting." : {
+      "comment" : "Title of the alert shown when a setting in the onboarding window fails to change"
+    },
+    "Clipsy can read what you copy in other apps." : {
+      "comment" : "Status text of the clipboard access row in Settings when access is allowed"
+    },
+    "Not allowed. Clipsy can’t add what you copy in other apps to your history." : {
+      "comment" : "Status text of the clipboard access row in Settings when access is denied"
+    },
+    "macOS asks before Clipsy reads what you copy in other apps. Allow it in Privacy & Security › Paste from Other Apps." : {
+      "comment" : "Status text of the clipboard access row in Settings when macOS asks before each read"
     }
   },
   "version" : "1.0"

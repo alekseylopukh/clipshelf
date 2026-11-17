@@ -6,6 +6,8 @@ import UniformTypeIdentifiers
 
 struct PrivacySettingsView: View {
     @Environment(PrivacySettings.self) private var privacy
+    @Environment(PasteboardAccess.self) private var pasteboardAccess
+    @Environment(\.appearsActive) private var appearsActive
     @State private var selection = Set<String>()
     @State private var isChoosingApps = false
     @State private var rejection: String?
@@ -49,9 +51,20 @@ struct PrivacySettingsView: View {
             Section {
                 Toggle("Show the Shelf in screenshots and screen sharing", isOn: $privacy.showsShelfInScreenCapture)
             }
+
+            if pasteboardAccess.status != .notDetermined {
+                Section {
+                    PasteboardAccessRow(status: pasteboardAccess.status)
+                }
+            }
         }
         .formStyle(.grouped)
         .fixedSize(horizontal: false, vertical: true)
+        .task(id: appearsActive) {
+            if appearsActive {
+                pasteboardAccess.refresh()
+            }
+        }
         .fileImporter(
             isPresented: $isChoosingApps,
             allowedContentTypes: [.application],
@@ -105,6 +118,34 @@ struct PrivacySettingsView: View {
     }
 }
 
+private struct PasteboardAccessRow: View {
+    let status: PasteboardAccessStatus
+    @Environment(\.openURL) private var openURL
+
+    var body: some View {
+        LabeledContent {
+            if status == .allowed {
+                PermissionStatusLabel(isAllowed: true)
+            } else {
+                Button("Open System Settings…") {
+                    openURL(PasteboardAccess.systemSettingsURL)
+                }
+            }
+        } label: {
+            Text("Clipboard Access")
+            if status == .allowed {
+                Text("Clipsy can read what you copy in other apps.")
+            } else if status == .denied {
+                Text("Not allowed. Clipsy can’t add what you copy in other apps to your history.")
+            } else {
+                Text(
+                    "macOS asks before Clipsy reads what you copy in other apps. Allow it in Privacy & Security › Paste from Other Apps."
+                )
+            }
+        }
+    }
+}
+
 private struct IgnoredAppRow: View {
     let bundleID: String
     @State private var app: InstalledApp?
@@ -142,4 +183,5 @@ private struct InstalledApp {
 #Preview {
     PrivacySettingsView()
         .environment(PrivacySettings())
+        .environment(PasteboardAccess(pasteboard: NSPasteboard.withUniqueName()))
 }

@@ -16,6 +16,7 @@ struct ClipsyApp: App {
     @State private var menuBarSettings: MenuBarSettings
     @State private var statusItem: StatusItemController
     @State private var shortcuts = ShortcutSettings(store: KeyboardShortcutsStore())
+    @State private var onboarding = Self.startOnboarding()
 
     init() {
         let repository = CardRepository(database: Self.openDatabase())
@@ -89,7 +90,33 @@ struct ClipsyApp: App {
                 .environment(privacy)
                 .environment(menuBarSettings)
                 .environment(shortcuts)
+                .environment(onboarding.access)
         }
+        Window("Welcome to Clipsy", id: OnboardingView.windowID) {
+            OnboardingView()
+                .environment(onboarding)
+                .environment(onboarding.access)
+                .environment(retention)
+        }
+        .windowResizability(.contentSize)
+        .restorationBehavior(.disabled)
+        .defaultLaunchBehavior(onboarding.presentsAtLaunch ? .presented : .suppressed)
+    }
+
+    private static func startOnboarding() -> OnboardingFlow {
+        let access = PasteboardAccess()
+        let onboarding = OnboardingFlow(access: access)
+        if !onboarding.presentsAtLaunch {
+            _ = Task {
+                PasteboardAccessAlert.presentIfNeeded(access: access)
+            }
+        }
+        _ = Task {
+            for await _ in NSWorkspace.shared.notificationCenter.notifications(named: NSWorkspace.didWakeNotification) {
+                PasteboardAccessAlert.presentIfNeeded(access: access)
+            }
+        }
+        return onboarding
     }
 
     private static func capturePolicy(privacy: PrivacySettings, pause: CapturePause) -> CapturePolicy {
