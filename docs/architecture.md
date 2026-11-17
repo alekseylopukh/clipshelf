@@ -291,10 +291,26 @@ Decided (2026-11-17): a plain, committed `Clipsy.xcodeproj`. `App/` is a folder-
 - **Unit (Swift Testing):** classifier, hashing and dedupe rules, ignore rules, size cap, retention SQL, Board deletion, FTS queries (prefix, diacritics), Sequence state machine, migrations.
 - **Pasteboard tests** use private named pasteboards (`NSPasteboard(name:)`), never `.general`.
 - **Fixtures are synthetic.** Never build test data from real clipboard content.
-- **Performance:** seed 100k synthetic Cards, measure search latency and launch time.
+- **Performance:** seed 100k synthetic Cards, measure search latency and launch time. `PerformanceTests` in `StoreTests` does this on every `scripts/build.sh test` and prints the timings; run it alone with `swift test --package-path Packages/ClipsyKit --filter PerformanceTests` for numbers worth comparing.
 - **Manual checklist per release:** direct paste into a native app, a browser, a terminal and an Electron app; non-QWERTY layout; full-screen Space; second display; Accessibility revoked; screen recording hides the Shelf.
 
-> TODO: set the performance budget (search latency, launch time) once there is a baseline.
+Baseline (2026-11-17, Apple M5 Pro, macOS 27.2, debug build, run alone): 100k text and link Cards with 13 words each in History. Search times are the median of five runs.
+
+| Measurement | Time | Results |
+|---|---|---|
+| Seed (one transaction) | 1.8 s | |
+| Open the database and run migrations | 3 ms | |
+| History load (`cards(in: .history)`, what the Shelf observes) | 250 ms | 100,000 |
+| Search, 2-character prefix | 1.44 s | 68,885 |
+| Search, one common word | 62 ms | 3,006 |
+| Search, two words | 2 ms | 74 |
+| Search, unique token | 0.1 ms | 1 |
+| Kind filter, no text | 121 ms | 10,000 |
+| One word plus kind filter | 8 ms | 279 |
+
+Search and history load return every match, so their time grows with the result count; a short prefix over a large history is the slow case.
+
+> TODO: set the performance budget (search latency, launch time) from this baseline; the test asserts only result counts until then.
 
 ### 6.3 CI (GitHub Actions)
 

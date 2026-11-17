@@ -445,6 +445,7 @@ What exists:
 - Acceptance: performance test passes and prints timings; no UI change
 - Human check: architecture §6.2 manual checklist on a signed build; MVP is usable end to end
 - Size: S
+- Status: done
 
 ## M7. Capture and storage (v1)
 
