@@ -12,6 +12,7 @@ struct OnboardingView: View {
 
     @Environment(OnboardingFlow.self) private var flow
     @Environment(\.dismissWindow) private var dismissWindow
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         Group {
@@ -28,9 +29,11 @@ struct OnboardingView: View {
                 }
             }
         }
+        .id(flow.step)
+        .transition(reduceMotion ? .opacity : AnyTransition(.blurReplace))
         .padding(DesignTokens.onboardingPadding)
-        .frame(width: DesignTokens.onboardingWidth)
-        .frame(minHeight: DesignTokens.onboardingMinimumHeight)
+        .frame(width: DesignTokens.onboardingWidth, height: DesignTokens.onboardingHeight)
+        .animation(reduceMotion ? DesignTokens.Motion.reduced : DesignTokens.Motion.standard, value: flow.step)
         .onAppear {
             flow.markPresented()
         }
@@ -47,14 +50,15 @@ private struct OnboardingPage<Icon: View, Content: View, Controls: View>: View {
     var body: some View {
         VStack(spacing: DesignTokens.spacingLarge) {
             icon
-                .frame(width: DesignTokens.onboardingIconSize, height: DesignTokens.onboardingIconSize)
+                .frame(width: DesignTokens.onboardingHeroSize, height: DesignTokens.onboardingHeroSize)
                 .accessibilityHidden(true)
             Text(title)
-                .font(.title2)
-                .bold()
+                .font(.largeTitle.bold())
             Text(message)
+                .font(.title3)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
+                .frame(maxWidth: DesignTokens.onboardingMessageWidth)
                 .fixedSize(horizontal: false, vertical: true)
             Form {
                 content
@@ -67,6 +71,7 @@ private struct OnboardingPage<Icon: View, Content: View, Controls: View>: View {
             SheetButtonBar {
                 controls
             }
+            .controlSize(.large)
         }
     }
 }
@@ -78,6 +83,7 @@ private struct StepSymbol: View {
         Image(systemName: systemName)
             .resizable()
             .scaledToFit()
+            .symbolRenderingMode(.hierarchical)
             .foregroundStyle(.tint)
     }
 }
@@ -97,6 +103,7 @@ private struct WelcomeStep: View {
         } controls: {
             Button("Continue", action: flow.advance)
                 .keyboardShortcut(.defaultAction)
+                .buttonStyle(.borderedProminent)
         }
     }
 }
@@ -119,12 +126,14 @@ private struct PasteDirectlyStep: View {
             if isTrusted {
                 Button("Continue", action: flow.advance)
                     .keyboardShortcut(.defaultAction)
+                    .buttonStyle(.borderedProminent)
             } else {
                 Button("Not Now", action: flow.advance)
                 Button("Open System Settings…") {
                     _ = SystemAccessibilityTrust().requestTrust()
                 }
                 .keyboardShortcut(.defaultAction)
+                .buttonStyle(.borderedProminent)
             }
         }
         .task {
@@ -155,12 +164,14 @@ private struct ClipboardAccessStep: View {
             if access.status == .allowed {
                 Button("Continue", action: flow.advance)
                     .keyboardShortcut(.defaultAction)
+                    .buttonStyle(.borderedProminent)
             } else {
                 Button("Not Now", action: flow.advance)
                 Button("Open System Settings…") {
                     openURL(PasteboardAccess.systemSettingsURL)
                 }
                 .keyboardShortcut(.defaultAction)
+                .buttonStyle(.borderedProminent)
             }
         }
         .task {
@@ -203,6 +214,7 @@ private struct FinishStep: View {
         } controls: {
             Button("Done", action: done)
                 .keyboardShortcut(.defaultAction)
+                .buttonStyle(.borderedProminent)
         }
         .alert(
             "Remove older cards from History?",
