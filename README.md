@@ -54,7 +54,7 @@ Requires macOS 26 and Xcode 26 or later. Swift packages (GRDB, KeyboardShortcuts
 ```bash
 git clone https://github.com/alekseylopukh/clipsy.git
 cd clipsy
-scripts/build.sh        # build the app (Debug) into .build/DerivedData
+scripts/build.sh        # build the app (Debug) into .build/DerivedData, signed with your Apple Development identity if you have one
 scripts/build.sh test   # run the tests
 open .build/DerivedData/Build/Products/Debug/Clipsy.app
 ```
