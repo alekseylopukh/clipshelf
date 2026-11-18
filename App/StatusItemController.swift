@@ -147,7 +147,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     }
 
     private static func icon(isPaused: Bool) -> NSImage {
-        let symbol = isPaused ? "pause.circle" : "clipboard"
+        let symbol = isPaused ? "pause.circle" : "paperclip"
         let description = isPaused
             ? String(localized: "Capture Paused", comment: "Accessibility description of the paused menu bar symbol")
             : String(localized: "Clipsy", comment: "Accessibility label of the menu bar item")
