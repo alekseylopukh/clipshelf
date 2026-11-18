@@ -42,7 +42,10 @@ enum SnapshotRenderer {
         size: CGSize? = nil,
         settle: Duration = .seconds(1)
     ) async throws -> NSBitmapImageRep {
-        let hostingView = NSHostingView(rootView: view)
+        let hostingView = NSHostingView(rootView: view.transaction {
+            $0.animation = nil
+            $0.disablesAnimations = true
+        })
         let window = NSWindow(
             contentRect: CGRect(origin: .zero, size: size ?? .zero),
             styleMask: [.borderless],

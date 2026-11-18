@@ -1,10 +1,12 @@
 import AppKit
+import DesignSystem
 import os
 import Pasting
 import Store
 
 extension ShelfController {
     private static let logger = Logger(subsystem: "app.gonar.clipsy", category: "Shelf")
+    private static let signposter = OSSignposter(subsystem: "app.gonar.clipsy", category: "Shelf")
 
     func perform(_ action: PasteCoordinator.Action, cards: [CardSummary], plainModifier: Bool) async {
         let snapshot = flightSnapshot(for: action, cards: cards)
@@ -16,7 +18,11 @@ extension ShelfController {
                 plainModifier: plainModifier,
                 target: targetApplication,
                 hideShelf: { [weak self] in
-                    self?.hideImmediately()
+                    if action == .copy {
+                        self?.hide()
+                    } else {
+                        self?.hideImmediately()
+                    }
                     if let snapshot {
                         self?.flight.lift(snapshot)
                     }
@@ -47,16 +53,37 @@ extension ShelfController {
               let cardFrame = actions.cardFrames[cards[0].id], let screen = panel.screen,
               let contentView = panel.contentView
         else { return nil }
-        let rect = PasteFlightSnapshot.contentRect(ofCardFrame: cardFrame, in: contentView.bounds)
-        guard !rect.isEmpty, let bitmap = contentView.bitmapImageRepForCachingDisplay(in: rect) else { return nil }
-        contentView.cacheDisplay(in: rect, to: bitmap)
-        guard let image = bitmap.cgImage else { return nil }
+        let state = Self.signposter.beginInterval("pasteSnapshot")
+        defer { Self.signposter.endInterval("pasteSnapshot", state) }
+        let bounds = contentView.bounds
+        let cardRect = PasteFlightSnapshot.contentRect(ofCardFrame: cardFrame, in: bounds)
+        let showsAfterimage = DesignTokens.pasteAfterimageIsEnabled
+            && !NSWorkspace.shared.accessibilityDisplayShouldReduceTransparency
+        let captureRect = showsAfterimage
+            ? PasteFlightSnapshot.stripRect(ofCardFrames: Array(actions.cardFrames.values), in: bounds)
+            : cardRect
+        guard !cardRect.isEmpty, !captureRect.isEmpty,
+              let bitmap = contentView.bitmapImageRepForCachingDisplay(in: captureRect)
+        else { return nil }
+        contentView.cacheDisplay(in: captureRect, to: bitmap)
+        let crop = PasteFlightSnapshot.cropRect(of: cardRect, in: captureRect, scale: panel.backingScaleFactor)
+        guard let captured = bitmap.cgImage,
+              let image = showsAfterimage ? captured.cropping(to: crop) : captured
+        else { return nil }
         return PasteFlightSnapshot(
             image: image,
-            frame: panel.convertToScreen(contentView.convert(rect, to: nil)),
+            frame: screenRect(of: cardRect, in: contentView),
             screenFrame: screen.frame,
-            scale: panel.backingScaleFactor
+            scale: panel.backingScaleFactor,
+            afterimage: showsAfterimage ? captured : nil,
+            afterimageFrame: screenRect(of: captureRect, in: contentView),
+            cardFrameInAfterimage: cardRect.offsetBy(dx: -captureRect.minX, dy: -captureRect.minY),
+            glassFrame: panel.frame.insetBy(dx: DesignTokens.shelfShadowMargin, dy: DesignTokens.shelfShadowMargin)
         )
+    }
+
+    private func screenRect(of rect: CGRect, in contentView: NSView) -> CGRect {
+        panel.convertToScreen(contentView.convert(rect, to: nil))
     }
 
     func landingRect(isNeeded: Bool) async -> CGRect? {

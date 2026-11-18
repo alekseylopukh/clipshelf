@@ -128,9 +128,13 @@ private struct CardPreviewRoot: View {
     let available: CGSize
 
     var body: some View {
-        if let card = model.cursorCard {
-            CardPreviewView(card: card, available: available)
-                .id(card.id)
+        ZStack {
+            if let card = model.cursorCard {
+                CardPreviewView(card: card, available: available)
+                    .id(card.id)
+                    .transition(.opacity)
+            }
         }
+        .animation(DesignTokens.Motion.quick, value: model.cursorCard?.id)
     }
 }

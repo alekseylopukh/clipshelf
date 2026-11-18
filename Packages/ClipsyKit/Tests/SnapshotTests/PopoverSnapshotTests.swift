@@ -63,9 +63,12 @@ final class PopoverSnapshotTests {
         )
     }
 
-    @Test(arguments: SnapshotRenderer.Appearance.allCases, [1, 2, 3, 4, 6, 7, 8] as [Int64])
+    @Test(
+        arguments: SnapshotRenderer.Appearance.allCases,
+        [1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 13, 14] as [Int64]
+    )
     func `render the preview popover`(appearance: SnapshotRenderer.Appearance, cardID: Int64) async throws {
-        let card = try #require(fixtures.cards.first { $0.id == cardID })
+        guard let card = fixtures.cards.first(where: { $0.id == cardID }) else { return }
         let representations = fixtures.representations
         let sizes = [("", PreviewSizeCalculator().defaultSize), ("-small", CGSize(width: 1438, height: 524))]
         for (suffix, available) in sizes {

@@ -27,20 +27,59 @@ struct PreviewSizeCalculatorTests {
         #expect(available == CGSize(width: 1888, height: 731))
     }
 
-    @Test func `big screen gets the default size`() {
-        #expect(calculator.size(in: CGSize(width: 1696, height: 755)) == CGSize(width: 880, height: 680))
+    @Test(arguments: [
+        (kind: PreviewKind.text(isCodeLike: false), expected: PreviewFrame(width: 640, maximumHeight: 680)),
+        (kind: .text(isCodeLike: true), expected: PreviewFrame(width: 760, maximumHeight: 680)),
+        (kind: .link, expected: PreviewFrame(width: 480, maximumHeight: 680)),
+        (kind: .linkWithImage, expected: PreviewFrame(width: 480, maximumHeight: 680)),
+        (kind: .color, expected: PreviewFrame(width: 360, maximumHeight: 680)),
+        (kind: .files(count: 3), expected: PreviewFrame(width: 420, height: 132, maximumHeight: 680)),
+        (kind: .files(count: 25), expected: PreviewFrame(width: 420, height: 440, maximumHeight: 680)),
+        (kind: .unavailable, expected: PreviewFrame(width: 320, height: 220, maximumHeight: 680))
+    ])
+    func `big screen sizes the preview to its content`(kind: PreviewKind, expected: PreviewFrame) {
+        #expect(calculator.frame(for: kind, in: CGSize(width: 1696, height: 755)) == expected)
     }
 
-    @Test func `small screen clamps the size and keeps the aspect ratio`() {
-        let size = calculator.size(in: CGSize(width: 1438, height: 524))
-
-        #expect(size == CGSize(width: 678, height: 524))
+    @Test(arguments: [
+        PreviewKind.text(isCodeLike: false), .text(isCodeLike: true), .link, .linkWithImage, .color,
+        .files(count: 25), .unavailable
+    ])
+    func `small screen lowers the maximum height`(kind: PreviewKind) {
+        #expect(calculator.frame(for: kind, in: CGSize(width: 1438, height: 524)).maximumHeight == 524)
     }
 
-    @Test func `narrow screen clamps by width`() {
-        let size = calculator.size(in: CGSize(width: 440, height: 900))
+    @Test func `narrow screen clamps the width`() {
+        let frame = calculator.frame(for: .text(isCodeLike: true), in: CGSize(width: 500, height: 755))
 
-        #expect(size == CGSize(width: 440, height: 340))
+        #expect(frame.width == 500)
+    }
+
+    @Test func `narrow screen clamps the box by width`() {
+        let frame = calculator.frame(for: .file, in: CGSize(width: 440, height: 900))
+
+        #expect(frame == PreviewFrame(width: 440, height: 340, maximumHeight: 680))
+    }
+
+    @Test func `short screen clamps a fixed height`() {
+        let frame = calculator.frame(for: .files(count: 10), in: CGSize(width: 1438, height: 300))
+
+        #expect(frame == PreviewFrame(width: 420, height: 300, maximumHeight: 300))
+    }
+
+    @Test func `image frame fits the image inside the default box`() {
+        let frame = calculator.frame(
+            for: .image(pixelSize: CGSize(width: 1600, height: 1000)),
+            in: CGSize(width: 1696, height: 755)
+        )
+
+        #expect(frame == PreviewFrame(width: 880, height: 550, maximumHeight: 680))
+    }
+
+    @Test func `single file fills the clamped box`() {
+        let frame = calculator.frame(for: .file, in: CGSize(width: 1438, height: 524))
+
+        #expect(frame == PreviewFrame(width: 678, height: 524, maximumHeight: 524))
     }
 
     @Test(arguments: [

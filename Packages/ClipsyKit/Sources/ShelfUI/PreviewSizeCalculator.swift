@@ -1,6 +1,24 @@
 import CoreGraphics
 import DesignSystem
 
+enum PreviewKind: Equatable {
+    case text(isCodeLike: Bool)
+    case linkWithImage
+    case link
+    case color
+    case image(pixelSize: CGSize?)
+    case file
+    case files(count: Int)
+    case unavailable
+}
+
+/// `height` nil makes the preview as tall as its content
+struct PreviewFrame: Equatable {
+    var width: CGFloat
+    var height: CGFloat?
+    var maximumHeight: CGFloat
+}
+
 struct PreviewSizeCalculator {
     var defaultSize = CGSize(width: DesignTokens.previewWidth, height: DesignTokens.previewHeight)
     var minimumSide = DesignTokens.previewMinimumSide
@@ -10,6 +28,40 @@ struct PreviewSizeCalculator {
         CGSize(
             width: visibleFrame.width - 2 * margin,
             height: visibleFrame.maxY - shelfGlassFrame.maxY - margin
+        )
+    }
+
+    func frame(for kind: PreviewKind, in available: CGSize) -> PreviewFrame {
+        let maximumWidth = min(defaultSize.width, available.width)
+        let maximumHeight = min(defaultSize.height, available.height)
+        let width: CGFloat
+        var height: CGFloat?
+        switch kind {
+        case let .text(isCodeLike):
+            width = isCodeLike ? DesignTokens.previewCodeWidth : DesignTokens.previewTextWidth
+        case .linkWithImage, .link:
+            width = DesignTokens.previewLinkWidth
+        case .color:
+            width = DesignTokens.previewColorWidth
+        case let .image(pixelSize):
+            let size = size(in: available, imagePixelSize: pixelSize)
+            width = size.width
+            height = size.height
+        case .file:
+            let size = size(in: available)
+            width = size.width
+            height = size.height
+        case let .files(count):
+            width = DesignTokens.previewFilesWidth
+            height = DesignTokens.previewFileRowHeight * CGFloat(min(count, DesignTokens.previewFilesMaximumRows))
+        case .unavailable:
+            width = DesignTokens.previewUnavailableSize.width
+            height = DesignTokens.previewUnavailableSize.height
+        }
+        return PreviewFrame(
+            width: min(width, maximumWidth),
+            height: height.map { min($0, maximumHeight) },
+            maximumHeight: maximumHeight
         )
     }
 

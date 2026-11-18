@@ -12,7 +12,6 @@ struct CardView: View {
     private let content: CardContent
     private let highlights: CardHighlights
 
-    @State private var isHovered = false
     @State private var size = CGSize.zero
     @State private var openWithApplications: [OpenWithApplication] = []
     @Environment(CardActions.self) private var actions
@@ -44,10 +43,8 @@ struct CardView: View {
             board: board,
             now: now,
             layout: layout,
-            isSelected: isSelected,
-            isHovered: isHovered
+            isSelected: isSelected
         )
-        .onHover { isHovered = $0 }
         .onGeometryChange(for: CGSize.self, of: \.size) { size = $0 }
         .background {
             if model.cursorID == card.id {
@@ -182,23 +179,20 @@ private struct CardFace: View {
     let now: Date
     let layout: CardLayout
     let isSelected: Bool
-    let isHovered: Bool
 
     var body: some View {
-        VStack(
-            alignment: .leading,
-            spacing: layout == .compact ? DesignTokens.spacingSmall : DesignTokens.spacingMedium
-        ) {
+        VStack(alignment: .leading, spacing: 0) {
             CardHeader(card: card, now: now, layout: layout, highlightedTitle: highlights.title, board: board)
-            CardBodyView(card: card, content: content, highlightedPreview: highlights.preview)
-            if layout == .regular {
+            CardBodyView(card: card, content: content, layout: layout, highlightedPreview: highlights.preview)
+            if CardFooter.isShown(for: card.kind, layout: layout) {
                 CardFooter(kind: card.kind, content: content)
+                    .padding(.top, DesignTokens.spacingMedium)
             }
         }
         .padding(DesignTokens.cardContentInset)
         .frame(maxHeight: .infinity)
         .aspectRatio(layout == .compact ? DesignTokens.compactCardAspectRatio : 1, contentMode: .fit)
-        .cardSurface(isSelected: isSelected, isHovered: isHovered)
+        .cardSurface(isSelected: isSelected)
     }
 }
 

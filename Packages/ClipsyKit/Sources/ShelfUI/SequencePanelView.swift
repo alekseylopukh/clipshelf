@@ -40,7 +40,7 @@ struct SequencePanelView: View {
                     .onDeleteCommand {
                         model.remove(selection)
                     }
-                    .animation(reduceMotion ? nil : .default, value: model.sequence.entries)
+                    .animation(reduceMotion ? nil : DesignTokens.Motion.standard, value: model.sequence.entries)
                 }
             }
             .frame(width: DesignTokens.sequencePanelWidth)

@@ -7,50 +7,120 @@ struct ShelfTopBar: View {
     let model: ShelfModel
     let commands: ShelfCommands
 
+    @State private var leadingWidth: CGFloat?
+    @State private var trackWidth: CGFloat?
+    @State private var searchFieldWidth = DesignTokens.searchFieldWidth
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         GlassEffectContainer(spacing: DesignTokens.spacingMedium) {
             HStack(spacing: DesignTokens.spacingMedium) {
-                ShelfSearchField(model: model)
-                ShelfFiltersButton(model: model)
+                HStack(spacing: DesignTokens.spacingMedium) {
+                    ShelfSearchField(model: model)
+                        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { searchFieldWidth = $0 }
+                    ShelfFiltersButton(model: model)
+                }
+                .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { leadingWidth = $0 }
+                Spacer(minLength: DesignTokens.spacingMedium)
                 ScrollView(.horizontal) {
-                    HStack(spacing: DesignTokens.spacingMedium) {
-                        Button {
-                            model.showTab(.history)
-                        } label: {
-                            Label("History", systemImage: "clock")
-                        }
-                        .buttonStyle(.glassTab(isSelected: model.tab == .history))
-                        ForEach(model.boards) { board in
-                            BoardCapsule(board: board, isSelected: model.tab == .board(id: board.id)) {
-                                model.showTab(.board(id: board.id))
-                            }
-                        }
-                    }
+                    ShelfTabTrack(model: model)
+                        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { trackWidth = $0 }
                 }
                 .scrollIndicators(.hidden)
                 .scrollClipDisabled()
+                .mask {
+                    Rectangle().padding(.vertical, -DesignTokens.spacingMedium)
+                }
+                .frame(maxWidth: trackWidth)
+                .layoutPriority(1)
                 Button("New Board", systemImage: "plus") {
                     commands.newBoard?()
                 }
                 .buttonStyle(.glassIcon)
                 .disabled(commands.newBoard == nil)
-                ShelfMoreMenu(commands: commands)
+                Spacer(minLength: DesignTokens.spacingMedium)
+                HStack(spacing: DesignTokens.spacingMedium) {
+                    if let count = model.selectedCount {
+                        ShelfSelectionCount(count: count)
+                            .transition(
+                                reduceMotion
+                                    ? .opacity
+                                    : .scale(scale: DesignTokens.searchTokenEntranceScale, anchor: .trailing)
+                                    .combined(with: .opacity)
+                            )
+                    }
+                    ShelfMoreMenu(commands: commands)
+                }
+                .frame(minWidth: leadingWidth, alignment: .trailing)
+                .animation(
+                    reduceMotion ? DesignTokens.Motion.reduced : DesignTokens.Motion.pop,
+                    value: model.selectedCount
+                )
             }
             .controlSize(.large)
+            .animation(reduceMotion ? DesignTokens.Motion.reduced : DesignTokens.Motion.standard, value: model.tokens)
         }
         .overlay(alignment: .bottomLeading) {
             Color.clear
-                .frame(height: 0)
+                .frame(height: .zero)
                 .overlay(alignment: .topLeading) {
                     if model.isSearchFieldFocused, !model.suggestions.isEmpty {
-                        SearchSuggestionList(model: model)
+                        SearchSuggestionList(model: model, width: searchFieldWidth)
                             .padding(.top, DesignTokens.spacingSmall)
+                            .transition(suggestionTransition)
                     }
                 }
+                .animation(
+                    reduceMotion ? DesignTokens.Motion.reduced : DesignTokens.Motion.present,
+                    value: model.isSearchFieldFocused && !model.suggestions.isEmpty
+                )
         }
-        .animation(reduceMotion ? nil : .default, value: model.tab)
+    }
+
+    private var suggestionTransition: AnyTransition {
+        guard !reduceMotion else { return .opacity.animation(DesignTokens.Motion.reduced) }
+        let transition = AnyTransition.scale(scale: DesignTokens.searchSuggestionEntranceScale, anchor: .top)
+            .combined(with: .offset(y: DesignTokens.searchSuggestionEntranceOffset))
+            .combined(with: .opacity)
+        return .asymmetric(
+            insertion: transition.animation(DesignTokens.Motion.present),
+            removal: transition.animation(DesignTokens.Motion.quick)
+        )
+    }
+}
+
+private struct ShelfTabTrack: View {
+    let model: ShelfModel
+
+    var body: some View {
+        TabTrack(selection: model.tab, label: Text("Boards")) { namespace in
+            Button {
+                model.showTab(.history)
+            } label: {
+                Label("History", systemImage: "clock")
+            }
+            .buttonStyle(.plain)
+            .tabTrackSegment(id: CardList.history, in: namespace, isSelected: model.tab == .history)
+            ForEach(model.boards) { board in
+                BoardTab(board: board, namespace: namespace, isSelected: model.tab == .board(id: board.id)) {
+                    model.showTab(.board(id: board.id))
+                }
+            }
+        }
+    }
+}
+
+private struct ShelfSelectionCount: View {
+    let count: Int
+
+    var body: some View {
+        Text("\(count) selected")
+            .font(.body)
+            .monospacedDigit()
+            .contentTransition(.numericText())
+            .padding(.horizontal, DesignTokens.spacingLarge)
+            .frame(height: DesignTokens.topBarControlHeight)
+            .glassEffect(.regular, in: .capsule)
     }
 }
 
@@ -62,7 +132,7 @@ private struct ShelfFiltersButton: View {
         Button("Filters", systemImage: "line.3.horizontal.decrease") {
             model.isFilterBrowserPresented.toggle()
         }
-        .buttonStyle(.glassIcon)
+        .buttonStyle(.glassIcon(isProminent: !model.tokens.isEmpty))
         .popover(isPresented: $model.isFilterBrowserPresented, arrowEdge: .top) {
             FilterBrowser(model: model)
         }
@@ -74,12 +144,14 @@ private struct ShelfSearchField: View {
 
     @FocusState private var isFocused: Bool
     @Environment(CardActions.self) private var actions
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         @Bindable var model = model
         GlassSearchField {
             ForEach(model.tokens) { token in
                 SearchTokenChip(token: token, model: model)
+                    .transition(tokenTransition)
             }
             TextField("Search", text: $model.query, selection: $model.searchSelection)
                 .textFieldStyle(.plain)
@@ -120,10 +192,18 @@ private struct ShelfSearchField: View {
             }
         }
     }
+
+    private var tokenTransition: AnyTransition {
+        guard !reduceMotion else { return .opacity.animation(DesignTokens.Motion.reduced) }
+        return AnyTransition.scale(scale: DesignTokens.searchTokenEntranceScale, anchor: .leading)
+            .combined(with: .opacity)
+            .animation(DesignTokens.Motion.pop)
+    }
 }
 
-private struct BoardCapsule: View {
+private struct BoardTab: View {
     let board: Board
+    let namespace: Namespace.ID
     let isSelected: Bool
     let action: () -> Void
 
@@ -134,7 +214,13 @@ private struct BoardCapsule: View {
         Button(action: action) {
             BoardLabel(board: board)
         }
-        .buttonStyle(.glassTab(isSelected: isSelected || isTargeted))
+        .buttonStyle(.plain)
+        .tabTrackSegment(
+            id: CardList.board(id: board.id),
+            in: namespace,
+            isSelected: isSelected,
+            isTargeted: isTargeted
+        )
         .contextMenu {
             BoardContextMenu(board: board)
         }

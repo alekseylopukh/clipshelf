@@ -691,6 +691,10 @@
         }
       }
     },
+    "%lld selected" : {
+      "comment" : "Top bar: number of selected cards",
+      "extractionState" : "manual"
+    },
     "%@ × %@" : {
       "comment" : "Card footer: pixel width and height of an image card",
       "extractionState" : "manual"

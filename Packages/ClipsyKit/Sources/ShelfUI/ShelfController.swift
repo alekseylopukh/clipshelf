@@ -30,7 +30,7 @@ public final class ShelfController {
     let landingLocator = PasteLandingLocator()
     let dragSource = CardDragSource()
     var isDragging = false
-    private let presentation = ShelfPresentation()
+    let presentation = ShelfPresentation()
     private let calculator = ShelfFrameCalculator()
     let model: ShelfModel
     let paster: PasteCoordinator
@@ -45,6 +45,8 @@ public final class ShelfController {
     let preview: CardPreviewPopover
     private let defaults: UserDefaults
     private var resizeStart: (mouseY: CGFloat, height: CGFloat)?
+    let slide = ShelfSlide()
+    var closeTask: Task<Void, Never>?
 
     public init(
         model: ShelfModel,
@@ -84,6 +86,7 @@ public final class ShelfController {
             .padding(DesignTokens.shelfShadowMargin))
         hostingView.sizingOptions = []
         hostingView.autoresizingMask = [.width, .height]
+        slide.attach(to: hostingView, in: panel)
         let contentView = NSView()
         contentView.addSubview(hostingView)
         panel.contentView = contentView
@@ -120,7 +123,7 @@ public final class ShelfController {
     }
 
     public var isShown: Bool {
-        presentation.isVisible
+        presentation.isVisible && closeTask == nil
     }
 
     public func toggle() {
@@ -145,13 +148,16 @@ public final class ShelfController {
         actions.plainTextModifier = plainText
         actions.isCopyAsPlainTextShortcutTaken = KeyboardShortcuts.getShortcut(for: .startSequence)
             == KeyboardShortcuts.Shortcut(.c, modifiers: plainText.flags.union(.command))
+        cancelClosing()
         panel.setFrame(calculator.windowFrame(height: storedHeight, in: screen.visibleFrame), display: false)
         model.didOpen()
         updateQuickPasteModifier(NSEvent.modifierFlags)
-        panel.makeKeyAndOrderFront(nil)
-        withAnimation(reduceMotion ? DesignTokens.shelfFadeAnimation : DesignTokens.shelfOpenAnimation) {
-            presentation.isVisible = true
+        if reduceMotion, !panel.isVisible {
+            panel.alphaValue = 0
         }
+        panel.makeKeyAndOrderFront(nil)
+        presentation.isVisible = true
+        slide.open(reduceMotion: reduceMotion)
     }
 
     public func hide() {
@@ -162,12 +168,7 @@ public final class ShelfController {
         preview.dismiss()
         boardEditor.cancel()
         deletion.discardUndo()
-        withAnimation(reduceMotion ? DesignTokens.shelfFadeAnimation : DesignTokens.shelfCloseAnimation) {
-            presentation.isVisible = false
-        } completion: { [weak self] in
-            guard let self, !isShown else { return }
-            panel.orderOut(nil)
-        }
+        beginClosing()
     }
 
     func perform(_ command: CardCommand, on ids: [Int64]) {
@@ -470,8 +471,7 @@ public extension ShelfController {
         preview.dismiss()
         boardEditor.cancel()
         deletion.discardUndo()
-        presentation.isVisible = false
-        panel.orderOut(nil)
+        closeNow()
     }
 
     var isShownInScreenCapture: Bool {

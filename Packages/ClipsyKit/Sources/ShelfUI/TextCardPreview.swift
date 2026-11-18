@@ -15,12 +15,14 @@ struct TextCardPreview: View {
     private static let logger = Logger(subsystem: "app.gonar.clipsy", category: "Shelf")
 
     var body: some View {
-        ScrollView {
+        FittingScrollView {
             (text ?? Text(verbatim: card.preview ?? ""))
-                .font(isCodeLike ? .body.monospaced() : .body)
+                .font(isCodeLike ? .body.monospaced() : .title3)
+                .lineSpacing(DesignTokens.previewTextLineSpacing)
                 .textSelection(.enabled)
                 .frame(maxWidth: .infinity, alignment: .topLeading)
                 .padding()
+                .frame(minHeight: DesignTokens.previewTextMinimumHeight, alignment: .top)
         }
         .background(Color(nsColor: DesignTokens.cardFill))
         .task(id: RichTextRequest(cardID: card.id, colorScheme: colorScheme, contrast: contrast)) {
@@ -36,7 +38,7 @@ struct TextCardPreview: View {
             let length = DesignTokens.previewTextMaximumLength
             if let rich = try await loader.preview(
                 of: card.id,
-                bodySize: NSFont.preferredFont(forTextStyle: .body).pointSize,
+                bodySize: NSFont.preferredFont(forTextStyle: isCodeLike ? .body : .title3).pointSize,
                 background: background,
                 maximumLength: length
             ) {

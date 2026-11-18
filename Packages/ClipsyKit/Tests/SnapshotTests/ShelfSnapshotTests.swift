@@ -11,14 +11,21 @@ import Testing
 final class ShelfSnapshotTests {
     enum Size: String, CaseIterable {
         case regular
+        case short
         case compact
+        case more
 
         var height: CGFloat {
-            self == .regular ? DesignTokens.shelfDefaultHeight : DesignTokens.shelfMinimumHeight
+            switch self {
+            case .regular, .more: DesignTokens.shelfDefaultHeight
+            case .short: 240
+            case .compact: DesignTokens.shelfMinimumHeight
+            }
         }
     }
 
     private static let width: CGFloat = 1920
+    private static let firstCardCount = 8
     private let suiteName = "ShelfSnapshotTests-\(UUID().uuidString)"
     private let fixtures: SnapshotFixtures
 
@@ -39,7 +46,10 @@ final class ShelfSnapshotTests {
             observe: { _ in AsyncThrowingStream { $0.finish() } },
             observeBoards: { AsyncThrowingStream { $0.finish() } }
         )
-        model.receive(fixtures.cards)
+        model.receive(
+            size == .more ? Array(fixtures.cards.dropFirst(Self.firstCardCount))
+                : Array(fixtures.cards.prefix(Self.firstCardCount))
+        )
         model.receiveBoards(fixtures.boards)
         let presentation = ShelfPresentation()
         presentation.isVisible = true
@@ -74,7 +84,9 @@ final class ShelfSnapshotTests {
         .padding(DesignTokens.shelfInset)
         .background(SnapshotWallpaper())
 
-        model.select(fixtures.cards[1].id)
+        if size != .more {
+            model.select(fixtures.cards[1].id)
+        }
         try await SnapshotRenderer.render(
             root,
             named: "shelf-\(size.rawValue)",

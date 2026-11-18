@@ -2,15 +2,13 @@ import SwiftUI
 
 public struct CardSurface: ViewModifier {
     let isSelected: Bool
-    let isHovered: Bool
 
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.colorSchemeContrast) private var contrast
     @Environment(\.pixelLength) private var pixelLength
 
-    public init(isSelected: Bool, isHovered: Bool) {
+    public init(isSelected: Bool) {
         self.isSelected = isSelected
-        self.isHovered = isHovered
     }
 
     private var shape: RoundedRectangle {
@@ -20,28 +18,79 @@ public struct CardSurface: ViewModifier {
     public func body(content: Content) -> some View {
         content
             .background {
-                shape
-                    .fill(Color(nsColor: DesignTokens.cardFill))
-                    .shadow(
-                        color: isHovered || isSelected ? DesignTokens.cardLiftShadowColor : .clear,
-                        radius: DesignTokens.cardLiftShadowRadius,
-                        y: DesignTokens.cardLiftShadowOffset
-                    )
+                CardShadowedFill(shape: shape, isDark: colorScheme == .dark)
             }
             .containerShape(shape)
             .overlay {
-                shape.strokeBorder(Color(nsColor: .separatorColor), lineWidth: pixelLength)
+                CardEdge(
+                    shape: shape,
+                    isDark: colorScheme == .dark,
+                    isContrastIncreased: contrast == .increased,
+                    pixelLength: pixelLength
+                )
             }
             .overlay {
-                if isSelected {
-                    SelectionRing(width: DesignTokens.selectionRingWidth(for: contrast))
+                ZStack {
+                    if isSelected {
+                        SelectionRing(width: DesignTokens.selectionRingWidth(for: contrast))
+                    }
                 }
+                // keeps the ring instant inside the strip's animated card updates
+                .animation(nil, value: isSelected)
             }
             .contentShape(.dragPreview, shape)
             .contentShape(shape)
-            .scaleEffect(isSelected ? DesignTokens.cardLiftScale : 1)
-            .animation(reduceMotion ? nil : .default, value: isSelected)
-            .animation(reduceMotion ? nil : .default, value: isHovered)
+    }
+}
+
+private struct CardShadowedFill: View {
+    let shape: RoundedRectangle
+    let isDark: Bool
+
+    var body: some View {
+        shape
+            .fill(Color(nsColor: DesignTokens.cardFill))
+            .shadow(
+                color: .black.opacity(
+                    isDark ? DesignTokens.cardContactShadowOpacityDark : DesignTokens.cardContactShadowOpacity
+                ),
+                radius: DesignTokens.cardContactShadowRadius,
+                y: DesignTokens.cardContactShadowOffset
+            )
+            .shadow(
+                color: .black.opacity(
+                    isDark ? DesignTokens.cardAmbientShadowOpacityDark : DesignTokens.cardAmbientShadowOpacity
+                ),
+                radius: DesignTokens.cardAmbientShadowRadius,
+                y: DesignTokens.cardAmbientShadowOffset
+            )
+    }
+}
+
+private struct CardEdge: View {
+    let shape: RoundedRectangle
+    let isDark: Bool
+    let isContrastIncreased: Bool
+    let pixelLength: CGFloat
+
+    var body: some View {
+        if isContrastIncreased {
+            shape.strokeBorder(Color(nsColor: .separatorColor), lineWidth: 1)
+        } else if isDark {
+            shape.strokeBorder(
+                LinearGradient(
+                    colors: [
+                        .white.opacity(DesignTokens.cardEdgeTopOpacityDark),
+                        .white.opacity(DesignTokens.cardEdgeBottomOpacityDark)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                ),
+                lineWidth: DesignTokens.cardEdgeWidthDark
+            )
+        } else {
+            shape.strokeBorder(.black.opacity(DesignTokens.cardEdgeOpacity), lineWidth: pixelLength)
+        }
     }
 }
 
@@ -58,7 +107,7 @@ private struct SelectionRing: View {
 }
 
 public extension View {
-    func cardSurface(isSelected: Bool, isHovered: Bool) -> some View {
-        modifier(CardSurface(isSelected: isSelected, isHovered: isHovered))
+    func cardSurface(isSelected: Bool) -> some View {
+        modifier(CardSurface(isSelected: isSelected))
     }
 }

@@ -29,8 +29,11 @@ struct SnapshotFixtures {
         try Data("Agenda\n1. Shelf polish\n2. Release notes\n".utf8).write(to: notes)
         let sketch = directory.appending(path: "Sketch.png")
         try Self.png(width: 600, height: 600, hues: (0.9, 0.1)).write(to: sketch)
+        let panorama = try Self.png(width: 2400, height: 600, hues: (0.5, 0.95))
+        let portrait = try Self.png(width: 600, height: 1800, hues: (0.15, 0.35))
+        let cutout = try Self.png(width: 800, height: 800, hues: (0.7, 0.85), isTransparent: true)
 
-        cards = Self.textCards(now: now) + Self.mediaCards(now: now)
+        cards = Self.textCards(now: now) + Self.mediaCards(now: now) + Self.moreCards(now: now)
         boards = [
             Board(id: 1, name: "Work", color: "blue", createdAt: now),
             Board(id: 2, name: "Design", color: "orange", createdAt: now),
@@ -47,7 +50,10 @@ struct SnapshotFixtures {
                 Representation(itemIndex: 0, uti: "public.file-url", data: fileURLs[1]),
                 Representation(itemIndex: 1, uti: "public.file-url", data: fileURLs[2]),
                 Representation(itemIndex: 2, uti: "public.file-url", data: fileURLs[0])
-            ]
+            ],
+            9: [Representation(itemIndex: 0, uti: UTType.png.identifier, data: panorama)],
+            10: [Representation(itemIndex: 0, uti: UTType.png.identifier, data: portrait)],
+            11: [Representation(itemIndex: 0, uti: UTType.png.identifier, data: cutout)]
         ]
         representations = { byCard[$0] ?? [] }
     }
@@ -131,6 +137,66 @@ struct SnapshotFixtures {
         ]
     }
 
+    private static func moreCards(now: Date) -> [CardSummary] {
+        [
+            CardSummary(
+                id: 9,
+                kind: .image,
+                metadata: #"{"pixelWidth":2400,"pixelHeight":600}"#,
+                sourceApp: SourceApp(bundleID: "com.apple.iBooksX", name: "Books"),
+                createdAt: now.addingTimeInterval(-345_600),
+                contentHash: "13"
+            ),
+            CardSummary(
+                id: 10,
+                kind: .image,
+                metadata: #"{"pixelWidth":600,"pixelHeight":1800}"#,
+                sourceApp: SourceApp(bundleID: "com.apple.MobileSMS", name: "Messages"),
+                createdAt: now.addingTimeInterval(-432_000),
+                contentHash: "14"
+            ),
+            CardSummary(
+                id: 11,
+                kind: .image,
+                metadata: #"{"pixelWidth":800,"pixelHeight":800}"#,
+                sourceApp: SourceApp(bundleID: "com.apple.news", name: "News"),
+                createdAt: now.addingTimeInterval(-518_400),
+                contentHash: "15"
+            ),
+            CardSummary(
+                id: 12,
+                kind: .link,
+                preview: "https://www.example.org/guides/keyboard-shortcuts",
+                metadata: #"{"pageTitle":"Keyboard Shortcuts Guide","#
+                    + #""url":"https://www.example.org/guides/keyboard-shortcuts"}"#,
+                sourceApp: SourceApp(bundleID: "com.apple.shortcuts", name: "Shortcuts"),
+                createdAt: now.addingTimeInterval(-604_800)
+            ),
+            CardSummary(
+                id: 13,
+                kind: .text,
+                preview: "Episode 12 at 18:30",
+                metadata: #"{"characterCount":19,"lineCount":1,"wordCount":4}"#,
+                sourceApp: SourceApp(bundleID: "com.apple.podcasts", name: "Podcasts"),
+                createdAt: now.addingTimeInterval(-691_200)
+            ),
+            CardSummary(
+                id: 14,
+                kind: .color,
+                preview: "#1C1C1E",
+                metadata: ##"{"color":"#1C1C1E"}"##,
+                sourceApp: SourceApp(bundleID: "com.apple.freeform", name: "Freeform"),
+                createdAt: now.addingTimeInterval(-777_600)
+            ),
+            CardSummary(
+                id: 15,
+                kind: .unknown,
+                metadata: #"{"typeIdentifier":"com.example.sample-item"}"#,
+                createdAt: now.addingTimeInterval(-864_000)
+            )
+        ]
+    }
+
     private static func rtf() throws -> Data {
         let text = NSMutableAttributedString(string: "Quarterly plan\n", attributes: [
             .font: NSFont.boldSystemFont(ofSize: 24),
@@ -145,7 +211,12 @@ struct SnapshotFixtures {
         )
     }
 
-    private static func png(width: Int, height: Int, hues: (CGFloat, CGFloat)) throws -> Data {
+    private static func png(
+        width: Int,
+        height: Int,
+        hues: (CGFloat, CGFloat),
+        isTransparent: Bool = false
+    ) throws -> Data {
         let colorSpace = CGColorSpace(name: CGColorSpace.sRGB) ?? CGColorSpaceCreateDeviceRGB()
         guard let context = CGContext(
             data: nil,
@@ -161,6 +232,11 @@ struct SnapshotFixtures {
                 NSColor(hue: hues.1, saturation: 0.6, brightness: 0.5, alpha: 1).cgColor
             ] as CFArray, locations: nil)
         else { throw FixtureError.drawingFailed }
+        if isTransparent {
+            let inset = CGFloat(min(width, height)) / 8
+            context.addEllipse(in: CGRect(x: 0, y: 0, width: width, height: height).insetBy(dx: inset, dy: inset))
+            context.clip()
+        }
         context.drawLinearGradient(
             gradient,
             start: .zero,
