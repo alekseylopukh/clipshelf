@@ -37,31 +37,30 @@ struct PrivacySettingsView: View {
                     Button("Remove App", systemImage: "minus", action: removeSelectedApps)
                         .disabled(selection.isEmpty)
                 }
-                .labelStyle(.iconOnly)
-                .buttonStyle(.borderless)
+                .buttonStyle(.borderlessIcon)
             } header: {
                 Text("Ignored Apps")
             } footer: {
-                Text(
+                FormFootnote(Text(
                     "Clipsy doesn’t keep anything copied in these apps. Browser extensions of password managers may not mark copied passwords as concealed; to keep them out of your history, add your browser."
-                )
-                .foregroundStyle(.secondary)
+                ))
             }
 
             Section {
                 Toggle(isOn: $privacy.recognizesTextInImages) {
-                    Text("Recognize text in images")
-                    Text("Text is recognized on this Mac, so you can search for it.")
+                    LabelWithNote(
+                        Text("Recognize text in images"),
+                        note: Text("Text is recognized on this Mac, so you can search for it.")
+                    )
                 }
             }
 
             Section {
                 Toggle("Show link previews", isOn: $privacy.fetchesLinkPreviews)
             } footer: {
-                Text(
+                FormFootnote(Text(
                     "Clipsy loads each web link you copy to show the page’s title and image. Loading a page can use up a one-time link or let the site track the visit."
-                )
-                .foregroundStyle(.secondary)
+                ))
             }
 
             Section {
@@ -148,16 +147,20 @@ private struct PasteboardAccessRow: View {
                 }
             }
         } label: {
-            Text("Clipboard Access")
-            if status == .allowed {
-                Text("Clipsy can read what you copy in other apps.")
-            } else if status == .denied {
-                Text("Not allowed. Clipsy can’t add what you copy in other apps to your history.")
-            } else {
-                Text(
-                    "macOS asks before Clipsy reads what you copy in other apps. Allow it in Privacy & Security › Paste from Other Apps."
-                )
-            }
+            LabelWithNote(Text("Clipboard Access"), note: note)
+        }
+    }
+
+    private var note: Text {
+        switch status {
+        case .allowed:
+            Text("Clipsy can read what you copy in other apps.")
+        case .denied:
+            Text("Not allowed. Clipsy can’t add what you copy in other apps to your history.")
+        default:
+            Text(
+                "macOS asks before Clipsy reads what you copy in other apps. Allow it in Privacy & Security › Paste from Other Apps."
+            )
         }
     }
 }

@@ -28,31 +28,24 @@ struct FileCardPreview: View {
             case let .file(url):
                 QuickLookView(url: url)
             case let .missing(name):
-                ContentUnavailableView {
-                    Label {
-                        Text(
-                            "File Not Found",
-                            comment: "Title of the preview of a file card whose file was moved or deleted"
-                        )
-                    } icon: {
-                        Image(systemName: "questionmark.folder")
-                    }
-                } description: {
-                    Text(verbatim: name)
-                }
+                EmptyStateView(
+                    Text(
+                        "File Not Found",
+                        comment: "Title of the preview of a file card whose file was moved or deleted"
+                    ),
+                    systemImage: "questionmark.folder",
+                    description: Text(verbatim: name)
+                )
             case let .files(urls):
                 List(urls, id: \.self) { url in
                     FilePreviewRow(url: url)
                 }
                 .scrollContentBackground(.hidden)
             case .unavailable:
-                ContentUnavailableView {
-                    Label {
-                        Text("No Preview", comment: "Title of the preview of a card that Clipsy cannot show")
-                    } icon: {
-                        Image(systemName: card.kind.symbolName)
-                    }
-                }
+                EmptyStateView(
+                    Text("No Preview", comment: "Title of the preview of a card that Clipsy cannot show"),
+                    systemImage: card.kind.symbolName
+                )
             }
         }
         .task(id: card.id) {

@@ -1,3 +1,4 @@
+import DesignSystem
 import SwiftUI
 
 struct ShelfEmptyView: View {
@@ -7,27 +8,25 @@ struct ShelfEmptyView: View {
     var body: some View {
         switch state {
         case .history:
-            ContentUnavailableView(
-                "No Clipboard History",
+            EmptyStateView(
+                Text("No Clipboard History"),
                 systemImage: "clipboard",
                 description: Text("Copy something and it shows up here.")
             )
         case .board:
-            ContentUnavailableView(
-                "This Board Is Empty",
+            EmptyStateView(
+                Text("This Board Is Empty"),
                 systemImage: "square.stack",
                 description: Text("Drag Cards here or use “Add to Board”.")
             )
         case .noResults:
-            ContentUnavailableView(
-                "No Results",
+            EmptyStateView(
+                Text("No Results"),
                 systemImage: "magnifyingglass",
                 description: Text("Try a different search or remove a filter.")
             )
         case .paused:
-            ContentUnavailableView {
-                Label("Capture Paused", systemImage: "pause.circle")
-            } actions: {
+            EmptyStateView(Text("Capture Paused"), systemImage: "pause.circle") {
                 Button("Resume Capture") {
                     commands.setCapturePaused?(false)
                 }

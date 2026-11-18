@@ -56,6 +56,7 @@ The project builds with Swift 6 and strict concurrency set to complete. The app 
 - **R5.3 [B]** Every action can be done from the keyboard. Repeatable actions are menu commands with shortcuts. Icon-only controls carry a text label (`Button("…", systemImage:)`). Use no `onTapGesture` for actions.
 - **R5.4 [B]** Every user-facing string goes through the String Catalog. Format dates and numbers with `FormatStyle`.
 - **R5.5 [N]** Honor Reduce Motion, Reduce Transparency, Increase Contrast and Differentiate Without Color.
+- **R5.6 [B]** A UI role listed in [docs/design.md › Components](../../docs/design.md#components) uses the component listed there. Screens never hand-assemble an equivalent from modifiers. A new recurring role gets a component and a row there first.
 
 ## R6. Errors
 - **R6.1 [B]** Show errors from user actions in the UI. Never swallow them.

@@ -19,7 +19,7 @@ struct AddToBoardItems: View {
                 Label {
                     Text(board.name)
                 } icon: {
-                    Image(nsImage: BoardContextMenu.swatch(BoardColor(rawValue: board.color) ?? .gray))
+                    Image(nsImage: (BoardColor(rawValue: board.color) ?? .gray).menuSwatch)
                 }
             }
         }

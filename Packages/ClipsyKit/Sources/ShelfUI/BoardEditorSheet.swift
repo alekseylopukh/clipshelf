@@ -16,15 +16,13 @@ struct BoardEditorSheet: View {
                         BoardColorPicker(selection: $editor.color)
                     }
                 } header: {
-                    Text(isNew ? "New Board" : "Edit Board")
-                        .font(.headline)
+                    SheetHeader(Text(isNew ? "New Board" : "Edit Board"))
                 }
             }
             .formStyle(.grouped)
             .scrollDisabled(true)
             .fixedSize(horizontal: false, vertical: true)
-            HStack {
-                Spacer()
+            SheetButtonBar {
                 Button("Cancel", role: .cancel) {
                     editor.cancel()
                 }

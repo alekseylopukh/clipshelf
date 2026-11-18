@@ -19,12 +19,7 @@ struct CardFormSheet<Fields: View>: View {
                     .fixedSize(horizontal: false, vertical: true)
                 CardForm(title: title, fields: fields)
             }
-            HStack {
-                if let errorMessage {
-                    Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
-                        .foregroundStyle(.red)
-                }
-                Spacer()
+            SheetButtonBar(errorMessage: errorMessage) {
                 Button("Cancel", role: .cancel) {
                     dismiss()
                 }
@@ -55,8 +50,7 @@ private struct CardForm<Fields: View>: View {
             Section {
                 fields
             } header: {
-                Text(title)
-                    .font(.headline)
+                SheetHeader(Text(title))
             }
         }
         .formStyle(.grouped)

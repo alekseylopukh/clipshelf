@@ -87,6 +87,7 @@ All suites live in the `SnapshotTests` target:
 | `ShelfSnapshotTests` | `shelf-{regular,compact}`: the Shelf, 1920 pt wide |
 | `PopoverSnapshotTests` | `sequence`, `sequence-empty`, `rename`, `preview-<card id>`, `preview-<card id>-small` (clamped to 1438 × 524 pt, a 13" MacBook Air above a 300 pt Shelf), `edit-{text,link,color,board}`, `filters` |
 | `AppSnapshotTests` | `settings-{general,shortcuts,privacy,about}`, `onboarding-{welcome,paste-directly,clipboard-access,finish}` |
+| `ComponentGallerySnapshotTests` | `components`: every [DesignSystem component](#components) in its states; glass shows shape and layout only |
 
 - Fixture: eight made-up Cards (`SnapshotFixtures`: text, rich text, link with preview image, color, code, image, file, three files) and three Boards. Images and files are generated into a temporary folder; app icons come from system apps. No clipboard data is read. Settings and onboarding use a private defaults suite, a temporary database, a fake updater and a fake pasteboard access status (`.ask`, so the clipboard step shows).
 - `SnapshotRenderer` hosts each view in a borderless `NSWindow` that is never ordered in, so nothing appears on screen, and captures it with `cacheDisplay`. Views without a fixed size render at their fitting size.
@@ -412,18 +413,18 @@ Step 3 and the Privacy pane row read `NSPasteboard.general.accessBehavior` (chec
 | Element | Component |
 |---|---|
 | Shelf window | `NSPanel` subclass, non-activating, full-size content view, resizable from the top edge, floating level, joins the active Space and full-screen Spaces; `sharingType = .none` unless the privacy toggle is on. Details in [architecture.md](architecture.md). |
-| Shelf background | SwiftUI `.glassEffect(.regular, in: .rect(cornerRadius:))` on a background layer of the root view (see [§2 Metrics](#metrics)), concentric corner radius |
+| Shelf background | `GlassPanelBackground` (`.glassEffect(.regular, in: .rect(cornerRadius:))` on a background layer of the root view, see [§2 Metrics](#metrics)), concentric corner radius |
 | Shelf content | SwiftUI hosted in `NSHostingView` |
 | Card strip | Horizontal `ScrollView` + `LazyHStack` (or `NSCollectionView` if performance needs it) |
-| Card | SwiftUI view with opaque `background(.background.secondary)` fill and `separatorColor` stroke; no glass |
-| Selection ring | Custom stroke in `Color.accentColor`, `.focusEffectDisabled()` on the Card |
-| Quick-paste badge | `Text` with `.glassEffect(in: .capsule)` |
+| Card | `.cardSurface(isSelected:isHovered:)`: opaque `controlBackgroundColor` fill and `separatorColor` hairline; no glass |
+| Selection ring | Part of `.cardSurface`: stroke in `Color.accentColor`, concentric outside the Card |
+| Quick-paste badge | `GlassBadge(count:)` |
 | Top bar | `GlassEffectContainer` with `.glassEffectID` per capsule for morphing |
-| Search field | SwiftUI search field with tokens (`.searchable(text:tokens:)` style API) or `NSSearchField` with token attachments if the SwiftUI variant does not work inside the panel |
-| Filters | Button with `.buttonStyle(.glass)` opening a `.popover` |
-| Board capsules | `Button` with `.buttonStyle(.glass)`; selected uses `.glassProminent` |
-| Board color dot | `Circle().fill(Color(nsColor: .systemBlue))` etc. |
-| Empty states | `ContentUnavailableView` |
+| Search field | `GlassSearchField` with removable chips for tokens and a plain `TextField` (see [Components](#components)) |
+| Filters | Button with `.buttonStyle(.glassIcon)` opening a `.popover` |
+| Board capsules | `Button` with `.buttonStyle(.glassTab(isSelected:))`: `.glass`, selected `.glassProminent` |
+| Board color dot | `BoardDot` (`BoardColor.menuSwatch` inside menus) |
+| Empty states | `EmptyStateView`, a `ContentUnavailableView` |
 | Context menu | `NSMenu` / SwiftUI `.contextMenu` with `Label` items (SF Symbols), `Divider` between sections, destructive role on Delete |
 | Quick Look | `NSPopover` containing `QLPreviewView` (files) or SwiftUI previews (images, text, links, colors) |
 | Edit sheet | `.sheet` with `Form`, `ColorPicker`, standard toolbar; the text editor is an `NSTextView` in `NSViewRepresentable`, because RTF in and out needs AppKit font attributes that SwiftUI's `TextEditor` does not keep |
@@ -439,6 +440,35 @@ Step 3 and the Privacy pane row read `NSPasteboard.general.accessBehavior` (chec
 | Toast/HUD | None. The menu bar symbol shows the paused state ([§7](#7-menu-bar-extra)) and sounds confirm capture and paste ([WD-34](roadmap.md#working-defaults-for-open-todos)) |
 
 Checked against the macOS 26 SDK: SwiftUI has `.glass`, `.glassProminent`, `glassEffectID(_:in:)` and `glassEffectUnion(id:namespace:)`; `NSGlassEffectView` has `contentView`, `cornerRadius`, `tintColor` and `style`.
+
+### Components
+
+Every recurring UI role has one component, listed below, and screens use it instead of assembling the same look from modifiers ([code rule R5.6](../.claude/rules/code-rules.md#r5-native-look)). The components live in the `DesignSystem` module, except `PermissionStatusLabel`, which lives in the app target with its strings. The gallery renders each one in light and dark: `ComponentGallerySnapshotTests` → `components-{light,dark}.png` (see [Snapshot harness](#snapshot-harness)).
+
+| Role | Component | Where used | Rules |
+|---|---|---|---|
+| Glass icon button | `.buttonStyle(.glassIcon)` (`GlassIconButtonStyle`) | Top bar: New Board, Filters, More | 28 pt circle at `.large` size, 16 pt glyph box (`.labelStyle(.glassIcon)`). Write `Button("Title", systemImage:)` so it has a label |
+| Glass icon menu | A glass icon button with `.popUpMenuAnchor(_:)` (`PopUpMenuAnchor`) that pops up an `NSMenu` of `ActionMenuItem`s under itself | Top bar: More | Same control as the glass icon button, so the whole 28 pt circle is the hit target and focus ring, and Space or Return opens the menu. Not a SwiftUI `Menu`: macOS draws a menu's button through AppKit and ignores `.buttonStyle(.glass)` (it renders the plain bezel, with or without `.menuStyle(.button)`), and a borderless menu over a glass circle only takes clicks on its 16 pt glyph, whatever frame its label gets. Build the menu when the button is pressed, so state such as Pause/Resume is current |
+| Glass tab capsule | `.buttonStyle(.glassTab(isSelected:))` (`GlassTabButtonStyle`) | Top bar: History and Board capsules | `.glass`, selected `.glassProminent` with the selected trait; `.large` size |
+| Search field | `GlassSearchField { … }` | Top bar | Leading magnifying glass, 220 pt minimum, 28 pt capsule of interactive glass. Content: tokens, a plain `TextField`, the clear button |
+| Removable chip | `.buttonStyle(.removableChip)` (`RemovableChipButtonStyle`) | Search tokens in the search field | Callout label, trailing small `xmark`, `.fill.secondary` capsule; the whole chip removes it |
+| Accessory icon | `.buttonStyle(.accessoryIcon)` (`AccessoryIconButtonStyle`) | Clear Search; Remove on Sequence rows | Borderless, icon only, secondary |
+| Borderless icon | `.buttonStyle(.borderlessIcon)`, `.menuStyle(.borderlessIcon)` | Sequence header (Undo, More, Close); Privacy Ignored Apps +/− | Borderless, icon only, label color |
+| Card surface | `.cardSurface(isSelected:isHovered:)` (`CardSurface`) | `CardView` | Opaque `cardFill`, hairline `separatorColor` border, lift shadow when hovered or selected, accent selection ring 2 pt outside at a concentric radius, 1.02 lift, sets the `containerShape` for `.cardInner` clips. Never glass |
+| Glass badge | `GlassBadge(count:)`, `GlassBadge(value:)` | Quick-paste numbers; the color Card's value | Count: caption semibold, monospaced digits, 20 pt minimum. Value: monospaced callout. Both on a regular glass capsule |
+| Board color dot | `BoardDot(_:isOutlined:)`; `BoardColor.menuSwatch` in menus | Top bar Board capsules, search token labels, Card header (outlined); Board context menu and Add to Board | 8 pt dot in the Board color; outlined in white on the colored header band. Menus draw SwiftUI symbols as templates, so they use the palette image |
+| Empty state | `EmptyStateView(_:systemImage:description:actions:)` | Shelf empty states, preview No Preview and File Not Found | A `ContentUnavailableView` with a symbol, an optional description and optional actions |
+| Placeholder symbol | `PlaceholderSymbol(_:)` | Card bodies without a preview, image and link previews | `.largeTitle`, secondary |
+| Metadata text | `.metadataStyle()` | Card footer, text editor counts | Caption, secondary, monospaced digits |
+| Row with note | `LabelWithNote(_:note:)` | General, Privacy, onboarding Finish: rows and toggles that explain themselves | Goes in the label of a `LabeledContent` or `Toggle` in a grouped `Form`, which draws the note as a secondary subtitle |
+| Section footnote | `FormFootnote(_:)` | Privacy and About section footers | Secondary text under a grouped section |
+| Sheet header | `SheetHeader(_:)` | Board sheet, link and color edit sheets | `.headline` section header |
+| Sheet button bar | `SheetButtonBar(errorMessage:) { … }` | Board, link, color and text edit sheets; Acknowledgements; onboarding steps | Optional `InlineErrorLabel` leading, buttons trailing; the caller pads it |
+| Inline error | `InlineErrorLabel(_:)` | Inside `SheetButtonBar` | `exclamationmark.triangle.fill`, red |
+| Glass panel background | `GlassPanelBackground(cornerRadius:)` | Shelf, Sequence panel | Regular glass on a background layer, so content keeps label colors |
+| Permission status | `PermissionStatusLabel` (app target, its strings live there) | Privacy, General Accessibility row, onboarding | Green check "Allowed" / secondary cross "Not Allowed" |
+
+Single-use looks stay in their screen: the search suggestion list (glass rect, selected-row highlight), the Board swatch picker, the Sequence row marker, the Sequence empty state (one secondary callout line), the Card header band and the text editor border.
 
 ### Window and popover metrics
 

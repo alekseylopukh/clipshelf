@@ -23,9 +23,7 @@ struct SearchTokenLabel: View {
             case .date:
                 Image(systemName: SearchToken.Category.date.symbolName)
             case let .board(id):
-                Circle()
-                    .fill((boards.first { $0.id == id }.flatMap { BoardColor(rawValue: $0.color) } ?? .gray).color)
-                    .frame(width: DesignTokens.boardDotSize, height: DesignTokens.boardDotSize)
+                BoardDot(boards.first { $0.id == id }.flatMap { BoardColor(rawValue: $0.color) } ?? .gray)
             }
         }
         .lineLimit(1)

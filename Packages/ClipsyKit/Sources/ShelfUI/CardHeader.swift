@@ -132,7 +132,8 @@ private struct CardHeaderText: View {
                 ))
                 .monospacedDigit()
                 if let board {
-                    BoardMarker(board: board)
+                    BoardDot(BoardColor(rawValue: board.color) ?? .gray, isOutlined: true)
+                        .help(board.name)
                 }
             }
         }
@@ -142,19 +143,5 @@ private struct CardHeaderText: View {
             radius: DesignTokens.cardHeaderTextShadowRadius,
             y: DesignTokens.cardHeaderTextShadowOffset
         )
-    }
-}
-
-private struct BoardMarker: View {
-    let board: Board
-
-    var body: some View {
-        Circle()
-            .fill((BoardColor(rawValue: board.color) ?? .gray).color)
-            .overlay {
-                Circle().strokeBorder(DesignTokens.cardHeaderBoardDotRing, lineWidth: DesignTokens.boardDotOutlineWidth)
-            }
-            .frame(width: DesignTokens.boardDotSize, height: DesignTokens.boardDotSize)
-            .help(board.name)
     }
 }

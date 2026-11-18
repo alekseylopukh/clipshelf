@@ -45,8 +45,7 @@ struct SequencePanelView: View {
             }
             .frame(width: DesignTokens.sequencePanelWidth)
             .background {
-                Color.clear
-                    .glassEffect(.regular, in: .rect(cornerRadius: DesignTokens.sequencePanelCornerRadius))
+                GlassPanelBackground(cornerRadius: DesignTokens.sequencePanelCornerRadius)
             }
         }
         .dropDestination(for: CardReference.self) { references, _ in
@@ -66,12 +65,12 @@ private struct SequencePanelHeader: View {
         @Bindable var sequence = model.sequence
         HStack(spacing: DesignTokens.spacingSmall) {
             Label("Sequence", systemImage: "list.number")
-                .labelStyle(.titleAndIcon)
                 .font(.headline)
                 .frame(maxWidth: .infinity, alignment: .leading)
             Button("Undo", systemImage: "arrow.uturn.backward") {
                 sequence.undo()
             }
+            .buttonStyle(.borderlessIcon)
             .keyboardShortcut("z", modifiers: .command)
             .disabled(sequence.canUndo == false)
             Menu("More", systemImage: "ellipsis") {
@@ -87,14 +86,12 @@ private struct SequencePanelHeader: View {
                 }
                 .disabled(sequence.entries.isEmpty)
             }
-            .menuIndicator(.hidden)
-            .fixedSize()
+            .menuStyle(.borderlessIcon)
             Button("Close", systemImage: "xmark") {
                 sequence.close()
             }
+            .buttonStyle(.borderlessIcon)
         }
-        .labelStyle(.iconOnly)
-        .buttonStyle(.borderless)
         .padding(.horizontal, DesignTokens.spacingLarge)
         .padding(.vertical, DesignTokens.spacingMedium)
         .contentShape(.rect)
@@ -120,9 +117,7 @@ private struct SequenceRow: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             if isHovered {
                 Button("Remove", systemImage: "xmark.circle.fill", action: onRemove)
-                    .labelStyle(.iconOnly)
-                    .buttonStyle(.borderless)
-                    .foregroundStyle(.secondary)
+                    .buttonStyle(.accessoryIcon)
             } else {
                 Image(systemName: row.card?.kind.symbolName ?? CardKind.unknown.symbolName)
                     .foregroundStyle(.secondary)
