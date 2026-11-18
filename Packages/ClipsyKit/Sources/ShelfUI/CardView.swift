@@ -185,14 +185,12 @@ private struct CardFace: View {
     let isHovered: Bool
 
     var body: some View {
-        VStack(
-            alignment: .leading,
-            spacing: layout == .compact ? DesignTokens.spacingSmall : DesignTokens.spacingMedium
-        ) {
+        VStack(alignment: .leading, spacing: 0) {
             CardHeader(card: card, now: now, layout: layout, highlightedTitle: highlights.title, board: board)
-            CardBodyView(card: card, content: content, highlightedPreview: highlights.preview)
-            if layout == .regular {
+            CardBodyView(card: card, content: content, layout: layout, highlightedPreview: highlights.preview)
+            if CardFooter.isShown(for: card.kind, layout: layout) {
                 CardFooter(kind: card.kind, content: content)
+                    .padding(.top, DesignTokens.spacingMedium)
             }
         }
         .padding(DesignTokens.cardContentInset)

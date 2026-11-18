@@ -72,7 +72,6 @@ struct CardHeader: View {
                 .padding(.horizontal, -contentInset)
                 .padding(.top, -contentInset)
         }
-        .padding(.bottom, DesignTokens.spacingSmall)
         .task(id: card.sourceApp?.bundleID) {
             guard let bundleID = card.sourceApp?.bundleID else {
                 tint = nil

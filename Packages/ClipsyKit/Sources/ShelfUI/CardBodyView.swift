@@ -6,38 +6,75 @@ import SwiftUI
 struct CardBodyView: View {
     let card: CardSummary
     let content: CardContent
+    let layout: CardLayout
     let highlightedPreview: AttributedString?
 
     var body: some View {
-        Group {
-            switch card.kind {
-            case .text:
-                TextCardBody(card: card, isCodeLike: content.isCodeLike, highlightedPreview: highlightedPreview)
-            case .link:
-                LinkCardBody(card: card, content: content)
-            case .color:
-                ColorCardBody(value: content.metadata.color, swatch: content.swatch)
-            case .image:
-                ImageCardBody(card: card)
-            case .file:
-                FileCardBody(card: card, fileCount: content.metadata.fileNames?.count ?? 1)
-            case .unknown:
-                SymbolCardBody(
-                    symbol: card.kind.symbolName,
-                    caption: Text("Clipsy can still paste this item.", comment: "Body of a card whose type is unknown")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                )
-            }
+        switch card.kind {
+        case .text:
+            TextCardBody(
+                card: card,
+                isCodeLike: content.isCodeLike,
+                layout: layout,
+                highlightedPreview: highlightedPreview
+            )
+            // compact text is line-limited, and the inner corner would cut its last line's descenders
+            .insetCardBody(layout, isClipped: layout == .regular)
+        case .link:
+            LinkCardBody(card: card, content: content, layout: layout)
+        case .color:
+            ColorCardBody(value: content.metadata.color, swatch: content.swatch, layout: layout)
+        case .image:
+            ImageCardBody(card: card, dimensions: content.dimensionsText, layout: layout)
+        case .file:
+            FileCardBody(card: card, fileCount: content.metadata.fileNames?.count ?? 1)
+                .insetCardBody(layout)
+        case .unknown:
+            SymbolCardBody(
+                symbol: card.kind.symbolName,
+                caption: Text("Clipsy can still paste this item.", comment: "Body of a card whose type is unknown")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            )
+            .insetCardBody(layout)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .clipShape(.cardInner)
+    }
+}
+
+extension CardContent {
+    var dimensionsText: Text? {
+        guard let width = metadata.pixelWidth, let height = metadata.pixelHeight else { return nil }
+        return Text(
+            "\(width.formatted(.number.grouping(.never))) × \(height.formatted(.number.grouping(.never)))",
+            comment: "Caption on an image card: pixel width and height"
+        )
+    }
+}
+
+private extension View {
+    func insetCardBody(_ layout: CardLayout, isClipped: Bool = true) -> some View {
+        frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .clipShape(isClipped ? AnyShape(.cardInner) : AnyShape(.rect))
+            .padding(.top, layout == .regular ? DesignTokens.cardBodyTopInset : DesignTokens.cardCompactBodyTopInset)
+    }
+
+    func clipCardMediaCorners() -> some View {
+        clipShape(UnevenRoundedRectangle(
+            bottomLeadingRadius: DesignTokens.cardCornerRadius,
+            bottomTrailingRadius: DesignTokens.cardCornerRadius
+        ))
+    }
+
+    func bleedCardBody(toBottom: Bool) -> some View {
+        padding(.horizontal, -DesignTokens.cardContentInset)
+            .padding(.bottom, toBottom ? -DesignTokens.cardContentInset : 0)
     }
 }
 
 private struct TextCardBody: View {
     let card: CardSummary
     let isCodeLike: Bool
+    let layout: CardLayout
     let highlightedPreview: AttributedString?
 
     @State private var richText: AttributedString?
@@ -48,26 +85,31 @@ private struct TextCardBody: View {
     private static let logger = Logger(subsystem: "app.gonar.clipsy", category: "Shelf")
 
     var body: some View {
-        Color.clear
-            .overlay(alignment: .topLeading) {
-                Group {
-                    if let highlightedPreview {
-                        Text(highlightedPreview)
-                            .font(isCodeLike ? .body.monospaced() : .body)
-                    } else if let richText {
-                        Text(richText)
-                            .font(.body)
-                    } else {
-                        Text(verbatim: card.preview ?? "")
-                            .font(isCodeLike ? .body.monospaced() : .body)
-                    }
+        if layout == .compact {
+            TextPreview(
+                preview: card.preview,
+                isCodeLike: isCodeLike,
+                highlightedPreview: highlightedPreview,
+                richText: nil
+            )
+            .lineLimit(DesignTokens.cardCompactTextLineLimit)
+            .truncationMode(.tail)
+        } else {
+            Color.clear
+                .overlay(alignment: .topLeading) {
+                    TextPreview(
+                        preview: card.preview,
+                        isCodeLike: isCodeLike,
+                        highlightedPreview: highlightedPreview,
+                        richText: richText
+                    )
+                    .fixedSize(horizontal: false, vertical: true)
                 }
-                .fixedSize(horizontal: false, vertical: true)
-            }
-            .fadeTruncation()
-            .task(id: RichTextRequest(cardID: card.id, colorScheme: colorScheme, contrast: contrast)) {
-                await loadRichText()
-            }
+                .fadeTruncation()
+                .task(id: RichTextRequest(cardID: card.id, colorScheme: colorScheme, contrast: contrast)) {
+                    await loadRichText()
+                }
+        }
     }
 
     private func loadRichText() async {
@@ -84,6 +126,26 @@ private struct TextCardBody: View {
             return
         } catch {
             Self.logger.error("rich text preview failed: \(String(describing: type(of: error)), privacy: .public)")
+        }
+    }
+}
+
+private struct TextPreview: View {
+    let preview: String?
+    let isCodeLike: Bool
+    let highlightedPreview: AttributedString?
+    let richText: AttributedString?
+
+    var body: some View {
+        if let highlightedPreview {
+            Text(highlightedPreview)
+                .font(isCodeLike ? .body.monospaced() : .body)
+        } else if let richText {
+            Text(richText)
+                .font(.body)
+        } else {
+            Text(verbatim: preview ?? "")
+                .font(isCodeLike ? .body.monospaced() : .body)
         }
     }
 }
@@ -115,6 +177,7 @@ private struct SymbolCardBody: View {
 private struct LinkCardBody: View {
     let card: CardSummary
     let content: CardContent
+    let layout: CardLayout
 
     @State private var image: CGImage?
     @Environment(\.cardMediaLoader) private var loader
@@ -124,18 +187,25 @@ private struct LinkCardBody: View {
     var body: some View {
         Group {
             if let image {
-                VStack(alignment: .leading, spacing: DesignTokens.spacingMedium) {
-                    Color.clear
-                        .overlay {
-                            Image(decorative: image, scale: 1)
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
+                if layout == .compact {
+                    LinkImageArea(image: image)
+                        .clipCardMediaCorners()
+                        .bleedCardBody(toBottom: true)
+                } else {
+                    ViewThatFits(in: .vertical) {
+                        VStack(alignment: .leading, spacing: 0) {
+                            LinkImageArea(image: image)
+                                .bleedCardBody(toBottom: false)
+                            if let title = content.metadata.pageTitle {
+                                Text(verbatim: title)
+                                    .font(.callout.weight(.semibold))
+                                    .lineLimit(2)
+                                    .layoutPriority(1)
+                                    .padding(.top, DesignTokens.spacingMedium)
+                            }
                         }
-                        .clipShape(.cardInner)
-                    if let title = content.metadata.pageTitle {
-                        Text(verbatim: title)
-                            .font(.callout.weight(.semibold))
-                            .lineLimit(2)
+                        LinkImageArea(image: image)
+                            .bleedCardBody(toBottom: false)
                     }
                 }
             } else {
@@ -143,6 +213,7 @@ private struct LinkCardBody: View {
                     symbol: card.kind.symbolName,
                     caption: (content.metadata.pageTitle ?? content.host).map { Text(verbatim: $0) }
                 )
+                .insetCardBody(layout)
             }
         }
         .task(id: LinkImageRequest(hash: card.contentHash, hasImage: content.metadata.pixelWidth != nil)) {
@@ -165,6 +236,21 @@ private struct LinkCardBody: View {
     }
 }
 
+private struct LinkImageArea: View {
+    let image: CGImage
+
+    var body: some View {
+        Color.clear
+            .overlay {
+                Image(decorative: image, scale: 1)
+                    .resizable()
+                    .scaledToFill()
+            }
+            .clipped()
+            .frame(minHeight: DesignTokens.cardLinkImageMinimumHeight)
+    }
+}
+
 private struct LinkImageRequest: Hashable {
     let hash: String?
     let hasImage: Bool
@@ -172,6 +258,8 @@ private struct LinkImageRequest: Hashable {
 
 private struct ImageCardBody: View {
     let card: CardSummary
+    let dimensions: Text?
+    let layout: CardLayout
 
     @State private var thumbnail: CGImage?
     @Environment(\.cardMediaLoader) private var loader
@@ -181,18 +269,36 @@ private struct ImageCardBody: View {
     var body: some View {
         Group {
             if let thumbnail {
-                Image(decorative: thumbnail, scale: 1)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .background {
-                        if thumbnail.hasAlpha {
-                            Checkerboard()
+                Rectangle()
+                    .fill(.fill.quaternary)
+                    .overlay {
+                        GeometryReader { proxy in
+                            Image(decorative: thumbnail, scale: 1)
+                                .resizable()
+                                .aspectRatio(contentMode: CardMediaFit.contentMode(
+                                    imageSize: CGSize(width: thumbnail.width, height: thumbnail.height),
+                                    bodySize: proxy.size
+                                ))
+                                .background {
+                                    if thumbnail.hasAlpha {
+                                        Checkerboard()
+                                    }
+                                }
+                                .frame(width: proxy.size.width, height: proxy.size.height)
                         }
                     }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(.fill.quaternary)
+                    .clipCardMediaCorners()
+                    .overlay(alignment: .bottomLeading) {
+                        if let dimensions {
+                            MediaCaption(dimensions)
+                                .accessibilityHidden(true)
+                                .padding(DesignTokens.mediaCaptionInset)
+                        }
+                    }
+                    .bleedCardBody(toBottom: true)
             } else {
                 SymbolCardBody(symbol: card.kind.symbolName, caption: nil)
+                    .insetCardBody(layout)
             }
         }
         .task(id: card.contentHash) {
@@ -241,7 +347,7 @@ private struct FileCardBody: View {
                             Image(decorative: thumbnail.image, scale: displayScale)
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
-                                .frame(width: iconSize, height: iconSize)
+                                .frame(maxWidth: iconSize, maxHeight: iconSize)
                         }
                     }
                 }
@@ -292,18 +398,24 @@ extension CGImage {
 private struct ColorCardBody: View {
     let value: String?
     let swatch: Color?
+    let layout: CardLayout
 
     var body: some View {
         if let swatch {
             Rectangle()
                 .fill(swatch)
-                .overlay {
+                .overlay(alignment: .bottomLeading) {
                     if let value {
                         SwatchValueLabel(value, on: swatch)
+                            .accessibilityHidden(true)
+                            .padding(DesignTokens.swatchValueInset)
                     }
                 }
+                .clipCardMediaCorners()
+                .bleedCardBody(toBottom: true)
         } else {
             SymbolCardBody(symbol: CardKind.color.symbolName, caption: value.map { Text(verbatim: $0) })
+                .insetCardBody(layout)
         }
     }
 }

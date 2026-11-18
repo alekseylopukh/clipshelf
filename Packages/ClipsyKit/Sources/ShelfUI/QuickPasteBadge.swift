@@ -14,10 +14,14 @@ struct QuickPasteBadgeModifier: ViewModifier {
                         GlassBadge(count: number)
                             .accessibilityHidden(true)
                             .padding(DesignTokens.badgeInset)
-                            .transition(.opacity)
+                            .transition(
+                                reduceMotion
+                                    ? .opacity
+                                    : .scale(scale: DesignTokens.badgeEntranceScale).combined(with: .opacity)
+                            )
                     }
                 }
-                .animation(reduceMotion ? nil : DesignTokens.Motion.quick, value: number)
+                .animation(animation, value: number)
             }
             .accessibilityLabel { label in
                 label
@@ -28,6 +32,15 @@ struct QuickPasteBadgeModifier: ViewModifier {
                     )
                 }
             }
+    }
+
+    private var animation: Animation {
+        if reduceMotion {
+            return DesignTokens.Motion.reduced
+        }
+        guard let number else { return DesignTokens.Motion.quick }
+        return DesignTokens.Motion.pop
+            .delay(DesignTokens.badgeAppearDelay + DesignTokens.badgeStagger * Double(number - 1))
     }
 }
 

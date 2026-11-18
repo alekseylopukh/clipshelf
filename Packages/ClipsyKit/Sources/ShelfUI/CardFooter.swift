@@ -16,16 +16,8 @@ struct CardFooter: View {
                     Text("\(characters) characters", comment: "Card footer: number of characters in a text card")
                 }
             case .link:
-                if let url = content.metadata.url {
-                    Text(verbatim: url)
-                        .truncationMode(.head)
-                }
-            case .image:
-                if let width = content.metadata.pixelWidth, let height = content.metadata.pixelHeight {
-                    Text(
-                        "\(width.formatted(.number.grouping(.never))) × \(height.formatted(.number.grouping(.never)))",
-                        comment: "Card footer: pixel width and height of an image card"
-                    )
+                if let label = content.host.map(Self.displayHost) ?? content.metadata.url {
+                    Text(verbatim: label)
                 }
             case .file:
                 if let names = content.metadata.fileNames, names.count > 1 {
@@ -41,19 +33,30 @@ struct CardFooter: View {
                     Text(verbatim: name)
                         .truncationMode(.middle)
                 }
-            case .color:
-                if let color = content.metadata.color {
-                    Text(verbatim: color)
-                }
             case .unknown:
                 if let type = content.metadata.typeIdentifier {
                     Text(verbatim: type)
                         .truncationMode(.middle)
                 }
+            case .image, .color:
+                EmptyView()
             }
         }
         .metadataStyle()
         .lineLimit(1)
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    static func isShown(for kind: CardKind, layout: CardLayout) -> Bool {
+        switch kind {
+        case .text, .link, .file, .unknown:
+            layout == .regular
+        case .image, .color:
+            false
+        }
+    }
+
+    static func displayHost(_ host: String) -> String {
+        host.hasPrefix("www.") ? String(host.dropFirst("www.".count)) : host
     }
 }

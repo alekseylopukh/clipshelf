@@ -57,29 +57,29 @@ struct CardCommandButton: View {
                 .keyboardShortcut("c")
         case .copyAsPlainText:
             if plainTextModifiers == .command || isCopyAsPlainTextShortcutTaken {
-                Button("Copy as Plain Text", action: action)
+                Button("Copy as Plain Text", systemImage: "doc.plaintext", action: action)
             } else {
-                Button("Copy as Plain Text", action: action)
+                Button("Copy as Plain Text", systemImage: "doc.plaintext", action: action)
                     .keyboardShortcut("c", modifiers: plainTextModifiers.union(.command))
             }
         case .open:
-            Button("Open", action: action)
+            Button("Open", systemImage: "arrow.up.forward.app", action: action)
                 .keyboardShortcut("o")
         case .openWith:
             if let card = cards.first {
                 OpenWithMenu(cardID: card.id, applications: openWithApplications)
             }
         case .showInFinder:
-            Button("Show in Finder", action: action)
+            Button("Show in Finder", systemImage: "folder", action: action)
                 .keyboardShortcut("r", modifiers: [.shift, .command])
         case .quickLook:
             Button("Quick Look", systemImage: "eye", action: action)
                 .keyboardShortcut(.space, modifiers: [])
         case .showInList:
-            Button("Show in List", action: action)
+            Button("Show in List", systemImage: "list.bullet.rectangle", action: action)
                 .keyboardShortcut("g")
         case .rename:
-            Button("Rename…", action: action)
+            Button("Rename…", systemImage: "character.cursor.ibeam", action: action)
                 .keyboardShortcut("r")
         case .edit:
             Button("Edit…", systemImage: "pencil", action: action)
@@ -90,7 +90,7 @@ struct CardCommandButton: View {
             Button("Add to Sequence", systemImage: "list.number", action: action)
                 .globalKeyboardShortcut(.startSequence)
         case .removeFromBoard:
-            Button("Remove from Board", action: action)
+            Button("Remove from Board", systemImage: "minus.circle", action: action)
                 .keyboardShortcut(.delete, modifiers: [])
         case .share:
             Button("Share…", systemImage: "square.and.arrow.up", action: action)
