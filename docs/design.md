@@ -36,6 +36,10 @@ Values marked "proposed" are starting points to tune on real hardware, not measu
 | In-app promotional banners | None. Only system alerts where a permission is actually missing | No nudges, no upsell. |
 | Brand-tinted Sequence window | Plain glass panel with system rows | First-party look. |
 
+### App icon
+
+`App/AppIcon.icon`, an Icon Composer document that Xcode compiles into the app (the `AppIcon` build setting). It shows a paperclip of three glass pieces in a fixed blue, indigo and pink close to the system colors, each with a subtle vertical gradient; the indigo piece lies on top, and where it crosses the other two the overlap takes a mixed color, so the clip reads as layered glass. The artwork is SVG with no baked-in shadows or highlights; the material, light and dark backgrounds, and the clear and tinted renditions come from Icon Composer. Edit it in Icon Composer and check every rendition and the 32 and 16 pt sizes.
+
 ---
 
 ## 2. Shelf
