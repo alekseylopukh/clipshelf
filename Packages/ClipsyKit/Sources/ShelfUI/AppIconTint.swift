@@ -3,15 +3,16 @@ import DesignSystem
 import Foundation
 
 struct AppIconTint: Equatable {
-    let hue: Double
-    let saturation: Double
-    let brightness: Double
+    var votes: [CardBandColor: Double]
+    var darkShare: Double
+    var lightShare: Double
 }
 
 extension AppIconTint {
-    private static let hueBins = 12
     private static let minimumAlpha = 0.5
-    private static let minimumShare = 0.06
+    private static let minimumChroma = 0.25
+    private static let darkLuminance = 0.06
+    private static let lightLuminance = 0.4
 
     init?(icon: CGImage) {
         let side = DesignTokens.appIconTintSampleSide
@@ -34,8 +35,10 @@ extension AppIconTint {
         }
         guard isDrawn else { return nil }
 
-        var bins = [Bin](repeating: Bin(), count: Self.hueBins)
+        var votes: [CardBandColor: Double] = [:]
         var opaqueCount = 0.0
+        var darkCount = 0.0
+        var lightCount = 0.0
         for offset in stride(from: 0, to: pixels.count, by: 4) {
             let alpha = Double(pixels[offset + 3]) / 255
             guard alpha > Self.minimumAlpha else { continue }
@@ -44,44 +47,46 @@ extension AppIconTint {
             let green = Double(pixels[offset + 1]) / 255 / alpha
             let blue = Double(pixels[offset + 2]) / 255 / alpha
             let maximum = max(red, green, blue)
-            let delta = maximum - min(red, green, blue)
-            guard maximum > 0, delta > 0 else { continue }
-            let saturation = delta / maximum
-            let hue: Double = switch maximum {
-            case red: (green - blue) / delta / 6
-            case green: ((blue - red) / delta + 2) / 6
-            default: ((red - green) / delta + 4) / 6
+            let chroma = maximum - min(red, green, blue)
+            if chroma >= Self.minimumChroma {
+                let hue = Self.hueDegrees(red: red, green: green, blue: blue, maximum: maximum, chroma: chroma)
+                votes[CardBandColor(hueDegrees: hue), default: 0] += chroma
+            } else {
+                let luminance = Self.luminance(red: red, green: green, blue: blue)
+                if luminance < Self.darkLuminance {
+                    darkCount += 1
+                } else if luminance > Self.lightLuminance {
+                    lightCount += 1
+                }
             }
-            let wrapped = hue < 0 ? hue + 1 : hue
-            let weight = saturation * maximum
-            let index = min(Int(wrapped * Double(Self.hueBins)), Self.hueBins - 1)
-            bins[index].add(hue: wrapped, saturation: saturation, brightness: maximum, weight: weight)
         }
-        guard opaqueCount > 0,
-              let best = bins.max(by: { $0.weight < $1.weight }),
-              best.weight / opaqueCount >= Self.minimumShare
-        else { return nil }
-        let angle = atan2(best.hueY, best.hueX) / (2 * .pi)
+        guard opaqueCount > 0 else { return nil }
         self.init(
-            hue: angle < 0 ? angle + 1 : angle,
-            saturation: best.saturation / best.weight,
-            brightness: best.brightness / best.weight
+            votes: votes.mapValues { $0 / opaqueCount },
+            darkShare: darkCount / opaqueCount,
+            lightShare: lightCount / opaqueCount
         )
     }
 
-    private struct Bin {
-        var weight = 0.0
-        var hueX = 0.0
-        var hueY = 0.0
-        var saturation = 0.0
-        var brightness = 0.0
-
-        mutating func add(hue: Double, saturation: Double, brightness: Double, weight: Double) {
-            self.weight += weight
-            hueX += cos(hue * 2 * .pi) * weight
-            hueY += sin(hue * 2 * .pi) * weight
-            self.saturation += saturation * weight
-            self.brightness += brightness * weight
+    private static func hueDegrees(
+        red: Double,
+        green: Double,
+        blue: Double,
+        maximum: Double,
+        chroma: Double
+    ) -> Double {
+        let sector = switch maximum {
+        case red: (green - blue) / chroma
+        case green: (blue - red) / chroma + 2
+        default: (red - green) / chroma + 4
         }
+        return sector * 60
+    }
+
+    private static func luminance(red: Double, green: Double, blue: Double) -> Double {
+        func linear(_ value: Double) -> Double {
+            value <= 0.04045 ? value / 12.92 : pow((value + 0.055) / 1.055, 2.4)
+        }
+        return 0.2126 * linear(red) + 0.7152 * linear(green) + 0.0722 * linear(blue)
     }
 }

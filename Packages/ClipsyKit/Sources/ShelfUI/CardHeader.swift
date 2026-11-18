@@ -11,7 +11,6 @@ struct CardHeader: View {
 
     @State private var tint: AppIconTint?
     @Environment(\.self) private var environment
-    @Environment(\.colorSchemeContrast) private var contrast
 
     init(card: CardSummary, now: Date, layout: CardLayout, highlightedTitle: AttributedString?, board: Board?) {
         self.card = card
@@ -22,12 +21,25 @@ struct CardHeader: View {
         _tint = State(initialValue: card.sourceApp.flatMap { AppIconCache.shared.cachedTint(for: $0.bundleID) })
     }
 
+    static func iconPixelSize(layout: CardLayout, displayScale: CGFloat) -> CGFloat {
+        iconSize(layout: layout) * displayScale
+    }
+
+    private static func visibleIconSize(layout: CardLayout) -> CGFloat {
+        layout == .regular ? DesignTokens.cardHeaderIconSize : DesignTokens.cardCompactHeaderIconSize
+    }
+
+    private static func iconSize(layout: CardLayout) -> CGFloat {
+        visibleIconSize(layout: layout) / DesignTokens.appIconVisibleRatio
+    }
+
     var body: some View {
         let isRegular = layout == .regular
         let contentInset = DesignTokens.cardContentInset
-        let visibleIconSize = isRegular ? DesignTokens.cardHeaderIconSize : DesignTokens.cardCompactHeaderIconSize
+        let visibleIconSize = Self.visibleIconSize(layout: layout)
         let iconInset = isRegular ? DesignTokens.cardHeaderIconInset : DesignTokens.cardCompactHeaderIconInset
-        let iconSize = visibleIconSize / DesignTokens.appIconVisibleRatio
+        let iconSize = Self.iconSize(layout: layout)
+        let band = CardBandColor(tint: tint)
         let shape = UnevenRoundedRectangle(
             topLeadingRadius: DesignTokens.cardCornerRadius,
             topTrailingRadius: DesignTokens.cardCornerRadius
@@ -38,7 +50,8 @@ struct CardHeader: View {
                 now: now,
                 layout: layout,
                 highlightedTitle: highlightedTitle,
-                board: board
+                board: board,
+                isLightBand: band.isLight(in: environment)
             )
             Spacer(minLength: 0)
             AppIconView(
@@ -54,14 +67,8 @@ struct CardHeader: View {
         .padding(.top, -contentInset)
         .background {
             shape
-                .fill(bandColor)
-                .overlay {
-                    shape.fill(LinearGradient(
-                        colors: [DesignTokens.cardHeaderSheenColor, .clear],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    ))
-                }
+                .fill(band.fill(in: environment))
+                .animation(DesignTokens.Motion.quick, value: band)
                 .padding(.horizontal, -contentInset)
                 .padding(.top, -contentInset)
         }
@@ -76,18 +83,6 @@ struct CardHeader: View {
             tint = await AppIconCache.shared.tint(for: bundleID)
         }
     }
-
-    private var bandColor: Color {
-        let bandColor = CardBandColor(tint: tint)
-        // the text sits mid-band, under half of the sheen
-        return bandColor.legibleColor(
-            in: environment,
-            sheenOpacity: DesignTokens.cardHeaderSheenOpacity / 2,
-            minimumContrast: contrast == .increased
-                ? DesignTokens.cardHeaderIncreasedTextContrast
-                : bandColor.minimumWhiteContrast
-        )
-    }
 }
 
 private struct CardHeaderText: View {
@@ -96,6 +91,7 @@ private struct CardHeaderText: View {
     let layout: CardLayout
     let highlightedTitle: AttributedString?
     let board: Board?
+    let isLightBand: Bool
 
     @Environment(CardActions.self) private var actions
     @Environment(\.colorSchemeContrast) private var contrast
@@ -124,11 +120,11 @@ private struct CardHeaderText: View {
                 Text(now, format: Date.AnchoredRelativeFormatStyle(
                     anchor: card.displayDate,
                     presentation: .named,
-                    unitsStyle: .abbreviated
+                    unitsStyle: layout == .regular ? .wide : .narrow
                 ))
                 .font(DesignTokens.cardHeaderTimeFont)
                 .foregroundStyle(DesignTokens.cardHeaderText.opacity(
-                    contrast == .increased ? 1 : DesignTokens.cardHeaderSecondaryTextOpacity
+                    isLightBand || contrast == .increased ? 1 : DesignTokens.cardHeaderSecondaryTextOpacity
                 ))
                 .monospacedDigit()
                 if let board {
@@ -139,7 +135,7 @@ private struct CardHeaderText: View {
         }
         .lineLimit(1)
         .shadow(
-            color: DesignTokens.cardHeaderTextShadowColor,
+            color: isLightBand ? DesignTokens.cardHeaderTextShadowColor : .clear,
             radius: DesignTokens.cardHeaderTextShadowRadius,
             y: DesignTokens.cardHeaderTextShadowOffset
         )

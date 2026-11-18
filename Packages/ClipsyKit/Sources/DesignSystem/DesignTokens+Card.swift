@@ -4,22 +4,16 @@ public extension DesignTokens {
     /// the icon's visible squircle, without the image's transparent padding
     static let cardHeaderIconSize: CGFloat = 44
     static let cardHeaderIconInset: CGFloat = 10
-    static let cardHeaderSheenOpacity: Double = 0.12
-    static let cardHeaderSheenColor = Color.white.opacity(cardHeaderSheenOpacity)
     static let cardHeaderText = Color.white
     static let cardHeaderSecondaryTextOpacity: Double = 0.85
     static let cardHeaderTitleFont = Font.system(size: 14, weight: .semibold)
-    static let cardHeaderTimeFont = Font.subheadline
+    static let cardHeaderTimeFont = Font.subheadline.weight(.medium)
     static let cardHeaderTextShadowColor = Color.black.opacity(0.22)
     static let cardHeaderTextShadowRadius: CGFloat = 1
     static let cardHeaderTextShadowOffset: CGFloat = 0.5
     static let cardHeaderBoardDotRing = Color.white
-    static let cardHeaderTextContrast: Double = 3
-    /// orange, green and teal stay recognisable only below 3:1 white contrast (yellow has its own floor)
-    static let cardHeaderLightHueTextContrast: Double = 2.5
-    static let cardHeaderYellowTextContrast: Double = 2.2
     static let cardHeaderIncreasedTextContrast: Double = 4.5
-    static let appIconTintSampleSide = 24
+    static let appIconTintSampleSide = 32
     static let appIconPrewarmCount = 12
 
     static let cardLiftOffset: CGFloat = 2
