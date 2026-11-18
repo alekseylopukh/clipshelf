@@ -37,7 +37,7 @@ struct CardView: View {
 
     var body: some View {
         let isSelected = model.selection.contains(card.id)
-        CardSurface(
+        CardFace(
             card: card,
             content: content,
             highlights: highlights,
@@ -174,7 +174,7 @@ struct CardView: View {
     }
 }
 
-private struct CardSurface: View {
+private struct CardFace: View {
     let card: CardSummary
     let content: CardContent
     let highlights: CardHighlights
@@ -183,14 +183,6 @@ private struct CardSurface: View {
     let layout: CardLayout
     let isSelected: Bool
     let isHovered: Bool
-
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.colorSchemeContrast) private var contrast
-    @Environment(\.pixelLength) private var pixelLength
-
-    private var shape: RoundedRectangle {
-        RoundedRectangle(cornerRadius: DesignTokens.cardCornerRadius)
-    }
 
     var body: some View {
         VStack(
@@ -206,29 +198,7 @@ private struct CardSurface: View {
         .padding(DesignTokens.cardContentInset)
         .frame(maxHeight: .infinity)
         .aspectRatio(layout == .compact ? DesignTokens.compactCardAspectRatio : 1, contentMode: .fit)
-        .background {
-            shape
-                .fill(Color(nsColor: DesignTokens.cardFill))
-                .shadow(
-                    color: isHovered || isSelected ? DesignTokens.cardLiftShadowColor : .clear,
-                    radius: DesignTokens.cardLiftShadowRadius,
-                    y: DesignTokens.cardLiftShadowOffset
-                )
-        }
-        .containerShape(shape)
-        .overlay {
-            shape.strokeBorder(Color(nsColor: .separatorColor), lineWidth: pixelLength)
-        }
-        .overlay {
-            if isSelected {
-                SelectionRing(width: DesignTokens.selectionRingWidth(for: contrast))
-            }
-        }
-        .contentShape(.dragPreview, shape)
-        .contentShape(shape)
-        .scaleEffect(isSelected ? DesignTokens.cardLiftScale : 1)
-        .animation(reduceMotion ? nil : .default, value: isSelected)
-        .animation(reduceMotion ? nil : .default, value: isHovered)
+        .cardSurface(isSelected: isSelected, isHovered: isHovered)
     }
 }
 
@@ -239,18 +209,6 @@ private struct CardHighlights {
     init(card: CardSummary, match: SearchResult?) {
         title = card.title.flatMap { SearchHighlight.text($0, matches: match?.titleMatches ?? []) }
         preview = card.preview.flatMap { SearchHighlight.text($0, matches: match?.previewMatches ?? []) }
-    }
-}
-
-private struct SelectionRing: View {
-    let width: CGFloat
-
-    var body: some View {
-        let outset = DesignTokens.selectionRingGap + width
-        RoundedRectangle(cornerRadius: DesignTokens.cardCornerRadius + outset)
-            .strokeBorder(Color.accentColor, lineWidth: width)
-            .padding(-outset)
-            .accessibilityHidden(true)
     }
 }
 

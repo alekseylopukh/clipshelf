@@ -39,15 +39,14 @@ struct CardPreviewView: View {
             case .file:
                 FileCardPreview(card: card)
             case .unknown:
-                ContentUnavailableView {
-                    Label {
-                        Text("No Preview", comment: "Title of the preview of a card that Clipsy cannot show")
-                    } icon: {
-                        Image(systemName: card.kind.symbolName)
-                    }
-                } description: {
-                    Text("Clipsy can still paste this item.", comment: "Body of a card whose type is unknown")
-                }
+                EmptyStateView(
+                    Text("No Preview", comment: "Title of the preview of a card that Clipsy cannot show"),
+                    systemImage: card.kind.symbolName,
+                    description: Text(
+                        "Clipsy can still paste this item.",
+                        comment: "Body of a card whose type is unknown"
+                    )
+                )
             }
         }
         .frame(width: size.width, height: size.height)

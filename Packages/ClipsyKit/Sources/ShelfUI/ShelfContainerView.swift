@@ -19,8 +19,7 @@ struct ShelfContainerView: View {
         ZStack {
             GlassEffectContainer {
                 if presentation.isVisible {
-                    Color.clear
-                        .glassEffect(.regular, in: .rect(cornerRadius: DesignTokens.shelfCornerRadius))
+                    GlassPanelBackground(cornerRadius: DesignTokens.shelfCornerRadius)
                         .glassEffectTransition(reduceMotion ? .identity : .materialize)
                         .transition(reduceMotion ? .opacity : .offset(y: DesignTokens.shelfOpenOffset))
                 }

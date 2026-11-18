@@ -54,8 +54,9 @@ struct AboutSettingsView: View {
             } header: {
                 Text("Updates")
             } footer: {
-                Text("Clipsy looks for a new version on GitHub only when you check or turn on automatic checks.")
-                    .foregroundStyle(.secondary)
+                FormFootnote(Text(
+                    "Clipsy looks for a new version on GitHub only when you check or turn on automatic checks."
+                ))
             }
         }
         .formStyle(.grouped)

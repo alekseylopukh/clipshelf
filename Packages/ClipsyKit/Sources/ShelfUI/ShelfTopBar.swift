@@ -1,3 +1,4 @@
+import AppKit
 import DesignSystem
 import Store
 import SwiftUI
@@ -15,11 +16,12 @@ struct ShelfTopBar: View {
                 ShelfFiltersButton(model: model)
                 ScrollView(.horizontal) {
                     HStack(spacing: DesignTokens.spacingMedium) {
-                        TabCapsule(isSelected: model.tab == .history) {
+                        Button {
                             model.showTab(.history)
                         } label: {
                             Label("History", systemImage: "clock")
                         }
+                        .buttonStyle(.glassTab(isSelected: model.tab == .history))
                         ForEach(model.boards) { board in
                             BoardCapsule(board: board, isSelected: model.tab == .board(id: board.id)) {
                                 model.showTab(.board(id: board.id))
@@ -29,13 +31,10 @@ struct ShelfTopBar: View {
                 }
                 .scrollIndicators(.hidden)
                 .scrollClipDisabled()
-                Button {
+                Button("New Board", systemImage: "plus") {
                     commands.newBoard?()
-                } label: {
-                    TopBarIcon(title: "New Board", systemImage: "plus")
                 }
-                .buttonStyle(.glass)
-                .buttonBorderShape(.circle)
+                .buttonStyle(.glassIcon)
                 .disabled(commands.newBoard == nil)
                 ShelfMoreMenu(commands: commands)
             }
@@ -60,13 +59,10 @@ private struct ShelfFiltersButton: View {
 
     var body: some View {
         @Bindable var model = model
-        Button {
+        Button("Filters", systemImage: "line.3.horizontal.decrease") {
             model.isFilterBrowserPresented.toggle()
-        } label: {
-            TopBarIcon(title: "Filters", systemImage: "line.3.horizontal.decrease")
         }
-        .buttonStyle(.glass)
-        .buttonBorderShape(.circle)
+        .buttonStyle(.glassIcon)
         .popover(isPresented: $model.isFilterBrowserPresented, arrowEdge: .top) {
             FilterBrowser(model: model)
         }
@@ -81,10 +77,7 @@ private struct ShelfSearchField: View {
 
     var body: some View {
         @Bindable var model = model
-        HStack(spacing: DesignTokens.spacingSmall) {
-            Image(systemName: "magnifyingglass")
-                .foregroundStyle(.secondary)
-                .accessibilityHidden(true)
+        GlassSearchField {
             ForEach(model.tokens) { token in
                 SearchTokenChip(token: token, model: model)
             }
@@ -123,31 +116,8 @@ private struct ShelfSearchField: View {
                 Button("Clear Search", systemImage: "xmark.circle.fill") {
                     _ = model.clearSearch()
                 }
-                .labelStyle(.iconOnly)
-                .buttonStyle(.borderless)
-                .foregroundStyle(.secondary)
+                .buttonStyle(.accessoryIcon)
             }
-        }
-        .padding(.horizontal, DesignTokens.spacingLarge)
-        .frame(minWidth: DesignTokens.searchFieldWidth, minHeight: DesignTokens.topBarControlHeight)
-        .fixedSize(horizontal: true, vertical: false)
-        .glassEffect(.regular.interactive(), in: .capsule)
-    }
-}
-
-private struct TabCapsule<Title: View>: View {
-    let isSelected: Bool
-    let action: () -> Void
-    @ViewBuilder let label: () -> Title
-
-    var body: some View {
-        if isSelected {
-            Button(action: action, label: label)
-                .buttonStyle(.glassProminent)
-                .accessibilityAddTraits(.isSelected)
-        } else {
-            Button(action: action, label: label)
-                .buttonStyle(.glass)
         }
     }
 }
@@ -161,9 +131,10 @@ private struct BoardCapsule: View {
     @Environment(BoardEditor.self) private var editor
 
     var body: some View {
-        TabCapsule(isSelected: isSelected || isTargeted, action: action) {
+        Button(action: action) {
             BoardLabel(board: board)
         }
+        .buttonStyle(.glassTab(isSelected: isSelected || isTargeted))
         .contextMenu {
             BoardContextMenu(board: board)
         }
@@ -188,60 +159,55 @@ private struct BoardLabel: View {
         Label {
             Text(board.name)
         } icon: {
-            Circle()
-                .fill((BoardColor(rawValue: board.color) ?? .gray).color)
-                .frame(width: DesignTokens.boardDotSize, height: DesignTokens.boardDotSize)
+            BoardDot(BoardColor(rawValue: board.color) ?? .gray)
         }
         .lineLimit(1)
     }
 }
 
+/// a glass button that pops up an `NSMenu`, because macOS menus ignore `.buttonStyle(.glass)`
 private struct ShelfMoreMenu: View {
     let commands: ShelfCommands
 
+    @State private var anchor = PopUpMenuAnchor()
+
     var body: some View {
-        Menu {
-            Button("New Text Card", systemImage: "square.and.pencil") {
-                commands.newTextCard?()
-            }
-            .disabled(commands.newTextCard == nil)
-            Button("Start Sequence", systemImage: "list.number") {
-                commands.startSequence?()
-            }
-            .disabled(commands.startSequence == nil)
-            Divider()
-            if commands.isCapturePaused() {
-                Button("Resume Capture", systemImage: "play.circle") {
-                    commands.setCapturePaused?(false)
-                }
-            } else {
-                Button("Pause Capture", systemImage: "pause.circle") {
-                    commands.setCapturePaused?(true)
-                }
-            }
-            Divider()
-            Button("Settings…") {
-                commands.openSettings?()
-            }
-        } label: {
-            TopBarIcon(title: "More", systemImage: "ellipsis")
+        Button("More", systemImage: "ellipsis") {
+            anchor.popUp(menu())
         }
-        .menuIndicator(.hidden)
-        .buttonStyle(.glass)
-        .buttonBorderShape(.circle)
-        .fixedSize()
+        .buttonStyle(.glassIcon)
+        .popUpMenuAnchor(anchor)
     }
-}
 
-/// a fixed glyph box keeps icon-only glass buttons as tall as the text capsules
-private struct TopBarIcon: View {
-    let title: LocalizedStringKey
-    let systemImage: String
-
-    var body: some View {
-        Label(title, systemImage: systemImage)
-            .labelStyle(.iconOnly)
-            .frame(width: DesignTokens.topBarIconSize, height: DesignTokens.topBarIconSize)
+    private func menu() -> NSMenu {
+        let commands = commands
+        let menu = NSMenu()
+        menu.autoenablesItems = false
+        let newTextCard = ActionMenuItem(String(localized: "New Text Card"), systemImage: "square.and.pencil") {
+            commands.newTextCard?()
+        }
+        newTextCard.isEnabled = commands.newTextCard != nil
+        menu.addItem(newTextCard)
+        let startSequence = ActionMenuItem(String(localized: "Start Sequence"), systemImage: "list.number") {
+            commands.startSequence?()
+        }
+        startSequence.isEnabled = commands.startSequence != nil
+        menu.addItem(startSequence)
+        menu.addItem(.separator())
+        if commands.isCapturePaused() {
+            menu.addItem(ActionMenuItem(String(localized: "Resume Capture"), systemImage: "play.circle") {
+                commands.setCapturePaused?(false)
+            })
+        } else {
+            menu.addItem(ActionMenuItem(String(localized: "Pause Capture"), systemImage: "pause.circle") {
+                commands.setCapturePaused?(true)
+            })
+        }
+        menu.addItem(.separator())
+        menu.addItem(ActionMenuItem(String(localized: "Settings…")) {
+            commands.openSettings?()
+        })
+        return menu
     }
 }
 
@@ -254,17 +220,9 @@ private struct SearchTokenChip: View {
         Button {
             model.removeToken(token)
         } label: {
-            HStack(spacing: DesignTokens.spacingSmall) {
-                SearchTokenLabel(token: token, title: title, boards: model.boards)
-                Image(systemName: "xmark")
-                    .imageScale(.small)
-                    .foregroundStyle(.secondary)
-            }
-            .font(.callout)
-            .padding(DesignTokens.searchTokenInsets)
-            .background(.fill.secondary, in: .capsule)
+            SearchTokenLabel(token: token, title: title, boards: model.boards)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.removableChip)
         .accessibilityLabel(Text(
             "Remove Filter \(title)",
             comment: "VoiceOver label of a search filter token; the argument is the filter"

@@ -64,8 +64,7 @@ private struct OnboardingPage<Icon: View, Content: View, Controls: View>: View {
             .scrollDisabled(true)
             .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 0)
-            HStack {
-                Spacer()
+            SheetButtonBar {
                 controls
             }
         }
@@ -194,9 +193,11 @@ private struct FinishStep: View {
                 }
             }
             Toggle(isOn: $privacy.fetchesLinkPreviews) {
-                Text("Show link previews")
-                Text(
-                    "Clipsy loads each link you copy. This can use up a one-time link or let the site track the visit."
+                LabelWithNote(
+                    Text("Show link previews"),
+                    note: Text(
+                        "Clipsy loads each link you copy. This can use up a one-time link or let the site track the visit."
+                    )
                 )
             }
         } controls: {

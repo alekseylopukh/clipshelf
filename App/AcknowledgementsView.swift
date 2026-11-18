@@ -17,8 +17,7 @@ struct AcknowledgementsView: View {
                 }
             }
             Divider()
-            HStack {
-                Spacer()
+            SheetButtonBar {
                 Button("Done") {
                     dismiss()
                 }

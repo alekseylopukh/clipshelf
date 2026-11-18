@@ -19,12 +19,7 @@ struct TextCardEditorView: View {
                         .strokeBorder(.separator)
                 }
             TextCountsView(counts: editor.counts)
-            HStack {
-                if let errorMessage = editor.errorMessage {
-                    Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
-                        .foregroundStyle(.red)
-                }
-                Spacer()
+            SheetButtonBar(errorMessage: editor.errorMessage) {
                 Button("Cancel", role: .cancel) {
                     dismiss()
                 }
@@ -76,9 +71,7 @@ private struct TextCountsView: View {
             Text("\(counts.words) words")
             Text("\(counts.lines) lines")
         }
-        .font(.caption)
-        .foregroundStyle(.secondary)
-        .monospacedDigit()
+        .metadataStyle()
     }
 }
 

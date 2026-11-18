@@ -18,7 +18,7 @@ struct BoardContextMenu: View {
                 Label {
                     Text(color.title)
                 } icon: {
-                    Image(nsImage: Self.swatch(color))
+                    Image(nsImage: color.menuSwatch)
                 }
                 .tag(color)
             }
@@ -41,14 +41,5 @@ struct BoardContextMenu: View {
                 await editor.recolor(board, to: color)
             }
         }
-    }
-
-    /// a palette symbol, because menus draw SwiftUI symbols as monochrome templates
-    static func swatch(_ color: BoardColor) -> NSImage {
-        let configuration = NSImage.SymbolConfiguration(paletteColors: [color.nsColor])
-        guard let image = NSImage(systemSymbolName: "circle.fill", accessibilityDescription: nil)?
-            .withSymbolConfiguration(configuration)
-        else { fatalError("circle.fill is a built-in SF Symbol") }
-        return image
     }
 }

@@ -100,9 +100,7 @@ private struct SymbolCardBody: View {
 
     var body: some View {
         VStack(spacing: DesignTokens.spacingMedium) {
-            Image(systemName: symbol)
-                .font(.largeTitle)
-                .foregroundStyle(.secondary)
+            PlaceholderSymbol(symbol)
             if let caption {
                 caption
                     .font(.callout.weight(.semibold))
@@ -301,10 +299,7 @@ private struct ColorCardBody: View {
                 .fill(swatch)
                 .overlay {
                     if let value {
-                        Text(verbatim: value)
-                            .font(.callout.monospaced())
-                            .padding(DesignTokens.colorValueInsets)
-                            .glassEffect(.regular, in: .capsule)
+                        GlassBadge(value: value)
                     }
                 }
         } else {

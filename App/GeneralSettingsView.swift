@@ -1,3 +1,4 @@
+import DesignSystem
 import Pasting
 import ServiceManagement
 import Store
@@ -28,8 +29,10 @@ struct GeneralSettingsView: View {
                             SMAppService.openSystemSettingsLoginItems()
                         }
                     } label: {
-                        Text("Needs your approval")
-                        Text("Allow Clipsy in System Settings › General › Login Items.")
+                        LabelWithNote(
+                            Text("Needs your approval"),
+                            note: Text("Allow Clipsy in System Settings › General › Login Items.")
+                        )
                     }
                 }
                 Toggle("Show in menu bar", isOn: $menuBarSettings.isItemShown)
@@ -65,8 +68,7 @@ struct GeneralSettingsView: View {
                         isConfirmingErase = true
                     }
                 } label: {
-                    Text("Remove all cards from History")
-                    Text("Cards on boards are kept.")
+                    LabelWithNote(Text("Remove all cards from History"), note: Text("Cards on boards are kept."))
                 }
             }
         }
@@ -195,24 +197,19 @@ private struct AccessibilityStatusRow: View {
     var body: some View {
         LabeledContent {
             if isTrusted {
-                Label {
-                    Text("Allowed")
-                } icon: {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(.green)
-                }
+                PermissionStatusLabel(isAllowed: true)
             } else {
                 Button("Open System Settings…") {
                     _ = SystemAccessibilityTrust().requestTrust()
                 }
             }
         } label: {
-            Text("Accessibility")
-            if isTrusted {
-                Text("Clipsy can paste directly into other apps.")
-            } else {
-                Text("Not allowed. Clipsy copies cards to the clipboard instead of pasting them.")
-            }
+            LabelWithNote(
+                Text("Accessibility"),
+                note: isTrusted
+                    ? Text("Clipsy can paste directly into other apps.")
+                    : Text("Not allowed. Clipsy copies cards to the clipboard instead of pasting them.")
+            )
         }
     }
 }

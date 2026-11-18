@@ -26,9 +26,7 @@ struct ImageCardPreview: View {
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if isLoaded {
-                Image(systemName: card.kind.symbolName)
-                    .font(.largeTitle)
-                    .foregroundStyle(.secondary)
+                PlaceholderSymbol(card.kind.symbolName)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 ProgressView()

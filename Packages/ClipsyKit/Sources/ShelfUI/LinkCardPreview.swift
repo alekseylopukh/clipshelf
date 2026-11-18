@@ -8,9 +8,7 @@ struct LinkCardPreview: View {
 
     var body: some View {
         VStack(spacing: DesignTokens.spacingMedium) {
-            Image(systemName: "link")
-                .font(.largeTitle)
-                .foregroundStyle(.secondary)
+            PlaceholderSymbol("link")
                 .padding(.bottom, DesignTokens.spacingMedium)
             if let heading = title ?? host {
                 Text(verbatim: heading)

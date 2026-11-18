@@ -1,3 +1,4 @@
+import DesignSystem
 import Store
 import SwiftUI
 
@@ -51,9 +52,7 @@ struct CardFooter: View {
                 }
             }
         }
-        .font(.caption)
-        .foregroundStyle(.secondary)
-        .monospacedDigit()
+        .metadataStyle()
         .lineLimit(1)
         .frame(maxWidth: .infinity, alignment: .leading)
     }

@@ -1,19 +1,6 @@
 import DesignSystem
 import SwiftUI
 
-struct QuickPasteBadge: View {
-    let number: Int
-
-    var body: some View {
-        Text(number, format: .number)
-            .font(.caption.weight(.semibold))
-            .monospacedDigit()
-            .frame(minWidth: DesignTokens.badgeSize, minHeight: DesignTokens.badgeSize)
-            .glassEffect(.regular, in: .capsule)
-            .accessibilityHidden(true)
-    }
-}
-
 struct QuickPasteBadgeModifier: ViewModifier {
     let number: Int?
 
@@ -24,7 +11,8 @@ struct QuickPasteBadgeModifier: ViewModifier {
             .overlay(alignment: .bottomTrailing) {
                 ZStack {
                     if let number {
-                        QuickPasteBadge(number: number)
+                        GlassBadge(count: number)
+                            .accessibilityHidden(true)
                             .padding(DesignTokens.badgeInset)
                             .transition(.opacity)
                     }
