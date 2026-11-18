@@ -22,10 +22,6 @@ public extension DesignTokens {
     static let appIconTintSampleSide = 24
     static let appIconPrewarmCount = 12
 
-    static let cardLiftScale: CGFloat = 1.02
-    static let cardLiftShadowRadius: CGFloat = 8
-    static let cardLiftShadowOffset: CGFloat = 2
-    static let cardLiftShadowColor = Color.black.opacity(0.18)
     static let cardLiftOffset: CGFloat = 2
     static let cardContactShadowRadius: CGFloat = 1
     static let cardContactShadowOffset: CGFloat = 1
@@ -60,11 +56,10 @@ public extension DesignTokens {
     static let cardCompactTextLineLimit = 2
     static let mediaCaptionInset: CGFloat = 8
     static let mediaCaptionInsets = EdgeInsets(top: 3, leading: 7, bottom: 3, trailing: 7)
-    static let colorValueInsets = EdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10)
     static let swatchValueInset: CGFloat = 12
     static let swatchLabelLuminanceThreshold: Double = 0.179
 
-    static let badgeSize: CGFloat = 20
+    static let badgeSize: CGFloat = 22
     static let badgeInset: CGFloat = cardCornerRadius - badgeSize / 2
     static let badgeAppearDelay: TimeInterval = 0.12
     static let badgeStagger: TimeInterval = 0.015

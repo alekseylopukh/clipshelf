@@ -5,7 +5,7 @@ public struct MetadataStyle: ViewModifier {
 
     public func body(content: Content) -> some View {
         content
-            .font(.caption)
+            .font(.subheadline)
             .foregroundStyle(.secondary)
             .monospacedDigit()
     }

@@ -299,7 +299,7 @@ private struct ColorCardBody: View {
                 .fill(swatch)
                 .overlay {
                     if let value {
-                        GlassBadge(value: value)
+                        SwatchValueLabel(value, on: swatch)
                     }
                 }
         } else {

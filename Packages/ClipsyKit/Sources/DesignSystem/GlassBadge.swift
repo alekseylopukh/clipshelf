@@ -1,34 +1,17 @@
 import SwiftUI
 
 public struct GlassBadge: View {
-    private enum Content {
-        case count(Int)
-        case value(String)
-    }
-
-    private let content: Content
+    private let count: Int
 
     public init(count: Int) {
-        content = .count(count)
-    }
-
-    public init(value: String) {
-        content = .value(value)
+        self.count = count
     }
 
     public var body: some View {
-        switch content {
-        case let .count(count):
-            Text(count, format: .number)
-                .font(.caption.weight(.semibold))
-                .monospacedDigit()
-                .frame(minWidth: DesignTokens.badgeSize, minHeight: DesignTokens.badgeSize)
-                .glassEffect(.regular, in: .capsule)
-        case let .value(value):
-            Text(verbatim: value)
-                .font(.callout.monospaced())
-                .padding(DesignTokens.colorValueInsets)
-                .glassEffect(.regular, in: .capsule)
-        }
+        Text(count, format: .number)
+            .font(.subheadline.weight(.semibold))
+            .monospacedDigit()
+            .frame(minWidth: DesignTokens.badgeSize, minHeight: DesignTokens.badgeSize)
+            .glassEffect(.regular, in: .capsule)
     }
 }

@@ -92,11 +92,29 @@ private struct ComponentGallery: View {
                 }
                 .padding(DesignTokens.spacingMedium)
             }
+            GalleryRow("Tab track: selected, board tabs, drop target, long name") {
+                GalleryTabTrack()
+                    .fixedSize()
+                    .padding(DesignTokens.spacingMedium)
+            }
+            GalleryRow("Media caption and swatch value labels") {
+                HStack(spacing: DesignTokens.spacingLarge) {
+                    LinearGradient(colors: [.orange, .purple], startPoint: .leading, endPoint: .trailing)
+                        .frame(width: 160, height: 100)
+                        .overlay(alignment: .bottomLeading) {
+                            MediaCaption(Text(verbatim: "1600 × 1000"))
+                                .padding(DesignTokens.mediaCaptionInset)
+                        }
+                        .clipShape(.rect(cornerRadius: DesignTokens.cardInnerCornerRadius))
+                    ForEach(["#FAB700", "#0088FF", "#1C1C1E"], id: \.self) { value in
+                        GallerySwatch(value: value)
+                    }
+                }
+            }
             GalleryRow("Badges and board dots") {
                 HStack(spacing: DesignTokens.spacingLarge) {
                     GlassBadge(count: 3)
                     GlassBadge(count: 12)
-                    GlassBadge(value: "#FF8000")
                     ForEach(BoardColor.allCases, id: \.self) { color in
                         BoardDot(color)
                     }
@@ -198,6 +216,63 @@ private struct GalleryRow<Content: View>: View {
                 .font(.headline)
             content
         }
+    }
+}
+
+private struct GalleryTabTrack: View {
+    private enum Tab: Hashable {
+        case history
+        case board(String)
+    }
+
+    var body: some View {
+        TabTrack(selection: Tab.history, label: Text(verbatim: "Boards")) { namespace in
+            Label("History", systemImage: "clock")
+                .tabTrackSegment(id: Tab.history, in: namespace, isSelected: true)
+            Label {
+                Text(verbatim: "Work")
+            } icon: {
+                BoardDot(.blue)
+            }
+            .tabTrackSegment(id: Tab.board("Work"), in: namespace, isSelected: false)
+            Label {
+                Text(verbatim: "Design")
+            } icon: {
+                BoardDot(.orange)
+            }
+            .tabTrackSegment(id: Tab.board("Design"), in: namespace, isSelected: false, isTargeted: true)
+            Label {
+                Text(verbatim: "Quarterly Planning and Research Notes")
+            } icon: {
+                BoardDot(.green)
+            }
+            .tabTrackSegment(id: Tab.board("Notes"), in: namespace, isSelected: false)
+        }
+    }
+}
+
+private struct GallerySwatch: View {
+    let value: String
+
+    private var swatch: Color {
+        let hex = Int(value.dropFirst(), radix: 16) ?? 0
+        return Color(
+            .sRGB,
+            red: Double((hex >> 16) & 0xFF) / 255,
+            green: Double((hex >> 8) & 0xFF) / 255,
+            blue: Double(hex & 0xFF) / 255
+        )
+    }
+
+    var body: some View {
+        Rectangle()
+            .fill(swatch)
+            .overlay(alignment: .bottomLeading) {
+                SwatchValueLabel(value, on: swatch)
+                    .padding(DesignTokens.swatchValueInset)
+            }
+            .frame(width: 120, height: 100)
+            .clipShape(.rect(cornerRadius: DesignTokens.cardInnerCornerRadius))
     }
 }
 
