@@ -149,7 +149,7 @@ public final class ShelfController {
         model.didOpen()
         updateQuickPasteModifier(NSEvent.modifierFlags)
         panel.makeKeyAndOrderFront(nil)
-        withAnimation(reduceMotion ? DesignTokens.shelfFadeAnimation : DesignTokens.shelfOpenAnimation) {
+        withAnimation(reduceMotion ? DesignTokens.Motion.reduced : DesignTokens.Motion.present) {
             presentation.isVisible = true
         }
     }
@@ -162,7 +162,7 @@ public final class ShelfController {
         preview.dismiss()
         boardEditor.cancel()
         deletion.discardUndo()
-        withAnimation(reduceMotion ? DesignTokens.shelfFadeAnimation : DesignTokens.shelfCloseAnimation) {
+        withAnimation(reduceMotion ? DesignTokens.Motion.reduced : DesignTokens.Motion.quick) {
             presentation.isVisible = false
         } completion: { [weak self] in
             guard let self, !isShown else { return }

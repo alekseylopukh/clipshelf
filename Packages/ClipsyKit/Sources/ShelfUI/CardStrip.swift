@@ -6,6 +6,7 @@ struct CardStrip: View {
     let model: ShelfModel
 
     @State private var layout = CardLayout.regular
+    @State private var hasMeasuredLayout = false
     @State private var isEntering = true
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(CardActions.self) private var actions
@@ -33,13 +34,18 @@ struct CardStrip: View {
                         }
                     }
                     .scrollTargetLayout()
-                    .animation(reduceMotion ? nil : .default, value: model.cards)
+                    .animation(reduceMotion ? nil : DesignTokens.Motion.standard, value: model.cards)
                 }
                 .contentMargins(DesignTokens.shelfPadding, for: .scrollContent)
                 .onGeometryChange(for: CardLayout.self) { geometry in
                     CardLayout(stripHeight: geometry.size.height)
                 } action: { newLayout in
-                    withAnimation(reduceMotion ? nil : .default) {
+                    guard hasMeasuredLayout else {
+                        layout = newLayout
+                        hasMeasuredLayout = true
+                        return
+                    }
+                    withAnimation(reduceMotion ? nil : DesignTokens.Motion.standard) {
                         layout = newLayout
                     }
                 }
@@ -48,13 +54,13 @@ struct CardStrip: View {
                 }
                 .onChange(of: model.cursorID) { _, cursorID in
                     guard let cursorID, cursorID != model.revealedID else { return }
-                    withAnimation(reduceMotion ? nil : .default) {
+                    withAnimation(reduceMotion ? nil : DesignTokens.Motion.quick) {
                         proxy.scrollTo(cursorID)
                     }
                 }
                 .onChange(of: model.revealedID) { _, revealedID in
                     guard let revealedID else { return }
-                    withAnimation(reduceMotion ? nil : .default) {
+                    withAnimation(reduceMotion ? nil : DesignTokens.Motion.standard) {
                         proxy.scrollTo(revealedID, anchor: .center)
                     }
                 }

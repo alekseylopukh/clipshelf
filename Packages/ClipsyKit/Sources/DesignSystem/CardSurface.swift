@@ -40,8 +40,8 @@ public struct CardSurface: ViewModifier {
             .contentShape(.dragPreview, shape)
             .contentShape(shape)
             .scaleEffect(isSelected ? DesignTokens.cardLiftScale : 1)
-            .animation(reduceMotion ? nil : .default, value: isSelected)
-            .animation(reduceMotion ? nil : .default, value: isHovered)
+            .animation(reduceMotion ? nil : DesignTokens.Motion.quick, value: isSelected)
+            .animation(reduceMotion ? nil : DesignTokens.Motion.quick, value: isHovered)
     }
 }
 

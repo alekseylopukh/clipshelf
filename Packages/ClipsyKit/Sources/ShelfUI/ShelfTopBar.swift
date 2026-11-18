@@ -50,7 +50,7 @@ struct ShelfTopBar: View {
                     }
                 }
         }
-        .animation(reduceMotion ? nil : .default, value: model.tab)
+        .animation(reduceMotion ? nil : DesignTokens.Motion.standard, value: model.tab)
     }
 }
 

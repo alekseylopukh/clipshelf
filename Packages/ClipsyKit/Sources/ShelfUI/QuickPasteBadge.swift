@@ -17,7 +17,7 @@ struct QuickPasteBadgeModifier: ViewModifier {
                             .transition(.opacity)
                     }
                 }
-                .animation(reduceMotion ? nil : .default, value: number)
+                .animation(reduceMotion ? nil : DesignTokens.Motion.quick, value: number)
             }
             .accessibilityLabel { label in
                 label

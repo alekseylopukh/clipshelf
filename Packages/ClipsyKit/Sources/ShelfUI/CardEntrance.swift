@@ -13,7 +13,7 @@ struct CardEntrance: ViewModifier {
             .offset(y: isWaiting ? DesignTokens.cardEntranceOffset : 0)
             .onAppear {
                 guard let delay, !hasEntered else { return }
-                withAnimation(DesignTokens.cardEntranceAnimation.delay(delay)) {
+                withAnimation(DesignTokens.Motion.present.delay(delay)) {
                     hasEntered = true
                 }
             }
