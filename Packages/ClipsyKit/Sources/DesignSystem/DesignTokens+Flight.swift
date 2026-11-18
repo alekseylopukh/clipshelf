@@ -1,9 +1,6 @@
 import SwiftUI
 
 public extension DesignTokens {
-    static let pasteFlightDuration: TimeInterval = 0.3
-    static let pasteFadeDuration: TimeInterval = 0.18
-    static let pasteFlightEndScale: CGFloat = 0.15
     static let pasteFlightArcFraction: CGFloat = 0.85
     static let pasteFlightShadowRadius: CGFloat = 12
     static let pasteFlightShadowOpacity: Float = 0.25
@@ -23,5 +20,5 @@ public extension DesignTokens {
 
     static let pasteAfterimageDuration: TimeInterval = 0.16
     static let pasteAfterimageDrop: CGFloat = 12
-    static let pasteAfterimageIsEnabled = true
+    static let pasteAfterimageIsEnabled = false
 }
