@@ -7,7 +7,6 @@ public extension DesignTokens {
     static let previewScreenMargin: CGFloat = 16
     static let previewImageMaxPixelSize = 2048
     static let previewTextMaximumLength = 20000
-    static let previewSwatchHeight: CGFloat = 200
     static let previewFileRowIconSize: CGFloat = 32
 
     static let previewTextWidth: CGFloat = 640

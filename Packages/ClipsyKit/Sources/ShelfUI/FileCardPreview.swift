@@ -39,7 +39,12 @@ struct FileCardPreview: View {
             case let .files(urls):
                 List(urls, id: \.self) { url in
                     FilePreviewRow(url: url)
+                        .padding(.horizontal)
+                        .frame(height: DesignTokens.previewFileRowHeight)
+                        .listRowInsets(.all, 0)
+                        .listRowSeparator(.hidden)
                 }
+                .listStyle(.plain)
                 .scrollContentBackground(.hidden)
             case .unavailable:
                 EmptyStateView(

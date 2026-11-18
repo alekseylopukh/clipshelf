@@ -5,17 +5,13 @@ import SwiftUI
 struct CardPreviewView: View {
     let card: CardSummary
     private let content: CardContent
-    private let size: CGSize
+    private let frame: PreviewFrame
 
     init(card: CardSummary, available: CGSize = PreviewSizeCalculator().defaultSize) {
         let content = CardContent(card)
-        var imagePixelSize: CGSize?
-        if card.kind == .image, let width = content.metadata.pixelWidth, let height = content.metadata.pixelHeight {
-            imagePixelSize = CGSize(width: width, height: height)
-        }
         self.card = card
         self.content = content
-        size = PreviewSizeCalculator().size(in: available, imagePixelSize: imagePixelSize)
+        frame = PreviewSizeCalculator().frame(for: Self.kind(of: card, content: content), in: available)
     }
 
     var body: some View {
@@ -24,16 +20,16 @@ struct CardPreviewView: View {
             case .text:
                 TextCardPreview(card: card, isCodeLike: content.isCodeLike)
             case .link:
-                LinkCardPreview(
-                    title: card.title ?? content.metadata.pageTitle,
-                    host: content.host,
-                    url: content.metadata.url
-                )
+                FittingScrollView {
+                    LinkCardPreview(card: card, content: content)
+                }
             case .color:
-                ColorCardPreview(
-                    swatch: content.swatch,
-                    components: content.metadata.color.flatMap(ColorComponents.init(copiedText:))
-                )
+                FittingScrollView {
+                    ColorCardPreview(
+                        swatch: content.swatch,
+                        components: content.metadata.color.flatMap(ColorComponents.init(copiedText:))
+                    )
+                }
             case .image:
                 ImageCardPreview(card: card)
             case .file:
@@ -49,7 +45,80 @@ struct CardPreviewView: View {
                 )
             }
         }
-        .frame(width: size.width, height: size.height)
+        .frame(idealHeight: frame.height, maxHeight: frame.height)
+        .safeAreaBar(edge: .bottom) {
+            PreviewSourceBar(card: card, content: content)
+        }
+        .frame(width: frame.width)
+        .frame(maxHeight: frame.maximumHeight)
+    }
+
+    private static func kind(of card: CardSummary, content: CardContent) -> PreviewKind {
+        switch card.kind {
+        case .text:
+            return .text(isCodeLike: content.isCodeLike)
+        case .link:
+            return content.metadata.pixelWidth == nil ? .link : .linkWithImage
+        case .color:
+            return .color
+        case .image:
+            guard let width = content.metadata.pixelWidth, let height = content.metadata.pixelHeight else {
+                return .image(pixelSize: nil)
+            }
+            return .image(pixelSize: CGSize(width: width, height: height))
+        case .file:
+            let count = content.metadata.fileNames?.count ?? 1
+            return count > 1 ? .files(count: count) : .file
+        case .unknown:
+            return .unavailable
+        }
+    }
+}
+
+struct FittingScrollView<Content: View>: View {
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        ViewThatFits(in: .vertical) {
+            content
+                .fixedSize(horizontal: false, vertical: true)
+            ScrollView {
+                content
+            }
+        }
+    }
+}
+
+private struct PreviewSourceBar: View {
+    let card: CardSummary
+    let content: CardContent
+
+    var body: some View {
+        HStack(spacing: DesignTokens.spacingMedium) {
+            AppIconView(
+                bundleID: card.sourceApp?.bundleID,
+                fallbackSymbol: card.kind.symbolName,
+                size: DesignTokens.previewSourceIconSize
+            )
+            if let name = card.sourceApp?.name {
+                Text(verbatim: name)
+            }
+            TimelineView(.everyMinute) { context in
+                // the timeline starts at the top of the minute, before a card copied seconds ago
+                Text(max(context.date, card.displayDate), format: Date.AnchoredRelativeFormatStyle(
+                    anchor: card.displayDate,
+                    presentation: .named,
+                    unitsStyle: .wide
+                ))
+            }
+            CardFooter(kind: card.kind, content: content)
+        }
+        .font(.callout)
+        .foregroundStyle(.secondary)
+        .lineLimit(1)
+        .padding(.horizontal)
+        .frame(height: DesignTokens.previewSourceBarHeight)
+        .accessibilityElement(children: .combine)
     }
 }
 
