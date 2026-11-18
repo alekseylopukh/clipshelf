@@ -25,6 +25,10 @@ extension ShelfModel {
         cards.filter { selection.contains($0.id) }
     }
 
+    var selectedCount: Int? {
+        selection.count > 1 ? selection.count : nil
+    }
+
     var cursorCard: CardSummary? {
         cards.first { $0.id == cursorID }
     }

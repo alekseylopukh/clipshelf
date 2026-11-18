@@ -30,18 +30,6 @@ private struct ComponentGallery: View {
                         Button("More", systemImage: "ellipsis") {}
                             .buttonStyle(.glassIcon)
                             .popUpMenuAnchor(PopUpMenuAnchor())
-                        Button {} label: {
-                            Label("History", systemImage: "clock")
-                        }
-                        .buttonStyle(.glassTab(isSelected: true))
-                        Button {} label: {
-                            Label {
-                                Text(verbatim: "Work")
-                            } icon: {
-                                BoardDot(.blue)
-                            }
-                        }
-                        .buttonStyle(.glassTab(isSelected: false))
                     }
                 }
                 .padding(DesignTokens.spacingMedium)

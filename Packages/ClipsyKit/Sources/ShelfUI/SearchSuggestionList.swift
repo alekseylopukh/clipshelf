@@ -3,6 +3,9 @@ import SwiftUI
 
 struct SearchSuggestionList: View {
     let model: ShelfModel
+    let width: CGFloat
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -15,8 +18,9 @@ struct SearchSuggestionList: View {
             }
         }
         .padding(DesignTokens.spacingSmall)
-        .frame(width: DesignTokens.searchFieldWidth)
+        .frame(width: max(width, DesignTokens.searchFieldWidth))
         .glassEffect(.regular, in: .rect(cornerRadius: DesignTokens.searchSuggestionListCornerRadius))
+        .glassEffectTransition(reduceMotion ? .identity : .materialize)
         .accessibilityElement(children: .contain)
         .accessibilityLabel(Text(
             "Filter Suggestions",
