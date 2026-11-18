@@ -17,6 +17,6 @@ public struct GlassSearchField<Content: View>: View {
         .padding(.horizontal, DesignTokens.spacingLarge)
         .frame(minWidth: DesignTokens.searchFieldWidth, minHeight: DesignTokens.topBarControlHeight)
         .fixedSize(horizontal: true, vertical: false)
-        .glassEffect(.regular.interactive(), in: .capsule)
+        .glassEffect(.regular, in: .capsule)
     }
 }

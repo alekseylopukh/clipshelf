@@ -1,13 +1,15 @@
 import SwiftUI
 
 public extension DesignTokens {
-    static let shelfCloseOffset: CGFloat = 16
+    static let shelfOpenSlideDuration: TimeInterval = 0.36
+    static let shelfCloseSlideDuration: TimeInterval = 0.22
+    static let shelfReducedFadeDuration: TimeInterval = 0.15
 
-    static let cardEntranceStagger: TimeInterval = 0.014
+    static let cardEntranceDelay: TimeInterval = 0.08
+    static let cardEntranceStagger: TimeInterval = 0.03
     static let cardEntranceMaximumIndex = 7
     static let cardEntranceWindow = Duration.milliseconds(350)
-    static let cardEntranceOffset: CGFloat = 16
-    static let cardEntranceScale: CGFloat = 0.94
+    static let cardEntranceOffset: CGFloat = 24
 
     static let cardVisibilityThreshold: Double = 0.5
     static let stripEdgeOpacity: Double = 0.5

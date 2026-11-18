@@ -9,10 +9,6 @@ struct DesignTokensTests {
         #expect(DesignTokens.selectionRingWidth(for: .increased) == standard + 1)
     }
 
-    @Test func `the shadow margin leaves room for the open rise`() {
-        #expect(DesignTokens.shelfShadowMargin >= DesignTokens.shelfOpenOffset)
-    }
-
     @Test func `the dark card fill is #2A2A2C`() throws {
         let components = try #require(sRGBComponents(of: DesignTokens.cardFill, in: .darkAqua))
         #expect(components == [0x2A, 0x2A, 0x2C, 0xFF])

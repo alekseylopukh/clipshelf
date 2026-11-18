@@ -17,7 +17,6 @@ public enum DesignTokens {
     public static let shelfDefaultHeight: CGFloat = 324
     public static let shelfMaximumHeightFraction: CGFloat = 0.4
     public static let shelfResizeHandleHeight: CGFloat = 6
-    public static let shelfOpenOffset: CGFloat = 24
     public static let filterBrowserWidth: CGFloat = 260
     public static let filterBrowserHeight: CGFloat = 380
 

@@ -109,21 +109,21 @@ Placement uses the display's visible frame, so an auto-hidden Dock is not avoide
 
 ### Motion
 
-Every animation uses one of five curves in `DesignTokens.Motion` (`DesignTokens+Motion.swift`); no view uses `.default` or a curve of its own. Distances, scales and delays live with their area: `DesignTokens+Strip.swift`, `+Card`, `+TopBar` and `+Flight`. Change them there.
+Every animation uses one of five curves in `DesignTokens.Motion` (`DesignTokens+Motion.swift`); no view uses `.default` or a curve of its own. The one exception is the Shelf's own open and close slide, which Core Animation runs with its own timing (see Open and Close below). Distances, scales and delays live with their area: `DesignTokens+Strip.swift`, `+Card`, `+TopBar` and `+Flight`. Change them there.
 
 | Curve | Value | Used for |
 |---|---|---|
 | `quick` | `.spring(duration: 0.2, bounce: 0)` | Scroll to the cursor, everything that leaves |
 | `standard` | `.spring(duration: 0.3, bounce: 0.1)` | Layout: neighbors, the tab lens, the search field width |
-| `present` | `.spring(duration: 0.35, bounce: 0.14)` | Everything that arrives: the Shelf, the cascade, suggestions, empty states |
+| `present` | `.spring(duration: 0.35, bounce: 0.14)` | Everything that arrives: the cascade, suggestions, empty states |
 | `pop` | `.spring(duration: 0.34, bounce: 0.28)` | Small single confirmations: a new Card, badges, filter tokens |
-| `reduced` | `.easeOut(duration: 0.15)` | Reduce Motion: opacity only |
+| `reduced` | `.easeOut(duration: 0.15)` | Reduce Motion: opacity only (the Shelf's window fade uses the same ease-out and 0.15 s) |
 
 | Moment | Default | Reduce Motion |
 |---|---|---|
-| Open | The Shelf rises 24 pt (`shelfOpenOffset`) on `present` while its glass materializes (`glassEffectTransition(.materialize)` on the background glass layer inside a `GlassEffectContainer`); the content fades in with it. The panel does not scale. The rise fits inside the 32 pt `shelfShadowMargin`, so the window never clips it | Fade on `reduced` |
-| Cascade | Each Card visible at open rises 16 pt (`cardEntranceOffset`), scales from 0.94 (`cardEntranceScale`) anchored at its bottom and fades in on `present`, 14 ms (`cardEntranceStagger`) after its left neighbor, capped at the 8th Card (`cardEntranceMaximumIndex` 7). After 350 ms (`cardEntranceWindow`) Cards that scroll into view appear at once | None |
-| Close | The Shelf drops 16 pt (`shelfCloseOffset`) and fades on `quick`. Copy closes the Shelf this way | Fade on `reduced` |
+| Open | The whole Shelf slides up from below its window's bottom edge, like the Dock, on a spring with no bounce (`shelfOpenSlideDuration` 0.36 s). It is one layer translation that runs in the render server (`ShelfSlide`), so it stays smooth while the app builds Cards; nothing fades, materializes or scales. Reopening during a close continues from where the panel is | The window fades in over 0.15 s (`shelfReducedFadeDuration`) |
+| Cascade | While the Shelf arrives, each Card visible at open rises 24 pt (`cardEntranceOffset`) and fades in on `present`, starting 80 ms after the open (`cardEntranceDelay`) and 30 ms (`cardEntranceStagger`) after its left neighbor, capped at the 8th Card (`cardEntranceMaximumIndex` 7). Cards do not scale. After 350 ms (`cardEntranceWindow`) Cards that scroll into view appear at once | None |
+| Close | The whole Shelf slides down below its window's bottom edge in 0.22 s, ease-in (`shelfCloseSlideDuration`), the same layer translation as the open; the glass does not fade, and the window is ordered out once the panel is gone. Copy closes the Shelf this way | The window fades out over 0.15 s |
 | Paste | See [Paste](#paste) | No flight; the paste happens alone |
 | Hover, selection | None: the selection ring appears and leaves at once, and a Card never moves ([States](#states)) | None |
 | Scroll to the cursor | `quick`; revealing a Card in the center uses `standard` | Not animated |
@@ -495,7 +495,7 @@ Every recurring UI role has one component, listed below, and screens use it inst
 | Glass icon menu | A glass icon button with `.popUpMenuAnchor(_:)` (`PopUpMenuAnchor`) that pops up an `NSMenu` of `ActionMenuItem`s under itself | Top bar: More | Same control as the glass icon button, so the whole 28 pt circle is the hit target and focus ring, and Space or Return opens the menu. Not a SwiftUI `Menu`: macOS draws a menu's button through AppKit and ignores `.buttonStyle(.glass)` (it renders the plain bezel, with or without `.menuStyle(.button)`), and a borderless menu over a glass circle only takes clicks on its 16 pt glyph, whatever frame its label gets. Build the menu when the button is pressed, so state such as Pause/Resume is current |
 | Tab track | `TabTrack(selection:label:content:)` | Top bar: History and Board tabs | 28 pt capsule track in `.fill.tertiary` with 2 pt padding; a neutral lens in `.fill.secondary` slides to the selected segment on `standard` (`matchedGeometryEffect`), outlined in `separatorColor` with Increase Contrast; an accessibility group with a label. Not glass |
 | Tab track segment | `.tabTrackSegment(id:in:isSelected:isTargeted:)` | Each tab inside a `TabTrack` | 24 pt tall, 10 pt horizontal padding, one line up to 160 pt; primary when selected, else secondary; `.fill.quaternary` on hover; 25% accent while a drop targets it, with an alignment haptic on entry; the selected trait. The weight never changes, so widths stay put |
-| Search field | `GlassSearchField { … }` | Top bar | Leading magnifying glass, 220 pt minimum, 28 pt capsule of interactive glass. Content: tokens, a plain `TextField`, the clear button |
+| Search field | `GlassSearchField { … }` | Top bar | Leading magnifying glass, 220 pt minimum, 28 pt capsule of glass (not interactive: a text field does not flex when pressed). Content: tokens, a plain `TextField`, the clear button |
 | Removable chip | `.buttonStyle(.removableChip)` (`RemovableChipButtonStyle`) | Search tokens in the search field | Callout label, trailing small `xmark`, `.fill.secondary` capsule; the whole chip removes it |
 | Accessory icon | `.buttonStyle(.accessoryIcon)` (`AccessoryIconButtonStyle`) | Clear Search; Remove on Sequence rows | Borderless, icon only, secondary |
 | Borderless icon | `.buttonStyle(.borderlessIcon)`, `.menuStyle(.borderlessIcon)` | Sequence header (Undo, More, Close); Privacy Ignored Apps +/− | Borderless, icon only, label color |

@@ -7,14 +7,14 @@ struct CardEntrance: ViewModifier {
     @State private var hasEntered = false
 
     static func delay(at index: Int) -> TimeInterval {
-        Double(min(index, DesignTokens.cardEntranceMaximumIndex)) * DesignTokens.cardEntranceStagger
+        DesignTokens.cardEntranceDelay
+            + Double(min(index, DesignTokens.cardEntranceMaximumIndex)) * DesignTokens.cardEntranceStagger
     }
 
     func body(content: Content) -> some View {
         let isWaiting = delay != nil && !hasEntered
         content
             .opacity(isWaiting ? 0 : 1)
-            .scaleEffect(isWaiting ? DesignTokens.cardEntranceScale : 1, anchor: .bottom)
             .offset(y: isWaiting ? DesignTokens.cardEntranceOffset : 0)
             .onAppear {
                 guard let delay, !hasEntered else { return }

@@ -21,11 +21,6 @@ struct ShelfContainerView: View {
             GlassEffectContainer {
                 if presentation.isVisible {
                     GlassPanelBackground(cornerRadius: DesignTokens.shelfCornerRadius)
-                        .glassEffectTransition(reduceMotion ? .identity : .materialize)
-                        .transition(reduceMotion ? .opacity : .asymmetric(
-                            insertion: .offset(y: DesignTokens.shelfOpenOffset),
-                            removal: .offset(y: DesignTokens.shelfCloseOffset)
-                        ))
                 }
             }
             if presentation.isVisible {
@@ -55,10 +50,6 @@ struct ShelfContainerView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .clipShape(.rect(cornerRadius: DesignTokens.shelfCornerRadius))
-                .transition(reduceMotion ? .opacity : .asymmetric(
-                    insertion: .offset(y: DesignTokens.shelfOpenOffset).combined(with: .opacity),
-                    removal: .offset(y: DesignTokens.shelfCloseOffset).combined(with: .opacity)
-                ))
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
