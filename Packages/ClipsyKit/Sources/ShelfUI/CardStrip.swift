@@ -14,44 +14,62 @@ struct CardStrip: View {
     var body: some View {
         TimelineView(.everyMinute) { context in
             ScrollViewReader { proxy in
-                ScrollView(.horizontal) {
-                    LazyHStack(spacing: DesignTokens.cardSpacing) {
-                        ForEach(model.cards.enumerated(), id: \.element.id) { index, card in
-                            CardView(
-                                card: card,
-                                model: model,
-                                now: context.date,
-                                layout: layout,
-                                match: model.searchResult(for: card.id),
-                                board: model.board(of: card)
-                            )
-                            .cardEntrance(delay: entranceDelay(at: index))
-                            .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: {
-                                actions.cardFrames[card.id] = $0
+                ZStack {
+                    ScrollView(.horizontal) {
+                        LazyHStack(spacing: DesignTokens.cardSpacing) {
+                            ForEach(model.cards.enumerated(), id: \.element.id) { index, card in
+                                CardView(
+                                    card: card,
+                                    model: model,
+                                    now: context.date,
+                                    layout: layout,
+                                    match: model.searchResult(for: card.id),
+                                    board: model.board(of: card)
+                                )
+                                .cardEntrance(delay: isEntering && !reduceMotion ? CardEntrance.delay(at: index) : nil)
+                                .scrollTransition(
+                                    .interactive.threshold(.visible(DesignTokens.cardVisibilityThreshold)),
+                                    axis: .horizontal
+                                ) { content, phase in
+                                    content.opacity(phase.isIdentity ? 1 : DesignTokens.stripEdgeOpacity)
+                                }
+                                .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: {
+                                    actions.cardFrames[card.id] = $0
+                                }
+                                .onDisappear { actions.cardFrames[card.id] = nil }
+                                .transition(Self.cardTransition(
+                                    arrival: model.arrival,
+                                    isSearching: model.isSearching,
+                                    reduceMotion: reduceMotion
+                                ))
                             }
-                            .onDisappear { actions.cardFrames[card.id] = nil }
-                            .transition(.scale(scale: DesignTokens.shelfOpenScale).combined(with: .opacity))
+                        }
+                        .scrollTargetLayout()
+                        .animation(reduceMotion ? nil : DesignTokens.Motion.standard, value: model.cards)
+                    }
+                    .contentMargins(DesignTokens.shelfPadding, for: .scrollContent)
+                    .onGeometryChange(for: CardLayout.self) { geometry in
+                        CardLayout(stripHeight: geometry.size.height)
+                    } action: { newLayout in
+                        guard hasMeasuredLayout else {
+                            layout = newLayout
+                            hasMeasuredLayout = true
+                            return
+                        }
+                        withAnimation(reduceMotion ? nil : DesignTokens.Motion.standard) {
+                            layout = newLayout
                         }
                     }
-                    .scrollTargetLayout()
-                    .animation(reduceMotion ? nil : DesignTokens.Motion.standard, value: model.cards)
-                }
-                .contentMargins(DesignTokens.shelfPadding, for: .scrollContent)
-                .onGeometryChange(for: CardLayout.self) { geometry in
-                    CardLayout(stripHeight: geometry.size.height)
-                } action: { newLayout in
-                    guard hasMeasuredLayout else {
-                        layout = newLayout
-                        hasMeasuredLayout = true
-                        return
+                    .onScrollTargetVisibilityChange(
+                        idType: Int64.self,
+                        threshold: DesignTokens.cardVisibilityThreshold
+                    ) { ids in
+                        model.setVisibleCards(ids)
                     }
-                    withAnimation(reduceMotion ? nil : DesignTokens.Motion.standard) {
-                        layout = newLayout
-                    }
+                    .id(model.tab)
+                    .transition(.opacity)
                 }
-                .onScrollTargetVisibilityChange(idType: Int64.self, threshold: 0.5) { ids in
-                    model.setVisibleCards(ids)
-                }
+                .animation(reduceMotion ? DesignTokens.Motion.reduced : DesignTokens.Motion.quick, value: model.tab)
                 .onChange(of: model.cursorID) { _, cursorID in
                     guard let cursorID, cursorID != model.revealedID else { return }
                     withAnimation(reduceMotion ? nil : DesignTokens.Motion.quick) {
@@ -82,8 +100,23 @@ struct CardStrip: View {
         ))
     }
 
-    private func entranceDelay(at index: Int) -> TimeInterval? {
-        guard isEntering, !reduceMotion else { return nil }
-        return Double(min(index, DesignTokens.cardEntranceMaximumIndex)) * DesignTokens.cardEntranceStagger
+    static func cardTransition(arrival: CardsArrival, isSearching: Bool, reduceMotion: Bool) -> AnyTransition {
+        guard !reduceMotion else { return AnyTransition.opacity.animation(DesignTokens.Motion.reduced) }
+        let insertion = switch arrival {
+        case let .tab(fromLeading):
+            AnyTransition.offset(x: fromLeading ? -DesignTokens.cardTabSlideOffset : DesignTokens.cardTabSlideOffset)
+                .combined(with: .opacity)
+                .animation(DesignTokens.Motion.standard)
+        case .edit:
+            AnyTransition.scale(scale: DesignTokens.cardInsertScale)
+                .combined(with: .opacity)
+                .animation(DesignTokens.Motion.pop.delay(DesignTokens.cardInsertDelay))
+        case .search, .load:
+            AnyTransition.opacity.animation(DesignTokens.Motion.quick)
+        }
+        let removal: AnyTransition = isSearching
+            ? .opacity
+            : .scale(scale: DesignTokens.cardRemoveScale).combined(with: .opacity)
+        return .asymmetric(insertion: insertion, removal: removal.animation(DesignTokens.Motion.quick))
     }
 }

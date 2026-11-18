@@ -1,3 +1,4 @@
+import DesignSystem
 import Foundation
 import KeyboardShortcuts
 import Observation
@@ -21,6 +22,7 @@ public final class ShelfModel {
 
     public private(set) var tab: CardList
     public private(set) var cards: [CardSummary] = []
+    private(set) var arrival = CardsArrival.load
     public private(set) var boards: [Board] = []
     var query = "" {
         didSet {
@@ -53,6 +55,7 @@ public final class ShelfModel {
     var requestedSearchSelection: TextSelection?
     private var listCards: [CardSummary] = []
     private var hasLoadedList = false
+    private var pendingArrival = CardsArrival.load
     private var hasLoadedBoards = false
     private var hasLoadedResults = false
     private var searchResults: [Int64: SearchResult] = [:]
@@ -128,6 +131,13 @@ public final class ShelfModel {
         [.history] + boards.map { .board(id: $0.id) }
     }
 
+    var prewarmBundleIDs: [String] {
+        var seen = Set<String>()
+        return cards.prefix(DesignTokens.appIconPrewarmCount)
+            .compactMap(\.sourceApp?.bundleID)
+            .filter { seen.insert($0).inserted }
+    }
+
     func emptyState(isCapturePaused: Bool) -> ShelfEmptyState? {
         guard isSearching ? hasLoadedResults : hasLoadedList, cards.isEmpty else { return nil }
         if isSearching {
@@ -170,6 +180,8 @@ public final class ShelfModel {
 
     public func showTab(_ list: CardList) {
         guard list != tab else { return }
+        let oldIndex = tabs.firstIndex(of: tab)
+        let newIndex = tabs.firstIndex(of: list)
         tab = list
         defaults.set(Self.encodeTab(list), forKey: Self.tabKey)
         listCards = []
@@ -181,6 +193,11 @@ public final class ShelfModel {
         clearSelection()
         selectsFirstOnLoad = true
         setVisibleCards([])
+        if let oldIndex, let newIndex {
+            pendingArrival = .tab(fromLeading: newIndex < oldIndex)
+        } else {
+            pendingArrival = .load
+        }
     }
 
     public func setVisibleCards(_ ids: [Int64]) {
@@ -263,6 +280,8 @@ public final class ShelfModel {
     }
 
     private func show(_ newCards: [CardSummary]) {
+        arrival = pendingArrival
+        pendingArrival = .edit
         cards = newCards
         let ids = Set(newCards.map(\.id))
         selection.formIntersection(ids)
@@ -318,22 +337,6 @@ public final class ShelfModel {
 
     private func index(of id: Int64) -> Int? {
         cards.firstIndex { $0.id == id }
-    }
-
-    private static func encodeTab(_ list: CardList) -> String {
-        switch list {
-        case .history: "history"
-        case let .board(id): "board:\(id)"
-        }
-    }
-
-    private static func decodeTab(_ value: String?) -> CardList? {
-        guard let value else { return nil }
-        if value == "history" {
-            return .history
-        }
-        guard value.hasPrefix("board:"), let id = Int64(value.dropFirst("board:".count)) else { return nil }
-        return .board(id: id)
     }
 }
 
@@ -466,6 +469,7 @@ extension ShelfModel {
     }
 
     private func searchTextDidChange() {
+        pendingArrival = .search
         selectsFirstOnLoad = true
         guard !isSearching else {
             pendingRevealID = nil

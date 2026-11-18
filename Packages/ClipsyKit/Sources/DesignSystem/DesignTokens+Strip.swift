@@ -1,7 +1,6 @@
 import SwiftUI
 
 public extension DesignTokens {
-    static let shelfOpenScale: CGFloat = 0.98
     static let shelfCloseOffset: CGFloat = 16
 
     static let cardEntranceStagger: TimeInterval = 0.014

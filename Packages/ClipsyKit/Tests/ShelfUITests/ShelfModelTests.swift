@@ -315,4 +315,79 @@ final class ShelfModelTests {
         model.receive(Self.cards([1]))
         #expect(model.emptyState(isCapturePaused: false) == nil)
     }
+
+    @Test func `first list loads, later lists are edits`() {
+        let model = makeModel()
+
+        model.receive(Self.cards([2, 1]))
+        #expect(model.arrival == .load)
+        model.receive(Self.cards([3, 2, 1]))
+        #expect(model.arrival == .edit)
+    }
+
+    @Test(arguments: [
+        (CardList.history, CardList.board(id: 1), false),
+        (CardList.board(id: 1), CardList.history, true),
+        (CardList.board(id: 1), CardList.board(id: 2), false),
+        (CardList.board(id: 2), CardList.board(id: 1), true),
+    ])
+    func `new tab's cards arrive from its side`(from: CardList, to: CardList, fromLeading: Bool) {
+        let model = makeModel()
+        model.receiveBoards(Self.boards([1, 2]))
+        model.showTab(from)
+        model.receive(Self.cards([1]))
+
+        model.showTab(to)
+        model.receive(Self.cards([2]))
+        #expect(model.arrival == .tab(fromLeading: fromLeading))
+
+        model.receive(Self.cards([3, 2]))
+        #expect(model.arrival == .edit)
+    }
+
+    @Test func `search results and clearing the search crossfade`() {
+        let model = makeModel(cards: [3, 2, 1])
+
+        model.query = "invoice"
+        model.receiveResults(Self.results([2]))
+        #expect(model.arrival == .search)
+        model.receiveResults(Self.results([2, 1]))
+        #expect(model.arrival == .edit)
+
+        model.query = ""
+        #expect(model.arrival == .search)
+    }
+
+    @Test func `switching tabs while searching arrives as a tab switch`() {
+        let model = makeModel(cards: [3, 2, 1])
+        model.receiveBoards(Self.boards([1]))
+        model.query = "invoice"
+        model.receiveResults(Self.results([2]))
+
+        model.showTab(.board(id: 1))
+        model.receive(Self.cards([5]))
+
+        #expect(model.arrival == .tab(fromLeading: false))
+    }
+
+    @Test func `prewarm keeps order, skips duplicates and stops at twelve cards`() {
+        let apps = (5 ... 13).map { "com.example.app\($0)" }
+        let bundleIDs: [String?] = ["com.example.a", "com.example.b", "com.example.a", nil] + apps
+        let model = makeModel()
+
+        model.receive(bundleIDs.enumerated().map { index, bundleID in
+            CardSummary(
+                id: Int64(index + 1),
+                kind: .text,
+                sourceApp: bundleID.map { SourceApp(bundleID: $0, name: "App") },
+                createdAt: Date(timeIntervalSince1970: 0)
+            )
+        })
+
+        #expect(model.prewarmBundleIDs == ["com.example.a", "com.example.b"] + apps.dropLast())
+    }
+
+    private static func results(_ ids: [Int64]) -> [SearchResult] {
+        cards(ids).map { SearchResult(card: $0, titleMatches: [], previewMatches: []) }
+    }
 }

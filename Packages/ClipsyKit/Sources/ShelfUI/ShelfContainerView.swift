@@ -10,6 +10,7 @@ struct ShelfContainerView: View {
     let onResizeEnded: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.displayScale) private var displayScale
     @Environment(BoardEditor.self) private var boardEditor
     @Environment(CardActions.self) private var actions
     @State private var height = DesignTokens.shelfDefaultHeight
@@ -21,27 +22,43 @@ struct ShelfContainerView: View {
                 if presentation.isVisible {
                     GlassPanelBackground(cornerRadius: DesignTokens.shelfCornerRadius)
                         .glassEffectTransition(reduceMotion ? .identity : .materialize)
-                        .transition(reduceMotion ? .opacity : .offset(y: DesignTokens.shelfOpenOffset))
+                        .transition(reduceMotion ? .opacity : .asymmetric(
+                            insertion: .offset(y: DesignTokens.shelfOpenOffset),
+                            removal: .offset(y: DesignTokens.shelfCloseOffset)
+                        ))
                 }
             }
             if presentation.isVisible {
+                let emptyState = model.emptyState(isCapturePaused: commands.isCapturePaused())
                 VStack(spacing: 0) {
                     ShelfTopBar(model: model, commands: commands)
                         .padding([.horizontal, .top], DesignTokens.shelfPadding)
                         .zIndex(1)
                     ZStack {
                         CardStrip(model: model)
-                        if let emptyState = model.emptyState(isCapturePaused: commands.isCapturePaused()) {
+                        if let emptyState {
                             ShelfEmptyView(state: emptyState, commands: commands)
+                                .transition(
+                                    reduceMotion
+                                        ? .opacity
+                                        : .opacity.combined(with: .scale(scale: DesignTokens.emptyStateEntranceScale))
+                                )
                         }
                     }
+                    .animation(
+                        reduceMotion ? DesignTokens.Motion.reduced : DesignTokens.Motion.present,
+                        value: emptyState
+                    )
                 }
                 .overlay(alignment: .top) {
                     ShelfResizeHandle(onResize: onResize, onResizeEnded: onResizeEnded)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .clipShape(.rect(cornerRadius: DesignTokens.shelfCornerRadius))
-                .transition(reduceMotion ? .opacity : .offset(y: DesignTokens.shelfOpenOffset).combined(with: .opacity))
+                .transition(reduceMotion ? .opacity : .asymmetric(
+                    insertion: .offset(y: DesignTokens.shelfOpenOffset).combined(with: .opacity),
+                    removal: .offset(y: DesignTokens.shelfCloseOffset).combined(with: .opacity)
+                ))
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -69,6 +86,15 @@ struct ShelfContainerView: View {
         }
         .task {
             await model.observeApps()
+        }
+        .task(id: model.prewarmBundleIDs) {
+            await AppIconCache.shared.prewarm(
+                bundleIDs: model.prewarmBundleIDs,
+                pixelSizes: [
+                    CardHeader.iconPixelSize(layout: .regular, displayScale: displayScale),
+                    CardHeader.iconPixelSize(layout: .compact, displayScale: displayScale)
+                ]
+            )
         }
     }
 }
