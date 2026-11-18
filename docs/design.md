@@ -109,16 +109,15 @@ Placement uses the display's visible frame, so an auto-hidden Dock is not avoide
 
 ### Motion
 
-Every animation uses one of six curves in `DesignTokens.Motion` (`DesignTokens+Motion.swift`); no view uses `.default` or a curve of its own. Distances, scales and delays live with their area: `DesignTokens+Strip.swift`, `+Card`, `+TopBar` and `+Flight`. Change them there.
+Every animation uses one of five curves in `DesignTokens.Motion` (`DesignTokens+Motion.swift`); no view uses `.default` or a curve of its own. Distances, scales and delays live with their area: `DesignTokens+Strip.swift`, `+Card`, `+TopBar` and `+Flight`. Change them there.
 
 | Curve | Value | Used for |
 |---|---|---|
-| `quick` | `.spring(duration: 0.2, bounce: 0)` | Hover, lift, scroll to the cursor, everything that leaves |
+| `quick` | `.spring(duration: 0.2, bounce: 0)` | Scroll to the cursor, everything that leaves |
 | `standard` | `.spring(duration: 0.3, bounce: 0.1)` | Layout: neighbors, the tab lens, the search field width |
 | `present` | `.spring(duration: 0.35, bounce: 0.14)` | Everything that arrives: the Shelf, the cascade, suggestions, empty states |
 | `pop` | `.spring(duration: 0.34, bounce: 0.28)` | Small single confirmations: a new Card, badges, filter tokens |
 | `reduced` | `.easeOut(duration: 0.15)` | Reduce Motion: opacity only |
-| `ringFade` | `.easeOut(duration: 0.1)` | The selection ring leaving |
 
 | Moment | Default | Reduce Motion |
 |---|---|---|
@@ -126,7 +125,7 @@ Every animation uses one of six curves in `DesignTokens.Motion` (`DesignTokens+M
 | Cascade | Each Card visible at open rises 16 pt (`cardEntranceOffset`), scales from 0.94 (`cardEntranceScale`) anchored at its bottom and fades in on `present`, 14 ms (`cardEntranceStagger`) after its left neighbor, capped at the 8th Card (`cardEntranceMaximumIndex` 7). After 350 ms (`cardEntranceWindow`) Cards that scroll into view appear at once | None |
 | Close | The Shelf drops 16 pt (`shelfCloseOffset`) and fades on `quick`. Copy closes the Shelf this way | Fade on `reduced` |
 | Paste | See [Paste](#paste) | No flight; the paste happens alone |
-| Hover, selection | See [States](#states) | Shadow only |
+| Hover, selection | None: the selection ring appears and leaves at once, and a Card never moves ([States](#states)) | None |
 | Scroll to the cursor | `quick`; revealing a Card in the center uses `standard` | Not animated |
 | Strip edges | Cards less than half visible (`cardVisibilityThreshold`) dim to 50% (`stripEdgeOpacity`); opacity only, no scale | Same |
 | Board switch | The tab lens slides on `standard`; the old strip fades out on `quick`; the new Cards slide in 16 pt (`cardTabSlideOffset`) from the side of the new tab and fade in on `standard`. The new strip starts at its beginning | Fade |
@@ -162,7 +161,7 @@ A Card is a rounded rectangle with an opaque fill, an edge and a two-layer shado
 
 - **Fill.** `cardFill`: `controlBackgroundColor` (white) in light, #2A2A2C in dark, lighter than the window background so a Card reads as raised in both modes.
 - **Edge.** Light: a black 6% hairline (`cardEdgeOpacity`, one pixel wide). Dark: a 1 pt gradient from white 22% at the top to white 6% at the bottom (`cardEdgeTopOpacityDark`, `cardEdgeBottomOpacityDark`, `cardEdgeWidthDark`). No blend modes, because they render differently offscreen. Increase Contrast: a 1 pt `separatorColor` line.
-- **Shadow.** Two layers on the fill only: a contact shadow, black 12% (dark 40%), radius 1, y 1, and an ambient shadow, black 14% (dark 36%), radius 14, y 6 (`cardContactShadow*`, `cardAmbientShadow*`). Hover and selection change them; see [States](#states).
+- **Shadow.** Two layers on the fill only: a contact shadow, black 12% (dark 40%), radius 1, y 1, and an ambient shadow, black 14% (dark 36%), radius 14, y 6 (`cardContactShadow*`, `cardAmbientShadow*`).
 
 | Part | Contents | Style |
 |---|---|---|
@@ -203,14 +202,12 @@ Media bodies clip their bottom corners to the Card radius. Details such as rich 
 | State | Look |
 |---|---|
 | Rest | Fill, edge, contact and ambient shadow ([Anatomy](#anatomy)) |
-| Hover | Rises 2 pt (`cardLiftOffset`) on `quick`; the ambient shadow grows to black 20% (dark 48%), radius 20, y 10. No color change and no scale. The hover area stays at the rest position, so hovering the bottom edge does not flicker |
-| Selected | Accent-colored 3 pt ring, 2 pt outside the Card at a concentric radius; rises 2 pt; no contact shadow, ambient black 18% (dark 44%), radius 18, y 10. The ring appears at once and fades out in 0.1 s (`ringFade`), so holding an arrow key never shows more than one ring |
+| Hover | No change, as in Finder: a Card does not move, scale or change its shadow under the pointer |
+| Selected | Accent-colored 3 pt ring, 2 pt outside the Card at a concentric radius. The ring appears and leaves at once, with no animation, and the Card itself does not change, so holding an arrow key never shows more than one ring |
 | Multi-selected | Each selected Card gets the ring; a count ("3 selected") appears in the top bar |
 | Keyboard focus without selection change | Same as Selected; there is only one focus indicator |
 | Being dragged | An AppKit drag image taken from the Card; the source Card stays as it is |
 | Pasted (Sequence) | Not shown on the Shelf; see §6 |
-
-With Reduce Motion a Card does not rise, and its shadows change on `reduced`.
 
 ### Quick-paste badges
 
@@ -445,7 +442,7 @@ Step 3 and the Privacy pane row read `NSPasteboard.general.accessBehavior` (chec
 | VoiceOver: Shelf | The Card strip is a list with item count; the Board tabs are a group labeled "Boards" whose selected tab carries the selected trait; quick-paste badges are exposed as part of the Card label ("number 3") only while visible. |
 | Announcements | Announce capture paused/resumed, item deleted (with undo hint), Sequence item pasted. |
 | Keyboard only | Every action has a key or is in a menu reachable from the keyboard; Tab moves between search field, Board switcher and Card strip; focus ring always visible. Key map in [product.md](product.md). |
-| Reduce Motion | Fades on `reduced` replace springs, offsets, scales and slides; no Card cascade, no lift and no paste flight; scrolling and layout changes are instant (see [§2 Motion](#motion)). |
+| Reduce Motion | Fades on `reduced` replace springs, offsets, scales and slides; no Card cascade and no paste flight; scrolling and layout changes are instant (see [§2 Motion](#motion)). |
 | Reduce Transparency | Glass and the media caption's material turn opaque automatically; we add no custom blur that would ignore the setting. The paste ghost and afterimage stay off even when `pasteAfterimageIsEnabled` is on. The strip edge dimming stays. |
 | Increase Contrast | Card edges become a 1 pt `separatorColor` line; the selection ring thickens to 4 pt; the tab lens gets a `separatorColor` outline; Board dots do not change (on the Card header band they always have a white ring); header bands darken to 4.5:1 for their white text and the time turns opaque (see [Header band](#header-band)). |
 | Liquid Glass appearance | Test with the system Clear and Tinted glass options. |
@@ -463,7 +460,7 @@ Step 3 and the Privacy pane row read `NSPasteboard.general.accessBehavior` (chec
 | Shelf background | `GlassPanelBackground` (`.glassEffect(.regular, in: .rect(cornerRadius:))` on a background layer of the root view, see [§2 Metrics](#metrics)), concentric corner radius |
 | Shelf content | SwiftUI hosted in `NSHostingView` |
 | Card strip | Horizontal `ScrollView` + `LazyHStack` (or `NSCollectionView` if performance needs it) |
-| Card | `.cardSurface(isSelected:isHovered:)`: opaque `cardFill`, edge and two-layer shadow; no glass |
+| Card | `.cardSurface(isSelected:)`: opaque `cardFill`, edge and two-layer shadow; no glass |
 | Selection ring | Part of `.cardSurface`: stroke in `Color.accentColor`, concentric outside the Card |
 | Quick-paste badge | `GlassBadge(count:)` |
 | Top bar | `GlassEffectContainer` holding the glass controls; the Board tabs are a `TabTrack` in a horizontal `ScrollView` |
@@ -502,7 +499,7 @@ Every recurring UI role has one component, listed below, and screens use it inst
 | Removable chip | `.buttonStyle(.removableChip)` (`RemovableChipButtonStyle`) | Search tokens in the search field | Callout label, trailing small `xmark`, `.fill.secondary` capsule; the whole chip removes it |
 | Accessory icon | `.buttonStyle(.accessoryIcon)` (`AccessoryIconButtonStyle`) | Clear Search; Remove on Sequence rows | Borderless, icon only, secondary |
 | Borderless icon | `.buttonStyle(.borderlessIcon)`, `.menuStyle(.borderlessIcon)` | Sequence header (Undo, More, Close); Privacy Ignored Apps +/− | Borderless, icon only, label color |
-| Card surface | `.cardSurface(isSelected:isHovered:)` (`CardSurface`) | `CardView` | Opaque `cardFill`; edge (light hairline, dark gradient, `separatorColor` with Increase Contrast); contact and ambient shadow; 2 pt lift when hovered or selected; accent selection ring 2 pt outside at a concentric radius that appears at once and fades out; sets the `containerShape` for `.cardInner` clips. Never glass, never scaled |
+| Card surface | `.cardSurface(isSelected:)` (`CardSurface`) | `CardView` | Opaque `cardFill`; edge (light hairline, dark gradient, `separatorColor` with Increase Contrast); contact and ambient shadow; accent selection ring 2 pt outside at a concentric radius that appears and leaves at once; sets the `containerShape` for `.cardInner` clips. Never glass, never scaled |
 | Glass badge | `GlassBadge(count:)` | Quick-paste numbers | `.subheadline` semibold, monospaced digits, 22 pt minimum, on a regular glass capsule |
 | Media caption | `MediaCaption(_:)` | Image Card dimensions | `.caption` medium, monospaced digits, on an `.ultraThinMaterial` capsule: a material, not Liquid Glass |
 | Swatch value label | `SwatchValueLabel(_:on:)` | Color Card value | Monospaced `.callout` semibold, black when the swatch's WCAG luminance is above 0.179 (`swatchLabelLuminanceThreshold`), else white, both at 100%; no background |

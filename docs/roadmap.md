@@ -267,7 +267,7 @@ What exists:
 - Module(s): ShelfUI, DesignSystem
 - Depends on: T3.4
 - Spec: [design §3](design.md#3-cards), [§10](design.md#10-accessibility-and-appearance)
-- Deliverable: card strip (`ScrollView` + `LazyHStack`), header (app icon, title or type label, relative time), footer, selection ring, hover lift; bodies for plain and rich text, code-like text, link without preview, color, unknown; VoiceOver label, value and custom actions
+- Deliverable: card strip (`ScrollView` + `LazyHStack`), header (app icon, title or type label, relative time), footer, selection ring; bodies for plain and rich text, code-like text, link without preview, color, unknown; VoiceOver label, value and custom actions
 - Acceptance: `#Preview`s with mock data for each type; test for the code-like heuristic
 - Human check: light and dark, Increase Contrast, VoiceOver reads "Text from TextEdit, 2 minutes ago"
 - Human check: ← → ⇧← ⇧→ ⌘↑ ⌘↓ ⌘A move and extend the selection and the strip scrolls to follow it; click, ⌘-click, ⇧-click and double-click behave as in product §5

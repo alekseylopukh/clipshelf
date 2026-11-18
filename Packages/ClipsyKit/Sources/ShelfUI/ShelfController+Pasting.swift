@@ -56,12 +56,11 @@ extension ShelfController {
         let state = Self.signposter.beginInterval("pasteSnapshot")
         defer { Self.signposter.endInterval("pasteSnapshot", state) }
         let bounds = contentView.bounds
-        let lift = DesignTokens.cardLiftOffset
-        let cardRect = PasteFlightSnapshot.contentRect(ofCardFrame: cardFrame, in: bounds, lift: lift)
+        let cardRect = PasteFlightSnapshot.contentRect(ofCardFrame: cardFrame, in: bounds)
         let showsAfterimage = DesignTokens.pasteAfterimageIsEnabled
             && !NSWorkspace.shared.accessibilityDisplayShouldReduceTransparency
         let captureRect = showsAfterimage
-            ? PasteFlightSnapshot.stripRect(ofCardFrames: Array(actions.cardFrames.values), in: bounds, lift: lift)
+            ? PasteFlightSnapshot.stripRect(ofCardFrames: Array(actions.cardFrames.values), in: bounds)
             : cardRect
         guard !cardRect.isEmpty, !captureRect.isEmpty,
               let bitmap = contentView.bitmapImageRepForCachingDisplay(in: captureRect)

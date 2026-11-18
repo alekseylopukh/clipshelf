@@ -72,11 +72,10 @@ private struct ComponentGallery: View {
                         .disabled(true)
                 }
             }
-            GalleryRow("Card surface: rest, hovered, selected") {
+            GalleryRow("Card surface: rest, selected") {
                 HStack(spacing: DesignTokens.cardSpacing * 2) {
-                    GalleryCard(isSelected: false, isHovered: false)
-                    GalleryCard(isSelected: false, isHovered: true)
-                    GalleryCard(isSelected: true, isHovered: false)
+                    GalleryCard(isSelected: false)
+                    GalleryCard(isSelected: true)
                 }
                 .padding(DesignTokens.spacingMedium)
             }
@@ -266,7 +265,6 @@ private struct GallerySwatch: View {
 
 private struct GalleryCard: View {
     let isSelected: Bool
-    let isHovered: Bool
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -278,6 +276,6 @@ private struct GalleryCard: View {
         }
         .padding(DesignTokens.cardContentInset)
         .frame(width: 120, height: 120, alignment: .leading)
-        .cardSurface(isSelected: isSelected, isHovered: isHovered)
+        .cardSurface(isSelected: isSelected)
     }
 }

@@ -16,7 +16,6 @@ public extension DesignTokens {
     static let appIconTintSampleSide = 32
     static let appIconPrewarmCount = 12
 
-    static let cardLiftOffset: CGFloat = 2
     static let cardContactShadowRadius: CGFloat = 1
     static let cardContactShadowOffset: CGFloat = 1
     static let cardContactShadowOpacity: Double = 0.12
@@ -25,14 +24,6 @@ public extension DesignTokens {
     static let cardAmbientShadowOffset: CGFloat = 6
     static let cardAmbientShadowOpacity: Double = 0.14
     static let cardAmbientShadowOpacityDark: Double = 0.36
-    static let cardHoverShadowRadius: CGFloat = 20
-    static let cardHoverShadowOffset: CGFloat = 10
-    static let cardHoverShadowOpacity: Double = 0.20
-    static let cardHoverShadowOpacityDark: Double = 0.48
-    static let cardSelectedShadowRadius: CGFloat = 18
-    static let cardSelectedShadowOffset: CGFloat = 10
-    static let cardSelectedShadowOpacity: Double = 0.18
-    static let cardSelectedShadowOpacityDark: Double = 0.44
     static let cardEdgeOpacity: Double = 0.06
     static let cardEdgeTopOpacityDark: Double = 0.22
     static let cardEdgeBottomOpacityDark: Double = 0.06

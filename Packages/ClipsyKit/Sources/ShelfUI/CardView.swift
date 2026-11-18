@@ -12,7 +12,6 @@ struct CardView: View {
     private let content: CardContent
     private let highlights: CardHighlights
 
-    @State private var isHovered = false
     @State private var size = CGSize.zero
     @State private var openWithApplications: [OpenWithApplication] = []
     @Environment(CardActions.self) private var actions
@@ -44,10 +43,8 @@ struct CardView: View {
             board: board,
             now: now,
             layout: layout,
-            isSelected: isSelected,
-            isHovered: isHovered
+            isSelected: isSelected
         )
-        .onHover { isHovered = $0 }
         .onGeometryChange(for: CGSize.self, of: \.size) { size = $0 }
         .background {
             if model.cursorID == card.id {
@@ -182,7 +179,6 @@ private struct CardFace: View {
     let now: Date
     let layout: CardLayout
     let isSelected: Bool
-    let isHovered: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -196,7 +192,7 @@ private struct CardFace: View {
         .padding(DesignTokens.cardContentInset)
         .frame(maxHeight: .infinity)
         .aspectRatio(layout == .compact ? DesignTokens.compactCardAspectRatio : 1, contentMode: .fit)
-        .cardSurface(isSelected: isSelected, isHovered: isHovered)
+        .cardSurface(isSelected: isSelected)
     }
 }
 
